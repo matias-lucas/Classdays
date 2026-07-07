@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { EventoLinha } from "@/components/EventoLinha";
@@ -295,7 +296,7 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
       )}
 
       <footer className="foot">
-        <a href="/">← ver a agenda como a turma vê</a>
+        <Link href="/">← ver a agenda como a turma vê</Link>
       </footer>
     </div>
   );
