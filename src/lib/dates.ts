@@ -37,7 +37,10 @@ export function horaAgora(agora: Date = new Date()): string {
     timeZone: TIMEZONE,
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false,
+    // hourCycle h23 (e não hour12:false): garante "00:xx" à meia-noite.
+    // Alguns engines mapeiam hour12:false para h24 e devolvem "24:00",
+    // o que quebraria comparações de string tipo hora >= agora.
+    hourCycle: "h23",
   }).format(agora);
 }
 
