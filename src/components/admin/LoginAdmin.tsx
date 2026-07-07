@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NOME_CURSO } from "@/lib/config";
@@ -63,9 +64,9 @@ export function LoginAdmin() {
           {enviando ? "Entrando…" : "Entrar"}
         </button>
       </form>
-      <a className="login-voltar" href="/">
+      <Link className="login-voltar" href="/">
         ← voltar à agenda
-      </a>
+      </Link>
     </div>
   );
 }

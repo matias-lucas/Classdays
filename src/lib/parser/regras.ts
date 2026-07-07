@@ -1,4 +1,4 @@
-import { addDias, diaSemanaDe, proximoDiaDaSemana } from "@/lib/dates";
+import { addDias, proximoDiaDaSemana } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
 import type { EventoParseado, ResultadoParse } from "./tipos";
 

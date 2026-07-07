@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { EventoLinha } from "@/components/EventoLinha";
 import {
@@ -147,7 +148,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       )}
 
       <footer className="foot">
-        {ASSINATURA_RODAPE} · <a href="/admin">admin</a>
+        {ASSINATURA_RODAPE} · <Link href="/admin">admin</Link>
       </footer>
     </div>
   );
