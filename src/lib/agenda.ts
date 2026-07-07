@@ -6,8 +6,8 @@ import type { AulaFixa, Evento, TipoEvento } from "@/lib/types";
  *
  * Nada aqui lê banco, relógio ou fuso: tudo entra por parâmetro ("hoje" e
  * "agora" inclusive). Isso permite testar com datas fixas e garante que
- * servidor e navegador calculem exatamente a mesma tela (sem "hydration
- * mismatch", o erro do React quando o HTML do servidor difere do do cliente).
+ * servidor e navegador calculem exatamente a mesma tela (sem hydration
+ * mismatch).
  */
 
 // ---------------------------------------------------------------------------

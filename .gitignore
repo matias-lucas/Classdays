@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (o .example fica versionado como template)
 .env*
+!.env.example
 
 # banco local de desenvolvimento (recriado a partir do seed)
 /data/db.json
@@ -42,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+CLAUDE.md
+PRODUCT.md
+DESIGN.md

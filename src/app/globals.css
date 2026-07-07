@@ -150,13 +150,15 @@ h1 {
   place-items: center;
   transition:
     border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
+    background var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
 }
 .weeknav button:hover:not(:disabled) {
   border-color: var(--ink-faint);
 }
 .weeknav button:active:not(:disabled) {
   background: var(--line-soft);
+  transform: scale(0.92);
 }
 .weeknav button:disabled {
   opacity: 0.45;
@@ -279,6 +281,22 @@ h1 {
   margin-top: 8px;
 }
 
+/* conteúdo do hero troca (filtro, ou o relógio avança pro próximo item):
+   uma respirada curta deixa claro que mudou de propósito, não é glitch */
+.hero-body {
+  animation: heroSwap 320ms var(--ease) both;
+}
+@keyframes heroSwap {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ============================================================================
    selo de tipo — cor do selo = tipo do evento (nunca matéria)
    ========================================================================== */
@@ -350,7 +368,8 @@ h1 {
   transition:
     border-color var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
+    background var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
 }
 .chip .dot {
   width: 8px;
@@ -358,6 +377,9 @@ h1 {
 }
 .chip:hover {
   border-color: var(--ink-faint);
+}
+.chip:active {
+  transform: scale(0.96);
 }
 .chip.on {
   background: var(--ink);
@@ -372,16 +394,45 @@ h1 {
    grade da semana
    ========================================================================== */
 
-/* a grade re-nasce com um fade curto ao trocar de semana (key no React) */
-.grade-fade {
-  animation: fadein 140ms var(--ease) both;
+/* a grade re-nasce ao trocar de semana (key no React) — a direção do
+   slide (dir-prox/dir-ant) espelha pra que lado o usuário navegou no tempo */
+.grade-fade.dir-inicial {
+  animation: fadein 220ms var(--ease) both;
+}
+.grade-fade.dir-prox {
+  animation: slide-prox 240ms var(--ease) both;
+}
+.grade-fade.dir-ant {
+  animation: slide-ant 240ms var(--ease) both;
 }
 @keyframes fadein {
   from {
-    opacity: 0.55;
+    opacity: 0.5;
+    transform: scale(0.99);
   }
   to {
     opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slide-prox {
+  from {
+    opacity: 0.4;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slide-ant {
+  from {
+    opacity: 0.4;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -520,6 +571,22 @@ h1 {
 }
 .ev:hover {
   transform: translateX(2px);
+}
+/* entrada em cascata — só na tela do aluno (EventoLinha recebe `indice`);
+   o admin usa o mesmo componente sem essa prop e fica como está */
+.ev-entra {
+  animation: item-rise 260ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes item-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .ev.cancelado .ev-title {
   color: var(--ink-soft);

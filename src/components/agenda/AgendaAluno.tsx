@@ -36,8 +36,11 @@ interface Props {
   agoraInicial: string;
 }
 
+type DirecaoSemana = "inicial" | "prox" | "ant";
+
 export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicial }: Props) {
   const [semanaOffset, setSemanaOffset] = useState(0);
+  const [direcaoSemana, setDirecaoSemana] = useState<DirecaoSemana>("inicial");
   const [filtro, setFiltro] = useState<string | null>(null);
   const [agora, setAgora] = useState({ hoje: hojeInicial, hhmm: agoraInicial });
 
@@ -90,14 +93,20 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
           <button
             type="button"
             aria-label="Semana anterior"
-            onClick={() => setSemanaOffset((s) => s - 1)}
+            onClick={() => {
+              setDirecaoSemana("ant");
+              setSemanaOffset((s) => s - 1);
+            }}
           >
             ‹
           </button>
           <button
             type="button"
             className="today-btn"
-            onClick={() => setSemanaOffset(0)}
+            onClick={() => {
+              setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
+              setSemanaOffset(0);
+            }}
             disabled={semanaOffset === 0}
           >
             hoje
@@ -105,7 +114,10 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
           <button
             type="button"
             aria-label="Próxima semana"
-            onClick={() => setSemanaOffset((s) => s + 1)}
+            onClick={() => {
+              setDirecaoSemana("prox");
+              setSemanaOffset((s) => s + 1);
+            }}
           >
             ›
           </button>
@@ -129,23 +141,29 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         materiaDe={materiaDe}
         hojeIso={agora.hoje}
         filtro={filtro}
+        direcao={direcaoSemana}
       />
 
       <h2 className="slabel">Próximos eventos</h2>
-      {futuros.length === 0 ? (
-        <p className="empty-day">
-          Nenhum evento marcado{filtro ? " pra essa matéria" : ""}.
-        </p>
-      ) : (
-        futuros.map((e) => (
-          <EventoLinha
-            key={e.id}
-            evento={e}
-            materia={materiaDe(e.materia_id)}
-            hojeIso={agora.hoje}
-          />
-        ))
-      )}
+      {/* key no filtro faz a lista re-nascer inteira ao trocar de matéria,
+          pra todas as linhas visíveis entrarem juntas em cascata (ver .ev-entra) */}
+      <div key={filtro ?? "todas"}>
+        {futuros.length === 0 ? (
+          <p className="empty-day">
+            Nenhum evento marcado{filtro ? " pra essa matéria" : ""}.
+          </p>
+        ) : (
+          futuros.map((e, i) => (
+            <EventoLinha
+              key={e.id}
+              evento={e}
+              materia={materiaDe(e.materia_id)}
+              hojeIso={agora.hoje}
+              indice={i}
+            />
+          ))
+        )}
+      </div>
 
       <footer className="foot">
         {ASSINATURA_RODAPE} · <Link href="/admin">admin</Link>
