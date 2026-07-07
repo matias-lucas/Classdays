@@ -6,16 +6,13 @@ import { createHmac, createHash, timingSafeEqual } from "node:crypto";
  * Só existe UM admin (o representante), então nada de tabela de usuários:
  * uma senha em variável de ambiente (ADMIN_PASSWORD) e um cookie assinado.
  *
- * Como funciona:
- * - login certo → gravamos no cookie um "carimbo" = HMAC-SHA256 derivado da
- *   senha. HMAC é uma assinatura: só quem conhece a senha consegue produzi-la.
- * - a cada request protegida, recalculamos o carimbo e comparamos com o do
+ * - login certo → gravamos no cookie um HMAC-SHA256 derivado da senha.
+ * - a cada request protegida, recalculamos o hash e comparamos com o do
  *   cookie. Bate → é o admin. Sem sessão em banco, sem estado no servidor.
- * - trocar a senha invalida todas as sessões na hora (o carimbo muda).
+ * - trocar a senha invalida todas as sessões na hora (o hash muda).
  *
- * O cookie é httpOnly (JavaScript da página não o lê — proteção contra XSS)
- * e as comparações são em tempo constante (timingSafeEqual) para não vazar
- * informação pela demora da resposta.
+ * Cookie httpOnly (protege contra XSS) e comparações em tempo constante
+ * (timingSafeEqual) para não vazar informação pela demora da resposta.
  */
 
 export const COOKIE_SESSAO = "classdays_admin";

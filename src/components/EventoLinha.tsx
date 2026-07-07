@@ -19,6 +19,13 @@ interface Props {
   hojeIso: string;
   /** Espaço para ações extras (o admin encaixa o botão de apagar aqui). */
   children?: ReactNode;
+  /**
+   * Posição na lista — só a tela do aluno passa isso, pra entrada em
+   * cascata (stagger). Sem essa prop (uso no admin), a linha não anima:
+   * lá a lista muda por ação do próprio usuário (salvar/apagar), não é
+   * uma "revelação" que precise de entrada.
+   */
+  indice?: number;
 }
 
 /**
@@ -26,7 +33,7 @@ interface Props {
  * da matéria), corpo com matéria + selo + título. Compartilhada entre a tela
  * do aluno e o admin — mesma cara nos dois lugares, de propósito.
  */
-export function EventoLinha({ evento, materia, hojeIso, children }: Props) {
+export function EventoLinha({ evento, materia, hojeIso, children, indice }: Props) {
   const cor = materia?.cor ?? COR_TURMA;
   const nome = materia?.nome ?? "Turma";
   const { dia, mes } = fmtDiaMesPartes(evento.data);
@@ -40,10 +47,15 @@ export function EventoLinha({ evento, materia, hojeIso, children }: Props) {
     .filter(Boolean)
     .join(" · ");
 
+  const style = {
+    "--sc": cor,
+    ...(indice !== undefined ? { "--i": Math.min(indice, 8) } : {}),
+  } as React.CSSProperties;
+
   return (
     <div
-      className={`ev${evento.tipo === "cancelamento" ? " cancelado" : ""}`}
-      style={{ "--sc": cor } as React.CSSProperties}
+      className={`ev${evento.tipo === "cancelamento" ? " cancelado" : ""}${indice !== undefined ? " ev-entra" : ""}`}
+      style={style}
     >
       <div className="ev-date" aria-hidden="true">
         <div className="ev-day">{dia}</div>
