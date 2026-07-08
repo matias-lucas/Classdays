@@ -534,6 +534,16 @@ h1 {
 .day {
   margin-bottom: 2px;
 }
+/* no celular, dia já passado da semana atual some (a classe `passou` só existe
+   quando faz sentido esconder — ver marcarPassados). No desktop ele reaparece
+   apagado, ver a seção "quadro de horários" lá embaixo. */
+.day.passou {
+  display: none;
+}
+/* wrapper das aulas do dia — neutro no mobile; vira grade de 2 linhas no desktop */
+.day-classes {
+  display: contents;
+}
 .day-head {
   display: flex;
   align-items: baseline;
@@ -1104,6 +1114,93 @@ h1 {
   font-size: 12px;
   color: var(--ink-faint);
   text-underline-offset: 3px;
+}
+
+/* ============================================================================
+   DESKTOP — a grade da semana vira um quadro de horários (5 colunas)
+
+   No celular a agenda é uma coluna única. Numa tela larga isso fica perdido no
+   vazio, então a partir de ~880px a GRADE DA SEMANA "quebra" pra fora numa
+   faixa larga com Seg–Sex lado a lado (como o quadro pregado na parede),
+   enquanto o resto (Próximo, filtros, eventos) segue numa coluna de leitura
+   central e calma. Identidade preservada: mesmos cards, mesmas cores, mesmos
+   selos — só reorganizados pro espaço que o desktop oferece.
+   ========================================================================== */
+
+@media (min-width: 880px) {
+  .wrap {
+    max-width: 1180px;
+  }
+  /* tudo segue numa coluna de leitura central, MENOS a grade da semana */
+  .wrap > *:not(.slabel-grade):not(.grade-viewport) {
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  /* as 5 colunas de dias, todas da mesma altura (align-items: stretch) */
+  .grade-days {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+  .day {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    min-width: 0;
+  }
+  /* dia passado da semana atual: reaparece (não some como no mobile), apagado */
+  .day.passou {
+    display: flex;
+    opacity: 0.45;
+  }
+
+  /* cada dia é uma grade de 2 linhas = os dois horários da noite.
+     `flex: 1` faz o bloco de aulas preencher a altura da coluna (que já é a da
+     coluna mais alta), e as 2 linhas iguais dividem esse espaço. */
+  .day-classes {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+  /* aula da noite inteira (19h–22h) ocupa as duas linhas → card "quadradão";
+     as de um horário só ocupam a linha certa. Colunas fecham na mesma altura. */
+  .day-classes > .slot-full {
+    grid-row: 1 / 3;
+  }
+  .day-classes > .slot-cedo {
+    grid-row: 1;
+  }
+  .day-classes > .slot-tarde {
+    grid-row: 2;
+  }
+  .day-classes > .empty-day {
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* cards na vertical pra caber na coluna estreita: matéria+prof em cima,
+     hora+sala embaixo, tudo alinhado à esquerda */
+  .class-card {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 0;
+    height: 100%;
+  }
+  .cc-right {
+    text-align: left;
+  }
+  .noclass {
+    margin: 0;
+    height: 100%;
+    align-items: flex-start;
+  }
 }
 
 /* ============================================================================

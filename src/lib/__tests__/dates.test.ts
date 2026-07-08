@@ -3,6 +3,7 @@ import {
   addDias,
   diaSemanaDe,
   diffDias,
+  faixaHorario,
   fmtDiaMes,
   fmtDiaMesPartes,
   fmtHora,
@@ -93,5 +94,12 @@ describe("formatação pt-BR", () => {
     expect(rotuloSemana(-1)).toBe("Semana passada");
     expect(rotuloSemana(3)).toBe("Em 3 semanas");
     expect(rotuloSemana(-3)).toBe("3 semanas atrás");
+  });
+
+  it("faixaHorario classifica os dois horários da noite", () => {
+    expect(faixaHorario("19:00", "20:40")).toBe("cedo");
+    expect(faixaHorario("20:50", "22:30")).toBe("tarde");
+    expect(faixaHorario("19:00", "22:00")).toBe("full"); // noite inteira
+    expect(faixaHorario("19:00", "22:30")).toBe("full");
   });
 });
