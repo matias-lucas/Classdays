@@ -70,6 +70,21 @@ describe("montarSemana", () => {
     expect(semana[1].aulas.find((a) => a.aula.materia_id === "bd")?.cancelamento).not.toBeNull();
     expect(semana[1].aulas.find((a) => a.aula.materia_id === "edados")?.cancelamento).toBeNull();
   });
+
+  it("casa um evento (prova/trabalho/atividade) com a aula da mesma data e matéria", () => {
+    const prova = evento({
+      id: 1, tipo: "prova", data: "2026-07-07", materia_id: "edados", titulo: "Prova X",
+    });
+    const semana = montarSemana(GRADE, [prova], "2026-07-06");
+    expect(semana[1].aulas.find((a) => a.aula.materia_id === "edados")?.evento).toBe(prova);
+    expect(semana[1].aulas.find((a) => a.aula.materia_id === "bd")?.evento).toBeNull();
+  });
+
+  it("cancelamento não conta como evento da aula", () => {
+    const cancel = evento({ id: 1, tipo: "cancelamento", data: "2026-07-07", materia_id: "edados" });
+    const semana = montarSemana(GRADE, [cancel], "2026-07-06");
+    expect(semana[1].aulas.find((a) => a.aula.materia_id === "edados")?.evento).toBeNull();
+  });
 });
 
 describe("proximoItem (o card Próximo)", () => {

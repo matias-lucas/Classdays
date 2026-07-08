@@ -1,3 +1,4 @@
+import { Badge } from "@/components/Badge";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { DIAS_LONGOS, diaSemanaDe, fmtDiaMes } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
@@ -51,7 +52,7 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, direcao }: Pro
             ) : aulas.length === 0 ? (
               <p className="empty-day">{filtro ? "—" : "Sem aulas"}</p>
             ) : (
-              aulas.map(({ aula, cancelamento }) => {
+              aulas.map(({ aula, cancelamento, evento }) => {
                 const materia = materiaDe(aula.materia_id);
                 if (cancelamento) {
                   return (
@@ -77,6 +78,7 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, direcao }: Pro
                       <div className="cc-subj">
                         <span className="dot" />
                         {materia?.nome ?? aula.materia_id}
+                        {evento && <Badge tipo={evento.tipo} />}
                       </div>
                       {materia?.prof && <div className="cc-prof">{materia.prof}</div>}
                     </div>
