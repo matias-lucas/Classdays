@@ -15,7 +15,7 @@ import {
 } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { FiltroMaterias } from "./FiltroMaterias";
-import { GradeSemana } from "./GradeSemana";
+import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
 
 interface Props {
@@ -114,7 +114,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
             title={semanaOffset === 0 ? "Você já está na semana atual" : "Voltar para a semana atual"}
             aria-current={semanaOffset === 0 ? "date" : undefined}
           >
-            hoje
+            HOJE
           </button>
           <button
             type="button"
@@ -141,7 +141,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
 
       <h2 className="slabel">Grade da semana</h2>
-      <GradeSemana
+      <GradeSemanaSlider
         semana={semanaVisivel}
         materiaDe={materiaDe}
         hojeIso={agora.hoje}

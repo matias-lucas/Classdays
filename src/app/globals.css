@@ -444,25 +444,53 @@ h1 {
 }
 
 /* ============================================================================
-   grade da semana
+   grade da semana — carrossel de troca de semana (GradeSemanaSlider)
    ========================================================================== */
 
-/* a grade re-nasce ao trocar de semana (key no React) — a direção do
-   slide (dir-prox/dir-ant) espelha pra que lado o usuário navegou no tempo */
-/* .head-sub (o período "06 jul – 12 jul") reusa as mesmas classes de
-   direção, com a mesma key — muda junto com a grade, não separado dela */
-.grade-fade.dir-inicial,
-.head-sub.dir-inicial {
-  animation: fadein 220ms var(--ease) both;
+/* o viewport corta tudo que passa das bordas: é por ele que a semana que sai
+   "some" pro lado da tela. padding/margin vertical compensados pra sombra dos
+   cards não ser cortada em cima/embaixo (overflow corta os dois eixos junto) */
+.grade-viewport {
+  overflow: hidden;
+  padding-block: 8px;
+  margin-block: -8px;
+  animation: fadein 260ms var(--ease) both; /* só na primeira carga */
 }
-.grade-fade.dir-prox,
-.head-sub.dir-prox {
-  animation: slide-prox 280ms var(--ease) both;
+/* trilho com as duas semanas lado a lado; desliza inteiro num movimento só */
+.grade-track {
+  display: flex;
+  width: 200%;
+  will-change: transform;
 }
-.grade-fade.dir-ant,
-.head-sub.dir-ant {
-  animation: slide-ant 280ms var(--ease) both;
+.grade-track > .grade-panel {
+  flex: 0 0 50%;
+  min-width: 0;
 }
+/* avançar: [sai][entra], corre pra esquerda → a nova é puxada da direita */
+.grade-track.to-prox {
+  animation: week-slide-prox 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* voltar: [entra][sai], corre pra direita → a nova é puxada da esquerda */
+.grade-track.to-ant {
+  animation: week-slide-ant 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes week-slide-prox {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes week-slide-ant {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @keyframes fadein {
   from {
     opacity: 0.5;
@@ -473,24 +501,29 @@ h1 {
     transform: none;
   }
 }
-/* avançar semana: o conteúdo novo entra vindo da direita — a sensação de
-   "puxar pra frente". 24px (não 12px) pra realmente se sentir um puxão,
-   não só um tremor */
+
+/* o período no cabeçalho (`.head-sub`) acompanha, mas com um deslize curto —
+   é um texto pequeno, um carrossel inteiro nele ficaria estranho */
+.head-sub.dir-prox {
+  animation: slide-prox 280ms var(--ease) both;
+}
+.head-sub.dir-ant {
+  animation: slide-ant 280ms var(--ease) both;
+}
 @keyframes slide-prox {
   from {
     opacity: 0.35;
-    transform: translateX(24px);
+    transform: translateX(16px);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
-/* voltar semana: o inverso — entra vindo da esquerda */
 @keyframes slide-ant {
   from {
     opacity: 0.35;
-    transform: translateX(-24px);
+    transform: translateX(-16px);
   }
   to {
     opacity: 1;

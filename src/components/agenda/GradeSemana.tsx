@@ -8,20 +8,19 @@ interface Props {
   materiaDe: (id: string | null) => Materia | undefined;
   hojeIso: string;
   filtro: string | null;
-  /** Pra que lado o usuário navegou no tempo — anima o slide nessa direção. */
-  direcao: "inicial" | "prox" | "ant";
 }
 
 /**
  * Segunda a sexta com as aulas fixas, já cruzadas com os cancelamentos:
  * dia inteiro cancelado vira um aviso único; aula cancelada aparece riscada
  * do fluxo (borda tracejada), não some — ausência também é informação.
+ *
+ * Componente só de apresentação: quem cuida da animação de troca de semana
+ * é o GradeSemanaSlider, que renderiza duas destas lado a lado e desliza.
  */
-export function GradeSemana({ semana, materiaDe, hojeIso, filtro, direcao }: Props) {
+export function GradeSemana({ semana, materiaDe, hojeIso, filtro }: Props) {
   return (
-    // key na data da segunda faz o grid "re-nascer" ao trocar de semana;
-    // a classe dir-* escolhe pra que lado ele desliza (ver .grade-fade no CSS)
-    <div className={`grade-fade dir-${direcao}`} key={semana[0]?.data}>
+    <div className="grade-days">
       {semana.map((dia) => {
         const ehHoje = dia.data === hojeIso;
         const aulas = filtro
