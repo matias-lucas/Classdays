@@ -145,6 +145,28 @@ export function fmtHora(hora: string): string {
   return hora.replace(":", "h");
 }
 
+/** "20:40" → 1240 (minutos desde a meia-noite). */
+function minutosDe(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Em qual "faixa" da noite a aula cai — usado só no quadro de horários do
+ * desktop, onde cada dia é uma coluna de 2 linhas (dois horários da noite):
+ * - "full": aula longa que cobre a noite inteira (≥ 2h30, ex. 19h–22h) →
+ *   ocupa as duas linhas (o card "quadradão");
+ * - "cedo": primeiro horário (começa antes das ~20h45);
+ * - "tarde": segundo horário.
+ * Assim as colunas fecham todas na mesma altura, sem quebras.
+ */
+export function faixaHorario(horaIni: string, horaFim: string): "full" | "cedo" | "tarde" {
+  const ini = minutosDe(horaIni);
+  const fim = minutosDe(horaFim);
+  if (fim - ini >= 150) return "full"; // ≥ 2h30 cobre os dois horários
+  return ini < 20 * 60 + 45 ? "cedo" : "tarde"; // divisor às 20h45
+}
+
 /** Contagem regressiva humana: hoje / amanhã / em N dias / passou. */
 export function rotuloRelativo(dias: number): string {
   if (dias < 0) return "passou";

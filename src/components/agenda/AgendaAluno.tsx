@@ -64,13 +64,16 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
     () => montarSemana(grade, eventos, segunda),
     [grade, eventos, segunda],
   );
-  // na semana atual, dias que já passaram só ocupam espaço — na semana
-  // toda inteira (navegada de propósito) faz sentido ver tudo, passado incluso
-  const semanaVisivel = useMemo(() => {
-    if (semanaOffset !== 0) return semana;
-    const restante = semana.filter((d) => d.data >= agora.hoje);
-    return restante.length > 0 ? restante : semana; // fim de semana sem aula: mostra a semana toda
-  }, [semana, semanaOffset, agora.hoje]);
+  // Dias já passados da semana ATUAL viram "passados": no celular somem da
+  // grade (a gente cruza no corredor querendo o que falta); no desktop ficam
+  // apagados, pra grade seguir com as 5 colunas e não abrir buracos.
+  // Só marcamos se ainda sobrou algum dia à frente (num sábado, todas as aulas
+  // já passaram → não faz sentido esconder tudo, mostra a semana inteira).
+  // Semanas navegadas de propósito nunca escondem nada.
+  const marcarPassados = useMemo(
+    () => semanaOffset === 0 && semana.some((d) => d.data >= agora.hoje),
+    [semana, semanaOffset, agora.hoje],
+  );
 
   const futuros = useMemo(
     () => eventosFuturos(eventos, agora.hoje, filtro),
@@ -140,13 +143,14 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       <h2 className="slabel">Filtrar por matéria</h2>
       <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
 
-      <h2 className="slabel">Grade da semana</h2>
+      <h2 className="slabel slabel-grade">Grade da semana</h2>
       <GradeSemanaSlider
-        semana={semanaVisivel}
+        semana={semana}
         materiaDe={materiaDe}
         hojeIso={agora.hoje}
         filtro={filtro}
         direcao={direcaoSemana}
+        marcarPassados={marcarPassados}
       />
 
       <h2 className="slabel">Próximos eventos</h2>

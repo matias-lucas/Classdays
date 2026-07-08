@@ -12,6 +12,8 @@ interface Props {
   filtro: string | null;
   /** Pra que lado o usuário navegou no tempo — decide o sentido do carrossel. */
   direcao: "inicial" | "prox" | "ant";
+  /** Marcar os dias já passados (some no mobile, apaga no desktop). */
+  marcarPassados: boolean;
 }
 
 interface Transicao {
@@ -32,7 +34,14 @@ interface Transicao {
  * Só a semana em foco depende de `hojeIso`/`filtro`; a que sai é um retrato
  * congelado do que já estava renderizado.
  */
-export function GradeSemanaSlider({ semana, materiaDe, hojeIso, filtro, direcao }: Props) {
+export function GradeSemanaSlider({
+  semana,
+  materiaDe,
+  hojeIso,
+  filtro,
+  direcao,
+  marcarPassados,
+}: Props) {
   const identidade = semana[0]?.data;
   const [transicao, setTransicao] = useState<Transicao | null>(null);
 
@@ -74,6 +83,7 @@ export function GradeSemanaSlider({ semana, materiaDe, hojeIso, filtro, direcao 
         materiaDe={materiaDe}
         hojeIso={hojeIso}
         filtro={filtro}
+        marcarPassados={marcarPassados}
       />
     </div>
   );
@@ -89,6 +99,7 @@ export function GradeSemanaSlider({ semana, materiaDe, hojeIso, filtro, direcao 
         materiaDe={materiaDe}
         hojeIso={hojeIso}
         filtro={filtro}
+        marcarPassados={marcarPassados}
       />
     </div>
   );
