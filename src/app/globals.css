@@ -153,11 +153,14 @@ h1 {
     background var(--t-fast) var(--ease),
     transform 100ms var(--ease);
 }
-.weeknav button:hover:not(:disabled) {
-  border-color: var(--ink-faint);
+@media (hover: hover) and (pointer: fine) {
+  .weeknav button:hover:not(:disabled) {
+    border-color: var(--ink-faint);
+  }
 }
 .weeknav button:active:not(:disabled) {
   background: var(--line-soft);
+  border-color: var(--ink-faint);
   transform: scale(0.92);
 }
 .weeknav button:disabled {
@@ -170,6 +173,16 @@ h1 {
   font-family: var(--font-mono), monospace;
   font-size: 12px;
   font-weight: 500;
+}
+/* desabilitado aqui não quer dizer "quebrado" — quer dizer "você já está
+   aqui". Some o cinza-apagado genérico e usa o mesmo tratamento do chip
+   ativo (fundo ink), pra ler como "estado atual", não como erro. */
+.weeknav .today-btn:disabled {
+  opacity: 1;
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  cursor: default;
 }
 /* dedo é menos preciso que cursor: alvo maior no toque */
 @media (pointer: coarse) {
@@ -206,13 +219,28 @@ h1 {
    Próximo (o card-herói)
    ========================================================================== */
 
+/* wrapper separado do .hero: o hover mexe em transform aqui, enquanto o
+   .hero por dentro já usa transform/box-shadow pras próprias animações
+   (entrada + pulso) — numa CSS animation sempre vence uma transition na
+   mesma propriedade, então hover precisa morar num elemento sem animação */
+.hero-wrap {
+  transition: transform 200ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap:hover {
+    transform: translateY(-2px);
+  }
+}
+
 .hero {
   background: var(--surface);
   border-radius: var(--radius-hero);
   box-shadow: var(--shadow-hero);
   border-left: 6px solid var(--sc, var(--ink-faint));
   padding: 18px 20px;
-  animation: rise 450ms var(--ease) both;
+  animation:
+    rise 450ms var(--ease) both,
+    hero-pulse 3200ms ease-in-out 900ms infinite;
 }
 /* só transform: o conteúdo nunca depende da animação pra ficar visível
    (renderizadores estáticos e abas ocultas pausam animações) */
@@ -222,6 +250,21 @@ h1 {
   }
   to {
     transform: none;
+  }
+}
+/* respiração bem sutil na cor da matéria — só o card-assinatura tem isso,
+   pra continuar chamando atenção sem virar decoração o resto da tela */
+@keyframes hero-pulse {
+  0%,
+  100% {
+    box-shadow:
+      var(--shadow-hero),
+      0 0 0 0 color-mix(in srgb, var(--sc, var(--ink)) 0%, transparent);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-hero),
+      0 0 0 5px color-mix(in srgb, var(--sc, var(--ink)) 12%, transparent);
   }
 }
 .hero-top {
@@ -375,10 +418,14 @@ h1 {
   width: 8px;
   height: 8px;
 }
-.chip:hover {
-  border-color: var(--ink-faint);
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--ink-faint);
+  }
 }
 .chip:active {
+  border-color: var(--ink-faint);
+  background: var(--line-soft);
   transform: scale(0.96);
 }
 .chip.on {
@@ -389,6 +436,12 @@ h1 {
 .chip.on .dot {
   box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5);
 }
+/* dedo é menos preciso que cursor: alvo maior no toque (mesmo padrão do weeknav) */
+@media (pointer: coarse) {
+  .chip {
+    min-height: 44px;
+  }
+}
 
 /* ============================================================================
    grade da semana
@@ -396,14 +449,19 @@ h1 {
 
 /* a grade re-nasce ao trocar de semana (key no React) — a direção do
    slide (dir-prox/dir-ant) espelha pra que lado o usuário navegou no tempo */
-.grade-fade.dir-inicial {
+/* .head-sub (o período "06 jul – 12 jul") reusa as mesmas classes de
+   direção, com a mesma key — muda junto com a grade, não separado dela */
+.grade-fade.dir-inicial,
+.head-sub.dir-inicial {
   animation: fadein 220ms var(--ease) both;
 }
-.grade-fade.dir-prox {
-  animation: slide-prox 240ms var(--ease) both;
+.grade-fade.dir-prox,
+.head-sub.dir-prox {
+  animation: slide-prox 280ms var(--ease) both;
 }
-.grade-fade.dir-ant {
-  animation: slide-ant 240ms var(--ease) both;
+.grade-fade.dir-ant,
+.head-sub.dir-ant {
+  animation: slide-ant 280ms var(--ease) both;
 }
 @keyframes fadein {
   from {
@@ -415,20 +473,24 @@ h1 {
     transform: none;
   }
 }
+/* avançar semana: o conteúdo novo entra vindo da direita — a sensação de
+   "puxar pra frente". 24px (não 12px) pra realmente se sentir um puxão,
+   não só um tremor */
 @keyframes slide-prox {
   from {
-    opacity: 0.4;
-    transform: translateX(12px);
+    opacity: 0.35;
+    transform: translateX(24px);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
+/* voltar semana: o inverso — entra vindo da esquerda */
 @keyframes slide-ant {
   from {
-    opacity: 0.4;
-    transform: translateX(-12px);
+    opacity: 0.35;
+    transform: translateX(-24px);
   }
   to {
     opacity: 1;
@@ -487,8 +549,13 @@ h1 {
   gap: 12px;
   transition: transform 120ms var(--ease);
 }
-.class-card:hover {
-  transform: translateX(2px);
+/* linha só de leitura (sem onClick) — o deslize é uma pista pra mouse; em
+   touch, hover não corresponde a nada real, então fica de fora (senão o
+   toque "meio que" acontece, o que é pior que não acontecer) */
+@media (hover: hover) and (pointer: fine) {
+  .class-card:hover {
+    transform: translateX(2px);
+  }
 }
 .cc-left {
   min-width: 0;
@@ -499,6 +566,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 7px;
+  flex-wrap: wrap;
 }
 .cc-prof {
   font-size: 12px;
@@ -569,8 +637,10 @@ h1 {
   align-items: center;
   transition: transform 120ms var(--ease);
 }
-.ev:hover {
-  transform: translateX(2px);
+@media (hover: hover) and (pointer: fine) {
+  .ev:hover {
+    transform: translateX(2px);
+  }
 }
 /* entrada em cascata — só na tela do aluno (EventoLinha recebe `indice`);
    o admin usa o mesmo componente sem essa prop e fica como está */

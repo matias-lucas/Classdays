@@ -3,18 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { EventoLinha } from "@/components/EventoLinha";
-import {
-  cancelamentosDe,
-  eventosFuturos,
-  montarSemana,
-  proximoItem,
-} from "@/lib/agenda";
+import { eventosFuturos, montarSemana, proximoItem } from "@/lib/agenda";
 import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA } from "@/lib/config";
 import {
   addDias,
   fmtDiaMesPartes,
   hojeISO,
   horaAgora,
+  rotuloSemana,
   segundaDaSemana,
 } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
@@ -65,9 +61,16 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
 
   const segunda = addDias(segundaDaSemana(agora.hoje), semanaOffset * 7);
   const semana = useMemo(
-    () => montarSemana(grade, cancelamentosDe(eventos), segunda),
+    () => montarSemana(grade, eventos, segunda),
     [grade, eventos, segunda],
   );
+  // na semana atual, dias que já passaram só ocupam espaço — na semana
+  // toda inteira (navegada de propósito) faz sentido ver tudo, passado incluso
+  const semanaVisivel = useMemo(() => {
+    if (semanaOffset !== 0) return semana;
+    const restante = semana.filter((d) => d.data >= agora.hoje);
+    return restante.length > 0 ? restante : semana; // fim de semana sem aula: mostra a semana toda
+  }, [semana, semanaOffset, agora.hoje]);
 
   const futuros = useMemo(
     () => eventosFuturos(eventos, agora.hoje, filtro),
@@ -85,8 +88,8 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       <header className="head-row">
         <div>
           <h1>Agenda</h1>
-          <p className="head-sub">
-            {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
+          <p className={`head-sub dir-${direcaoSemana}`} key={segunda}>
+            {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
           </p>
         </div>
         <nav className="weeknav" aria-label="Navegar entre semanas">
@@ -108,6 +111,8 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
               setSemanaOffset(0);
             }}
             disabled={semanaOffset === 0}
+            title={semanaOffset === 0 ? "Você já está na semana atual" : "Voltar para a semana atual"}
+            aria-current={semanaOffset === 0 ? "date" : undefined}
           >
             hoje
           </button>
@@ -137,7 +142,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
 
       <h2 className="slabel">Grade da semana</h2>
       <GradeSemana
-        semana={semana}
+        semana={semanaVisivel}
         materiaDe={materiaDe}
         hojeIso={agora.hoje}
         filtro={filtro}

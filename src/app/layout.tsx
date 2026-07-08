@@ -48,7 +48,16 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${display.variable} ${corpo.variable} ${mono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {/* Sem nenhum listener de touch, o Safari do iOS ignora :active
+            no toque — os botões e chips ficariam "mudos" ao tocar. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.addEventListener("touchstart", function(){}, {passive:true});`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

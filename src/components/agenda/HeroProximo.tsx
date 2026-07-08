@@ -25,15 +25,17 @@ interface Props {
 export function HeroProximo({ item, materiaDe, hojeIso, filtroAtivo }: Props) {
   if (!item) {
     return (
-      <div className="hero" style={{ "--sc": "var(--ink-faint)" } as React.CSSProperties}>
-        <p
-          className="hero-empty hero-body"
-          key={filtroAtivo ? "vazio-filtro" : "vazio-geral"}
-        >
-          {filtroAtivo
-            ? "Nada por vir com esse filtro."
-            : "Sem aulas ou eventos à vista."}
-        </p>
+      <div className="hero-wrap">
+        <div className="hero" style={{ "--sc": "var(--ink-faint)" } as React.CSSProperties}>
+          <p
+            className="hero-empty hero-body"
+            key={filtroAtivo ? "vazio-filtro" : "vazio-geral"}
+          >
+            {filtroAtivo
+              ? "Nada por vir com esse filtro."
+              : "Sem aulas ou eventos à vista."}
+          </p>
+        </div>
       </div>
     );
   }
@@ -57,21 +59,23 @@ export function HeroProximo({ item, materiaDe, hojeIso, filtroAtivo }: Props) {
   const itemKey = `${item.kind}-${item.materia_id}-${item.data}-${item.hora}-${titulo}`;
 
   return (
-    <div className="hero" style={{ "--sc": cor } as React.CSSProperties}>
-      <div className="hero-body" key={itemKey}>
-        <div className="hero-top">
-          <span className="subj">
-            <span className="dot" />
-            {ehAula ? (materia?.prof ?? "Aula da grade") : (materia?.nome ?? "Turma")}
-          </span>
-          {ehAula ? <Badge tipo="aula" /> : <Badge tipo={item.tipo!} />}
+    <div className="hero-wrap">
+      <div className="hero" style={{ "--sc": cor } as React.CSSProperties}>
+        <div className="hero-body" key={itemKey}>
+          <div className="hero-top">
+            <span className="subj">
+              <span className="dot" />
+              {ehAula ? (materia?.prof ?? "Aula da grade") : (materia?.nome ?? "Turma")}
+            </span>
+            {ehAula ? <Badge tipo="aula" /> : <Badge tipo={item.tipo!} />}
+          </div>
+          <div className="hero-title">{titulo}</div>
+          <div className="hero-meta">
+            <span>{meta}</span>
+            <span className="countdown">{rotuloRelativo(diffDias(hojeIso, item.data))}</span>
+          </div>
+          {item.observacao && <p className="hero-obs">{item.observacao}</p>}
         </div>
-        <div className="hero-title">{titulo}</div>
-        <div className="hero-meta">
-          <span>{meta}</span>
-          <span className="countdown">{rotuloRelativo(diffDias(hojeIso, item.data))}</span>
-        </div>
-        {item.observacao && <p className="hero-obs">{item.observacao}</p>}
       </div>
     </div>
   );

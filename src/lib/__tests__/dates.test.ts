@@ -10,6 +10,7 @@ import {
   horaAgora,
   proximoDiaDaSemana,
   rotuloRelativo,
+  rotuloSemana,
   segundaDaSemana,
 } from "@/lib/dates";
 
@@ -84,5 +85,13 @@ describe("formatação pt-BR", () => {
     expect(rotuloRelativo(0)).toBe("hoje");
     expect(rotuloRelativo(1)).toBe("amanhã");
     expect(rotuloRelativo(5)).toBe("em 5 dias");
+  });
+
+  it("rótulos de semana (cabeçalho da agenda)", () => {
+    expect(rotuloSemana(0)).toBe("Esta semana");
+    expect(rotuloSemana(1)).toBe("Semana que vem");
+    expect(rotuloSemana(-1)).toBe("Semana passada");
+    expect(rotuloSemana(3)).toBe("Em 3 semanas");
+    expect(rotuloSemana(-3)).toBe("3 semanas atrás");
   });
 });

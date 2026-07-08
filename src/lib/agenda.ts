@@ -49,15 +49,17 @@ export interface DiaDaSemana {
   aulas: Array<{
     aula: AulaFixa;
     cancelamento: Evento | null; // cancelamento só desta aula, se houver
+    evento: Evento | null; // prova/trabalho/atividade dessa matéria nessa data, se houver
   }>;
 }
 
 /** Monta os 5 dias úteis da semana que começa em `segundaIso`. */
 export function montarSemana(
   grade: AulaFixa[],
-  cancelamentos: Evento[],
+  eventos: Evento[],
   segundaIso: string,
 ): DiaDaSemana[] {
+  const cancelamentos = cancelamentosDe(eventos);
   const dias: DiaDaSemana[] = [];
   for (let i = 0; i < 5; i++) {
     const data = addDias(segundaIso, i);
@@ -72,6 +74,13 @@ export function montarSemana(
       aulas: doDia.map((aula) => ({
         aula,
         cancelamento: cancelamentoDa(cancelamentos, data, aula.materia_id),
+        evento:
+          eventos.find(
+            (e) =>
+              e.tipo !== "cancelamento" &&
+              e.data === data &&
+              e.materia_id === aula.materia_id,
+          ) ?? null,
       })),
     });
   }
