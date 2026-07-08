@@ -86,7 +86,7 @@ export function PreviewEvento({
             value={evento.materia_id ?? ""}
             onChange={(e) => muda("materia_id", e.target.value || null)}
           >
-            <option value="">— turma toda</option>
+            <option value="">— TODAS</option>
             {materias.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.nome}

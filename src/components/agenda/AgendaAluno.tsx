@@ -175,7 +175,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       </div>
 
       <footer className="foot">
-        {ASSINATURA_RODAPE} · <Link href="/admin">admin</Link>
+        {ASSINATURA_RODAPE} · <Link href="/admin">/admin</Link>
       </footer>
     </div>
   );

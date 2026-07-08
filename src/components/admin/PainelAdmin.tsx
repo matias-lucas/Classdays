@@ -144,7 +144,7 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
     <div className="wrap">
       <p className="eyebrow">Classdays · Admin</p>
       <header className="admin-topo">
-        <h1>Cadastrar</h1>
+        <h1>Painel</h1>
         <div className="admin-meta">
           <span
             className="tag-backend"
@@ -157,47 +157,47 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
             dados: {backend}
           </span>
           <button type="button" className="btn btn-fantasma btn-mini" onClick={sair}>
-            sair
+            SAIR
           </button>
         </div>
       </header>
       <p className="head-sub" style={{ marginBottom: 18 }}>
         {claudeAtivo
-          ? "escreva como você falaria no grupo — o Claude estrutura"
-          : "escreva como você falaria no grupo — interpretação por regras locais"}
+          ? "Manutenção dos eventos — Interpretação por IA"
+          : "Manutenção dos eventos — Interpretação por regras locais"}
       </p>
 
       <form className="frase-form" onSubmit={interpretar}>
         <label className="campo">
-          <span>Frase</span>
+          <span>CADASTRAR EVENTOS · INPUT: </span>
           <textarea
             ref={areaFrase}
             value={frase}
             onChange={(e) => setFrase(e.target.value)}
-            placeholder={`ex.: ${EXEMPLOS[0]}`}
-            maxLength={300}
+            placeholder={"Digite o que acontecerá..."}
+            maxLength={118}
             rows={2}
             autoFocus
           />
         </label>
-        <p className="frase-dicas">
+        {/* <p className="frase-dicas">
           exemplos:{" "}
           {EXEMPLOS.map((ex, i) => (
             <span key={ex}>
               {i > 0 && " · "}
-              <button type="button" onClick={() => usarExemplo(ex)}>
+              <button type="button">
                 “{ex}”
               </button>
             </span>
           ))}
-        </p>
+        </p> */}
         <div className="frase-acoes">
           <button
             type="submit"
             className="btn btn-primario"
             disabled={interpretando || frase.trim().length < 3}
           >
-            {interpretando ? "Interpretando…" : "Interpretar frase"}
+            {interpretando ? "Interpretando…" : "Processar"}
           </button>
           <button
             type="button"
@@ -206,7 +206,7 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
               setRascunho({ evento: EVENTO_VAZIO, origem: "manual", avisos: [] })
             }
           >
-            ou criar manualmente
+            ✎ Inserir manualmente
           </button>
         </div>
       </form>

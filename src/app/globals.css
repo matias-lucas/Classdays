@@ -144,7 +144,7 @@ h1 {
   background: var(--surface);
   border-radius: var(--radius-ctrl);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1;
   display: grid;
   place-items: center;
@@ -171,8 +171,8 @@ h1 {
   width: auto;
   padding: 0 12px;
   font-family: var(--font-mono), monospace;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
 }
 /* desabilitado aqui não quer dizer "quebrado" — quer dizer "você já está
    aqui". Some o cinza-apagado genérico e usa o mesmo tratamento do chip
@@ -541,9 +541,33 @@ h1 {
   display: none;
 }
 /* wrapper das aulas do dia — neutro no mobile; vira grade de 2 linhas no desktop */
+
 .day-classes {
-  display: contents;
+  display: content;
 }
+/* @media (max-width: 879px) {
+  .day-classes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    flex: 1;
+  }
+  .day-classes > .slot-full {
+    grid-column: 1 / -1;
+  }
+  .day-classes > .slot-cedo {
+    grid-column: 1;
+  }
+  .day-classes > .slot-tarde {
+    grid-column: 2;
+  }
+  .day-classes > .empty-day {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}*/
 .day-head {
   display: flex;
   align-items: baseline;
