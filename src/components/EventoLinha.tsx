@@ -11,7 +11,7 @@ import {
 import type { Evento, Materia } from "@/lib/types";
 
 /** Cor usada quando o evento é da turma toda (sem matéria). */
-export const COR_TURMA = "#6A4D9C";
+export const COR_TURMA = "#525258";
 
 interface Props {
   evento: Evento;
@@ -35,7 +35,7 @@ interface Props {
  */
 export function EventoLinha({ evento, materia, hojeIso, children, indice }: Props) {
   const cor = materia?.cor ?? COR_TURMA;
-  const nome = materia?.nome ?? "Turma";
+  const nome = materia?.nome ?? "GERAL";
   const { dia, mes } = fmtDiaMesPartes(evento.data);
   const dias = diffDias(hojeIso, evento.data);
 

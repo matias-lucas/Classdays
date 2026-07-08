@@ -4,4 +4,4 @@
  */
 export const NOME_CURSO = "Engenharia de Software";
 export const NOME_TURMA = "4º período";
-export const ASSINATURA_RODAPE = "atualizado pela representação de turma";
+export const ASSINATURA_RODAPE = "Atualizado pela representação de turma";
