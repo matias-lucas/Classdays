@@ -14,6 +14,7 @@ import {
   segundaDaSemana,
 } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
+import { MenuLateral } from "@/components/MenuLateral";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
@@ -85,9 +86,12 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
 
   return (
     <div className="wrap">
-      <p className="eyebrow">
-        {NOME_CURSO} · {NOME_TURMA}
-      </p>
+      <div className="topbar">
+        <p className="eyebrow">
+          {NOME_CURSO} · {NOME_TURMA}
+        </p>
+        <MenuLateral />
+      </div>
       <header className="head-row">
         <div>
           <h1>Agenda</h1>

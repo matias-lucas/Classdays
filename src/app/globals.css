@@ -14,6 +14,8 @@
    ========================================================================== */
 
 :root {
+  color-scheme: light;
+
   --bg: #edf0f6;
   --surface: #ffffff;
   --ink: #16203a;
@@ -40,6 +42,17 @@
   --ok-fg: #1f7a44;
   --aviso-bg: #fdf3e3;
   --aviso-fg: #7a4f06;
+  --erro-bg-hover: #f8d7d7;
+
+  /* controles de alta ênfase (fundo = --ink): no tema escuro o --ink vira claro,
+     então a cor do texto/anel/estados precisa virar junto — por isso são tokens.
+     --scrim/--hatch idem, pra lerem certo sobre fundo escuro. */
+  --on-ink: #ffffff;
+  --ink-hover: #232f52;
+  --dot-ring: rgba(255, 255, 255, 0.5);
+  --focus-ring: rgba(22, 32, 58, 0.12);
+  --hatch: rgba(22, 32, 58, 0.015);
+  --scrim: rgba(22, 32, 58, 0.42);
 
   --radius-hero: 14px;
   --radius-card: 11px;
@@ -56,6 +69,60 @@
   --ease: cubic-bezier(0.22, 0.7, 0.3, 1);
   --t-fast: 150ms;
   --t-med: 200ms;
+}
+
+/* ============================================================================
+   tema escuro
+
+   O script de boot (layout.tsx) grava data-theme="dark" no <html> antes da
+   primeira pintura, então não há "flash" de tema claro. Mesmos tokens, paleta
+   noturna: superfícies em tons de "navio" (o mesmo matiz do --ink claro),
+   contraste AA preservado, e sombras mais fortes porque sombra clara some sobre
+   fundo escuro. `color-scheme: dark` acerta scrollbars e date/time pickers.
+   ========================================================================== */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0e1424;
+  --surface: #171f33;
+  --ink: #eef1f8;
+  --ink-soft: #aab3c7;
+  --ink-faint: #949eb6;
+  --line: #2a3550;
+  --line-soft: #212b42;
+
+  --badge-prova-bg: #3d2427;
+  --badge-prova-fg: #f2a3a6;
+  --badge-trabalho-bg: #22314f;
+  --badge-trabalho-fg: #a9c2f2;
+  --badge-atividade-bg: #1e3a2b;
+  --badge-atividade-fg: #8fd6a8;
+  --badge-evento-bg: #322a4a;
+  --badge-evento-fg: #c6b4e8;
+  --badge-cancelamento-bg: #2a3145;
+  --badge-cancelamento-fg: #b6bfd1;
+
+  --erro-fg: #f2a3a6;
+  --erro-bg: #3d2427;
+  --erro-bg-hover: #4a2a2d;
+  --ok-fg: #8fd6a8;
+  --aviso-bg: #3a301c;
+  --aviso-fg: #e6c583;
+
+  --shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.38);
+  --shadow-hero:
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.5);
+
+  --on-ink: #0e1424;
+  --ink-hover: #d7ddec;
+  --dot-ring: rgba(14, 20, 36, 0.55);
+  --focus-ring: rgba(238, 241, 248, 0.18);
+  --hatch: rgba(255, 255, 255, 0.02);
+  --scrim: rgba(0, 0, 0, 0.6);
 }
 
 /* ---- reset ---- */
@@ -75,6 +142,9 @@ body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   padding: 22px 16px 64px;
+  /* o painel lateral fica fora da tela (translateX) quando fechado; clip evita
+     que ele crie uma barra de rolagem horizontal, sem travar o scroll vertical */
+  overflow-x: clip;
 }
 a {
   color: inherit;
@@ -180,7 +250,7 @@ h1 {
 .weeknav .today-btn:disabled {
   opacity: 1;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   border-color: var(--ink);
   cursor: default;
 }
@@ -309,7 +379,7 @@ h1 {
 }
 .countdown {
   font-weight: 600;
-  background: color-mix(in srgb, var(--sc, var(--ink)) 12%, #fff);
+  background: color-mix(in srgb, var(--sc, var(--ink)) 12%, var(--surface));
   color: color-mix(in srgb, var(--sc, var(--ink)) 60%, var(--ink));
   padding: 2px 9px;
   border-radius: 20px;
@@ -379,7 +449,7 @@ h1 {
 .badge.aula {
   background: rgba(22, 32, 58, 0.12);
   color: rgba(22, 32, 58, 0.6);
-  background: color-mix(in srgb, var(--sc, var(--ink)) 12%, #fff);
+  background: color-mix(in srgb, var(--sc, var(--ink)) 12%, var(--surface));
   color: color-mix(in srgb, var(--sc, var(--ink)) 60%, var(--ink));
 }
 
@@ -434,11 +504,11 @@ h1 {
 }
 .chip.on {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   border-color: var(--ink);
 }
 .chip.on .dot {
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 1.5px var(--dot-ring);
 }
 /* dedo é menos preciso que cursor: alvo maior no toque (mesmo padrão do weeknav) */
 @media (pointer: coarse) {
@@ -601,7 +671,7 @@ h1 {
   font-weight: 600;
   letter-spacing: 0.1em;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   padding: 2px 6px;
   border-radius: 5px;
   text-transform: uppercase;
@@ -676,8 +746,8 @@ h1 {
     135deg,
     transparent,
     transparent 8px,
-    rgba(22, 32, 58, 0.015) 8px,
-    rgba(22, 32, 58, 0.015) 16px
+    var(--hatch) 8px,
+    var(--hatch) 16px
   );
 }
 .noclass strong {
@@ -835,10 +905,10 @@ h1 {
 }
 .btn-primario {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .btn-primario:hover:not(:disabled) {
-  background: #232f52;
+  background: var(--ink-hover);
 }
 .btn-fantasma {
   background: var(--surface);
@@ -854,7 +924,7 @@ h1 {
   color: var(--erro-fg);
 }
 .btn-perigo:hover:not(:disabled) {
-  background: #f8d7d7;
+  background: var(--erro-bg-hover);
 }
 .btn-mini {
   padding: 5px 10px;
@@ -900,7 +970,7 @@ h1 {
 .campo textarea:focus-visible {
   outline: none;
   border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(22, 32, 58, 0.12);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 /* datas e horas são dados: mono */
 .campo input[type="date"],
@@ -1231,6 +1301,185 @@ h1 {
     margin: 0;
     height: 100%;
     align-items: flex-start;
+  }
+}
+
+/* ============================================================================
+   barra do topo + botão de menu
+   ========================================================================== */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .menu-btn:hover {
+    border-color: var(--ink-faint);
+    color: var(--ink);
+  }
+}
+.menu-btn:active {
+  background: var(--line-soft);
+  border-color: var(--ink-faint);
+  transform: scale(0.92);
+}
+@media (pointer: coarse) {
+  .menu-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+/* três barras = ícone de menu (mais nítido que um glifo) */
+.menu-ico {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 16px;
+}
+.menu-ico i {
+  height: 1.7px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/* ============================================================================
+   painel lateral (Drawer)
+   ========================================================================== */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--t-med) var(--ease),
+    visibility var(--t-med) var(--ease);
+  z-index: 40;
+}
+.scrim.on {
+  opacity: 1;
+  visibility: visible;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 84vw);
+  background: var(--surface);
+  box-shadow: var(--shadow-hero);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform var(--t-med) var(--ease),
+    visibility var(--t-med) var(--ease);
+}
+.drawer.on {
+  transform: none;
+  visibility: visible;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.drawer-titulo {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.drawer-fechar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.drawer-fechar:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+.drawer-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.drawer-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* controle segmentado (Claro | Escuro) */
+.seg {
+  display: flex;
+  gap: 4px;
+  background: var(--line-soft);
+  border-radius: var(--radius-ctrl);
+  padding: 4px;
+}
+.seg-opt {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.seg-opt.on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+@media (pointer: coarse) {
+  .seg-opt {
+    padding: 12px 10px;
   }
 }
 
