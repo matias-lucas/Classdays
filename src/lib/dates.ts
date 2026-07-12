@@ -22,8 +22,8 @@ export const TIMEZONE = "America/Sao_Paulo";
 // conferir a timeline de "Hoje" no localhost. Vale pro servidor E pro relógio
 // do cliente (que reusa estas funções a cada 60s). PARA VOLTAR AO RELÓGIO REAL:
 // apague este bloco e os dois `return TEMP_*` marcados logo abaixo.
-const TEMP_HOJE = "2026-07-13";
-const TEMP_AGORA = "12:00";
+// const TEMP_HOJE = "2026-07-13";
+// const TEMP_AGORA = "12:00";
 // ────────────────────────────────────────────────────────────────────────────
 
 // ---------------------------------------------------------------------------
