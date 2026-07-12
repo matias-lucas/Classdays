@@ -17,12 +17,22 @@
 
 export const TIMEZONE = "America/Sao_Paulo";
 
+// ─── TEMP (teste local) ─────────────────────────────────────────────────────
+// Finge que "hoje" é segunda-feira 13/07/2026 e que "agora" são 12h, só pra
+// conferir a timeline de "Hoje" no localhost. Vale pro servidor E pro relógio
+// do cliente (que reusa estas funções a cada 60s). PARA VOLTAR AO RELÓGIO REAL:
+// apague este bloco e os dois `return TEMP_*` marcados logo abaixo.
+const TEMP_HOJE = "2026-07-13";
+const TEMP_AGORA = "12:00";
+// ────────────────────────────────────────────────────────────────────────────
+
 // ---------------------------------------------------------------------------
 // "hoje" e "agora" no fuso de Brasília
 // ---------------------------------------------------------------------------
 
 /** Data de hoje em Brasília, como "AAAA-MM-DD". (locale en-CA formata exatamente assim) */
 export function hojeISO(agora: Date = new Date()): string {
+  if (TEMP_HOJE) return TEMP_HOJE; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
     year: "numeric",
@@ -33,6 +43,7 @@ export function hojeISO(agora: Date = new Date()): string {
 
 /** Hora atual em Brasília, como "HH:MM" (24h). */
 export function horaAgora(agora: Date = new Date()): string {
+  if (TEMP_AGORA) return TEMP_AGORA; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIMEZONE,
     hour: "2-digit",
@@ -173,6 +184,53 @@ export function rotuloRelativo(dias: number): string {
   if (dias === 0) return "hoje";
   if (dias === 1) return "amanhã";
   return `em ${dias} dias`;
+}
+
+export interface Contagem {
+  dias: number;
+  horas: number;
+  minutos: number;
+  /** Minutos totais até o instante-alvo; < 0 quando ele já passou. */
+  totalMin: number;
+  /** false = evento de dia inteiro (só dá pra contar em dias). */
+  temHora: boolean;
+}
+
+/**
+ * Contagem regressiva "viva" até um evento — a matéria-prima do card expressivo
+ * (1b). Tudo entra por parâmetro ("hoje"/"agora" inclusive), então é pura e
+ * testável, e servidor/navegador calculam o mesmo (o relógio de minuto do
+ * AgendaAluno reavalia a cada 60s).
+ *
+ * Sem hora, o evento vale o dia todo: conta só em dias (`temHora:false`). Com
+ * hora, quebra o tempo restante em dias/horas/minutos. `totalMin < 0` sinaliza
+ * que o instante já passou (a UI mostra "agora").
+ */
+export function contagemRegressiva(
+  hojeIso: string,
+  agoraHHMM: string,
+  dataIso: string,
+  horaHHMM: string | null,
+): Contagem {
+  const diasAte = diffDias(hojeIso, dataIso);
+  if (horaHHMM === null) {
+    return {
+      dias: Math.max(diasAte, 0),
+      horas: 0,
+      minutos: 0,
+      totalMin: diasAte * 1440,
+      temHora: false,
+    };
+  }
+  const totalMin = diasAte * 1440 + (minutosDe(horaHHMM) - minutosDe(agoraHHMM));
+  const restante = Math.max(totalMin, 0);
+  return {
+    dias: Math.floor(restante / 1440),
+    horas: Math.floor((restante % 1440) / 60),
+    minutos: restante % 60,
+    totalMin,
+    temHora: true,
+  };
 }
 
 /** Qual semana é essa, em relação a hoje — pro cabeçalho da agenda. */

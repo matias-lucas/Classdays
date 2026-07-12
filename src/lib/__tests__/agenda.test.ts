@@ -5,7 +5,7 @@ import {
   eventosFuturos,
   itensDeHoje,
   montarSemana,
-  proximoItem,
+  proximoEvento,
 } from "@/lib/agenda";
 import type { AulaFixa, Evento } from "@/lib/types";
 
@@ -88,53 +88,40 @@ describe("montarSemana", () => {
   });
 });
 
-describe("proximoItem (o card Próximo)", () => {
-  it("antes da aula de hoje, a aula de hoje é o próximo", () => {
-    const nx = proximoItem(GRADE, [], HOJE, "10:00");
-    expect(nx).toMatchObject({ kind: "aula", materia_id: "edados", data: HOJE, hora: "19:00" });
+describe("proximoEvento (o card Próximo — só eventos)", () => {
+  const provaHoje = evento({
+    id: 1, tipo: "prova", data: HOJE, hora: "18:00", titulo: "Prova X", materia_id: "alglin",
+  });
+  const trabalhoDepois = evento({
+    id: 2, tipo: "trabalho", data: "2026-07-09", titulo: "Entrega", materia_id: "edados",
   });
 
-  it("depois que a primeira aula de hoje começou, vem a segunda", () => {
-    const nx = proximoItem(GRADE, [], HOJE, "19:30");
-    expect(nx).toMatchObject({ kind: "aula", materia_id: "bd", hora: "20:50" });
+  it("pega o evento mais próximo no tempo", () => {
+    expect(proximoEvento([trabalhoDepois, provaHoje], HOJE, "10:00")?.id).toBe(1);
   });
 
-  it("depois de todas as aulas de hoje, vai pro dia seguinte", () => {
-    const nx = proximoItem(GRADE, [], HOJE, "23:00");
-    expect(nx).toMatchObject({ kind: "aula", materia_id: "req", data: "2026-07-08" });
+  it("evento de hoje cuja hora já passou não conta", () => {
+    expect(proximoEvento([provaHoje], HOJE, "18:30")).toBeNull();
   });
 
-  it("um evento mais cedo que a próxima aula ganha", () => {
-    const prova = evento({
-      id: 1, tipo: "prova", data: HOJE, hora: "18:00", titulo: "Prova X", materia_id: "alglin",
-    });
-    const nx = proximoItem(GRADE, [prova], HOJE, "10:00");
-    expect(nx).toMatchObject({ kind: "evento", tipo: "prova", titulo: "Prova X" });
+  it("evento de hoje ainda por vir conta; sem hora vale o dia todo", () => {
+    const semHora = evento({ id: 4, tipo: "trabalho", data: HOJE, titulo: "Lista", materia_id: "bd" });
+    expect(proximoEvento([semHora], HOJE, "22:00")?.id).toBe(4);
   });
 
-  it("aula cancelada não aparece como próximo", () => {
-    const cancelamentos = [
-      evento({ id: 1, tipo: "cancelamento", data: HOJE, materia_id: "edados" }),
-    ];
-    const nx = proximoItem(GRADE, cancelamentos, HOJE, "10:00");
-    expect(nx).toMatchObject({ kind: "aula", materia_id: "bd", data: HOJE });
+  it("nunca devolve cancelamento, mesmo sendo o mais cedo", () => {
+    const cancel = evento({ id: 3, tipo: "cancelamento", data: HOJE, hora: "08:00", materia_id: "edados" });
+    expect(proximoEvento([cancel, provaHoje], HOJE, "07:00")?.id).toBe(1);
   });
 
-  it("evento sem hora ainda conta durante o dia todo", () => {
-    const entrega = evento({
-      id: 1, tipo: "trabalho", data: HOJE, titulo: "Entrega", materia_id: "edados",
-    });
-    const nx = proximoItem([], [entrega], HOJE, "22:00");
-    expect(nx).toMatchObject({ tipo: "trabalho", titulo: "Entrega" });
+  it("filtro por matéria restringe", () => {
+    expect(proximoEvento([provaHoje, trabalhoDepois], HOJE, "10:00", "edados")?.id).toBe(2);
   });
 
-  it("filtro por matéria restringe o pool", () => {
-    const nx = proximoItem(GRADE, [], HOJE, "10:00", "req");
-    expect(nx).toMatchObject({ kind: "aula", materia_id: "req", data: "2026-07-08" });
-  });
-
-  it("sem nada à frente devolve null", () => {
-    expect(proximoItem([], [], HOJE, "10:00")).toBeNull();
+  it("sem eventos à frente devolve null", () => {
+    expect(proximoEvento([], HOJE, "10:00")).toBeNull();
+    const passado = evento({ id: 9, tipo: "prova", data: "2026-07-01" });
+    expect(proximoEvento([passado], HOJE, "10:00")).toBeNull();
   });
 });
 
@@ -144,6 +131,18 @@ describe("itensDeHoje (a timeline do dia)", () => {
     expect(itens.map((i) => [i.kind, i.materia_id, i.hora])).toEqual([
       ["aula", "edados", "19:00"],
       ["aula", "bd", "20:50"],
+    ]);
+  });
+
+  it("aula carrega hora_fim da grade; evento não tem duração (null)", () => {
+    const prova = evento({
+      id: 1, tipo: "prova", data: HOJE, hora: "18:00", titulo: "Prova X", materia_id: "alglin",
+    });
+    const itens = itensDeHoje(GRADE, [prova], HOJE);
+    expect(itens.map((i) => [i.kind, i.hora, i.hora_fim])).toEqual([
+      ["evento", "18:00", null], // evento é um instante
+      ["aula", "19:00", "20:40"], // edados: fim vem da grade
+      ["aula", "20:50", "22:30"], // bd
     ]);
   });
 

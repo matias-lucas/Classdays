@@ -303,14 +303,48 @@ h1 {
 }
 
 .hero {
+  position: relative;
   background: var(--surface);
   border-radius: var(--radius-hero);
   box-shadow: var(--shadow-hero);
+  border: none;
   border-left: 6px solid var(--sc, var(--ink-faint));
   padding: 18px 20px;
   animation:
     rise 450ms var(--ease) both,
     hero-pulse 3200ms ease-in-out 900ms infinite;
+}
+/* quando o próximo é um EVENTO, o card inteiro é o botão que abre o 1b.
+   herda font/cor do reset de button; reabre à esquerda o filete da matéria e
+   abre espaço à direita pra seta. Aula da grade continua sendo um <div> mudo. */
+.hero-clicavel {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding-right: 46px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+/* seta de "abrir": pista discreta na cor da matéria, cutuca no hover */
+.hero-seta {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--sc, var(--ink-faint));
+  opacity: 0.5;
+  transition:
+    transform var(--t-med) var(--ease),
+    opacity var(--t-med) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap:hover .hero-seta {
+    transform: translateY(-50%) translateX(3px);
+    opacity: 0.85;
+  }
 }
 /* só transform: o conteúdo nunca depende da animação pra ficar visível
    (renderizadores estáticos e abas ocultas pausam animações) */
@@ -412,12 +446,200 @@ h1 {
 }
 
 /* ============================================================================
+   Próximo expressivo — o detalhe 1b (ProximoDetalhe)
+
+   Overlay que sobe por cima da agenda, banhado na cor da matéria (--sc), com a
+   contagem regressiva grande. Reusa o .scrim do Drawer. No celular é uma folha
+   que sobe de baixo; no desktop, um cartão centralizado. Só EVENTO abre isto.
+   ========================================================================== */
+
+.pd-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  max-height: 92vh;
+  overflow: hidden auto;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sc, var(--ink)) 14%, var(--surface)) 0%,
+    var(--surface) 46%
+  );
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-hero);
+  padding: 34px 24px calc(30px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform var(--t-med) var(--ease),
+    visibility var(--t-med) var(--ease);
+}
+.pd-sheet.on {
+  transform: none;
+  visibility: visible;
+}
+/* aurora da cor da matéria vazando do topo (o overflow recorta a metade de cima) */
+.pd-glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  width: 420px;
+  height: 300px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    50% 60% at 50% 50%,
+    color-mix(in srgb, var(--sc, var(--ink)) 42%, transparent),
+    transparent 72%
+  );
+  pointer-events: none;
+}
+.pd-fechar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.pd-fechar:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+@media (pointer: coarse) {
+  .pd-fechar {
+    width: 44px;
+    height: 44px;
+  }
+}
+.pd-corpo {
+  position: relative; /* acima da .pd-glow */
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: center;
+}
+.pd-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.pd-subj {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.pd-title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin-bottom: 26px;
+}
+.pd-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+.pd-lead {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pd-big {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--sc, var(--ink)) 42%, var(--ink));
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+.pd-quando {
+  font-family: var(--font-mono), monospace;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.pd-obs {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+/* a lista de "todos os próximos" abaixo do destaque — alinhada à esquerda
+   (o cabeçalho é centralizado), separada por uma régua. Reusa o .ev do
+   EventoLinha, então fica igual à antiga seção que ela substitui. */
+.pd-lista {
+  text-align: left;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.pd-lista-label {
+  display: block;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+}
+@media (min-width: 1000px) {
+  .pd-sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(480px, 92vw);
+    max-height: 88vh;
+    border-radius: 22px;
+    transform: translate(-50%, -46%);
+    opacity: 0;
+    transition:
+      transform var(--t-med) var(--ease),
+      opacity var(--t-med) var(--ease),
+      visibility var(--t-med) var(--ease);
+  }
+  .pd-sheet.on {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
    Hoje — a timeline do dia (HojeTimeline)
 
-   Linha vertical à esquerda com um nó por item (cor da matéria); o card à
-   direita reusa a linguagem dos outros cards (surface + filete --sc). SEM
-   marcador de "agora": é o retrato do dia, não um cronômetro. Eventos ganham
-   um selo que pulsa — a única coisa da lista que pede o olho.
+   Linha vertical à esquerda com um nó por item (cor da matéria); à direita,
+   texto sobre o próprio fundo (SEM card): horário em cima, título, depois
+   sala/estado. O único uso de "agora": o que já terminou fica apagado com
+   "encerrada" e o nó vira anel vazio — não há marcador do momento nem
+   cronômetro. Eventos ganham um selo que pulsa — a única coisa que pede o olho.
    ========================================================================== */
 
 .hoje {
@@ -425,14 +647,14 @@ h1 {
   display: flex;
   flex-direction: column;
 }
-/* cada item é [nó | card]; o espaçamento vertical fica no padding (não em
+/* cada item é [nó | corpo]; o espaçamento vertical fica no padding (não em
    margin) pra a linha do nó atravessar o vão e emendar no próximo nó */
 .hoje-item {
   position: relative;
   display: grid;
   grid-template-columns: 22px 1fr;
   column-gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: 18px;
   animation: item-rise 260ms var(--ease) both;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
@@ -448,13 +670,14 @@ h1 {
   width: 2px;
   background: var(--line);
 }
-/* primeiro nó: a linha nasce nele (nada acima); último: a linha morre nele */
+/* primeiro nó: a linha nasce nele (nada acima); último: a linha morre nele.
+   9px = centro do nó, alinhado à primeira linha de texto (o horário) */
 .hoje-item:first-child::before {
-  top: 10px;
+  top: 9px;
 }
 .hoje-item:last-child::before {
   bottom: auto;
-  height: 10px;
+  height: 9px;
 }
 .hoje-item:only-child::before {
   display: none;
@@ -464,56 +687,66 @@ h1 {
 }
 .hoje-dot {
   display: block;
-  width: 12px;
-  height: 12px;
-  margin: 4px auto 0; /* centro ~10px do topo: casa com o offset da linha */
+  width: 11px;
+  height: 11px;
+  margin: 3px auto 0; /* centro ~9px do topo: casa com o offset da linha */
   border-radius: 50%;
   background: var(--sc, var(--ink-faint));
-  /* anel na cor da superfície "fura" a linha, deixando o nó nítido sobre ela */
-  box-shadow: 0 0 0 3px var(--surface);
+  /* anel na cor do fundo "fura" a linha, deixando o nó nítido sobre ela */
+  box-shadow: 0 0 0 3px var(--bg);
   position: relative;
   z-index: 1;
 }
-.hoje-card {
-  background: var(--surface);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
-  border-left: 4px solid var(--sc, var(--ink-faint));
-  padding: 11px 13px;
+.hoje-corpo {
   min-width: 0;
 }
-.hoje-top {
+/* horário: a primeira linha, mono e discreta (o intervalo da aula ou o
+   instante do evento). Alinha o nó a esta linha (ver offsets acima). */
+.hoje-quando {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.hoje-title-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 3px;
-}
-.hoje-ctx {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-soft);
+  margin-top: 2px;
 }
 .hoje-title {
   font-weight: 600;
   font-size: 15.5px;
   letter-spacing: -0.01em;
+  color: var(--ink);
+  min-width: 0;
 }
 .hoje-meta {
-  font-family: var(--font-mono), monospace;
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: var(--ink-faint);
-  margin-top: 3px;
-  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
 }
 .hoje-obs {
   font-size: 12.5px;
   color: var(--ink-soft);
   margin-top: 4px;
 }
+/* encerrada: o que já passou recua — texto apagado e nó vira anel vazio. */
+.hoje-item.is-passada .hoje-corpo {
+  opacity: 0.55;
+}
+.hoje-item.is-passada .hoje-dot {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--line), 0 0 0 3px var(--bg);
+}
+.hoje-item.is-passada .badge {
+  animation: none; /* nada a pedir atenção depois que encerrou */
+}
 /* evento: o selo respira na própria cor de tipo — pista de que hoje tem algo
    além da aula. currentColor no selo = a cor do tipo (prova/trabalho/…) */
-.hoje-item.is-evento .badge {
+.hoje-item.is-evento:not(.is-passada) .badge {
   animation: badge-pulse 2600ms ease-in-out infinite;
 }
 @keyframes badge-pulse {
