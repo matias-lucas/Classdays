@@ -583,17 +583,76 @@ h1 {
    filtros por matéria (chips roláveis)
    ========================================================================== */
 
+/* invólucro só pra ancorar a seta de "tem mais pro lado" sobre a faixa */
+.filtros-wrap {
+  position: relative;
+}
 .filters {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  scrollbar-color: var(--line) transparent;
-  scrollbar-width: auto;
+  /* sem scrollbar: o fade + a seta comunicam o overflow (intenção do design) */
+  scrollbar-width: none;
   padding: 2px 2px 6px;
   margin: 0 -2px;
+  /* fade nas bordas: a máscara só "liga" o lado cujo --fade-* o JS abre (>0);
+     com 0/0 fica tudo opaco (nenhum fade) e o SSR nasce assim, sem divergência.
+     Independe de tema — mascara a própria faixa, não pinta cor por cima. */
+  --fade-l: 0px;
+  --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--fade-l),
+    #000 calc(100% - var(--fade-r)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--fade-l),
+    #000 calc(100% - var(--fade-r)),
+    transparent 100%
+  );
 }
 .filters::-webkit-scrollbar {
   display: none;
+}
+/* seta de cutucão: pisca pro lado do overflow até o primeiro scroll.
+   Decorativa (aria-hidden) e sem capturar toque/scroll. */
+.filtros-seta {
+  position: absolute;
+  top: calc(50% - 3px); /* desconta o padding-bottom da faixa pra centrar nos chips */
+  right: -2px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  font-family: var(--font-mono), monospace;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--t-med) var(--ease),
+    visibility var(--t-med) var(--ease);
+}
+.filtros-seta.on {
+  opacity: 1;
+  visibility: visible;
+  animation: nudge-x 1400ms var(--ease) infinite;
+}
+@keyframes nudge-x {
+  0%,
+  100% {
+    transform: translate(0, -50%);
+  }
+  50% {
+    transform: translate(4px, -50%);
+  }
 }
 .chip {
   flex-shrink: 0;
