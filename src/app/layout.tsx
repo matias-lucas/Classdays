@@ -47,8 +47,21 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${display.variable} ${corpo.variable} ${mono.variable}`}
+      // O script de boot abaixo grava data-theme no <html> antes da hidratação;
+      // sem isto o React reclamaria da divergência com o HTML do servidor.
+      suppressHydrationWarning
     >
       <body>
+        {/* Resolve o tema ANTES da primeira pintura (escolha salva → sistema),
+            pra não haver flash de tema claro. Roda como primeiro filho do body,
+            então acontece antes do conteúdo ser pintado. A chave e as cores são
+            as mesmas de src/lib/theme.ts (aqui hardcoded: o script roda antes de
+            qualquer módulo carregar). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("classdays-theme");var d=s==="dark"||(s!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",d?"#0e1424":"#edf0f6");}catch(e){}})();`,
+          }}
+        />
         {/* Sem nenhum listener de touch, o Safari do iOS ignora :active
             no toque — os botões e chips ficariam "mudos" ao tocar. */}
         <script
