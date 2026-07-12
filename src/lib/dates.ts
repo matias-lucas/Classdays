@@ -32,7 +32,7 @@ export const TIMEZONE = "America/Sao_Paulo";
 
 /** Data de hoje em Brasília, como "AAAA-MM-DD". (locale en-CA formata exatamente assim) */
 export function hojeISO(agora: Date = new Date()): string {
-  if (TEMP_HOJE) return TEMP_HOJE; // TEMP: apague esta linha pra voltar ao relógio real
+  // if (TEMP_HOJE) return TEMP_HOJE; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
     year: "numeric",
@@ -43,7 +43,7 @@ export function hojeISO(agora: Date = new Date()): string {
 
 /** Hora atual em Brasília, como "HH:MM" (24h). */
 export function horaAgora(agora: Date = new Date()): string {
-  if (TEMP_AGORA) return TEMP_AGORA; // TEMP: apague esta linha pra voltar ao relógio real
+  // if (TEMP_AGORA) return TEMP_AGORA; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIMEZONE,
     hour: "2-digit",
