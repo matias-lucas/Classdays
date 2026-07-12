@@ -412,6 +412,132 @@ h1 {
 }
 
 /* ============================================================================
+   Hoje — a timeline do dia (HojeTimeline)
+
+   Linha vertical à esquerda com um nó por item (cor da matéria); o card à
+   direita reusa a linguagem dos outros cards (surface + filete --sc). SEM
+   marcador de "agora": é o retrato do dia, não um cronômetro. Eventos ganham
+   um selo que pulsa — a única coisa da lista que pede o olho.
+   ========================================================================== */
+
+.hoje {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+/* cada item é [nó | card]; o espaçamento vertical fica no padding (não em
+   margin) pra a linha do nó atravessar o vão e emendar no próximo nó */
+.hoje-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  column-gap: 12px;
+  padding-bottom: 12px;
+  animation: item-rise 260ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+/* a linha da timeline: percorre o item inteiro (inclui o padding), então
+   encosta na linha do item seguinte e vira um traço contínuo */
+.hoje-item::before {
+  content: "";
+  position: absolute;
+  left: 11px; /* centro da coluna do nó (22px / 2) */
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+/* primeiro nó: a linha nasce nele (nada acima); último: a linha morre nele */
+.hoje-item:first-child::before {
+  top: 10px;
+}
+.hoje-item:last-child::before {
+  bottom: auto;
+  height: 10px;
+}
+.hoje-item:only-child::before {
+  display: none;
+}
+.hoje-node {
+  position: relative;
+}
+.hoje-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 4px auto 0; /* centro ~10px do topo: casa com o offset da linha */
+  border-radius: 50%;
+  background: var(--sc, var(--ink-faint));
+  /* anel na cor da superfície "fura" a linha, deixando o nó nítido sobre ela */
+  box-shadow: 0 0 0 3px var(--surface);
+  position: relative;
+  z-index: 1;
+}
+.hoje-card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--sc, var(--ink-faint));
+  padding: 11px 13px;
+  min-width: 0;
+}
+.hoje-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+.hoje-ctx {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.hoje-title {
+  font-weight: 600;
+  font-size: 15.5px;
+  letter-spacing: -0.01em;
+}
+.hoje-meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.hoje-obs {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+/* evento: o selo respira na própria cor de tipo — pista de que hoje tem algo
+   além da aula. currentColor no selo = a cor do tipo (prova/trabalho/…) */
+.hoje-item.is-evento .badge {
+  animation: badge-pulse 2600ms ease-in-out infinite;
+}
+@keyframes badge-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 32%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+/* estado vazio: nada hoje. Card calmo, com a mesma respirada do hero ao trocar
+   o filtro (o key no elemento reinicia a animação) */
+.hoje-vazio {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  padding: 15px 14px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  animation: heroSwap 320ms var(--ease) both;
+}
+
+/* ============================================================================
    selo de tipo — cor do selo = tipo do evento (nunca matéria)
    ========================================================================== */
 
