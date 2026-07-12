@@ -173,6 +173,73 @@ export function proximoItem(
 }
 
 // ---------------------------------------------------------------------------
+// "Hoje" (a timeline do dia)
+// ---------------------------------------------------------------------------
+
+export interface ItemHoje {
+  kind: "aula" | "evento";
+  tipo: TipoEvento | null; // null quando é aula da grade
+  titulo: string; // "" quando é aula (a UI mostra o nome da matéria)
+  materia_id: string | null;
+  hora: string | null;
+  sala: string | null;
+  observacao: string | null;
+}
+
+/**
+ * O dia de hoje, em ordem cronológica: as aulas fixas de hoje (pulando as
+ * canceladas) somadas aos eventos de hoje. É uma timeline do que *acontece*
+ * hoje — por isso, diferente de `eventosFuturos`, o cancelamento não vira um
+ * item: ele é ausência de aula, e some da linha (a grade logo abaixo continua
+ * mostrando o risco). Sem parâmetro `agora`: a timeline mostra o dia inteiro,
+ * sem marcador de "agora" e sem esconder o que já passou.
+ */
+export function itensDeHoje(
+  grade: AulaFixa[],
+  eventos: Evento[],
+  hojeIso: string,
+  filtroMateria: string | null = null,
+): ItemHoje[] {
+  const cancelamentos = cancelamentosDe(eventos);
+  const itens: ItemHoje[] = [];
+
+  // aulas fixas de hoje que não estão canceladas
+  const dow = diaSemanaDe(hojeIso);
+  for (const g of grade) {
+    if (g.dia_semana !== dow) continue;
+    if (cancelamentoDa(cancelamentos, hojeIso, g.materia_id)) continue;
+    itens.push({
+      kind: "aula",
+      tipo: null,
+      titulo: "",
+      materia_id: g.materia_id,
+      hora: g.hora_ini,
+      sala: g.sala,
+      observacao: null,
+    });
+  }
+
+  // eventos pontuais de hoje — cancelamento não entra (é ausência, não item)
+  for (const e of eventos) {
+    if (e.tipo === "cancelamento") continue;
+    if (e.data !== hojeIso) continue;
+    itens.push({
+      kind: "evento",
+      tipo: e.tipo,
+      titulo: e.titulo,
+      materia_id: e.materia_id,
+      hora: e.hora,
+      sala: null,
+      observacao: e.observacao,
+    });
+  }
+
+  return itens
+    .filter((x) => (filtroMateria ? x.materia_id === filtroMateria : true))
+    .sort((a, b) => (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"));
+}
+
+// ---------------------------------------------------------------------------
 // lista "Próximos eventos"
 // ---------------------------------------------------------------------------
 

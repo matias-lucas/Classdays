@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { EventoLinha } from "@/components/EventoLinha";
-import { eventosFuturos, montarSemana, proximoItem } from "@/lib/agenda";
+import { eventosFuturos, itensDeHoje, montarSemana, proximoItem } from "@/lib/agenda";
 import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA } from "@/lib/config";
 import {
   addDias,
@@ -18,6 +18,7 @@ import { MenuLateral } from "@/components/MenuLateral";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
+import { HojeTimeline } from "./HojeTimeline";
 
 interface Props {
   materias: Materia[];
@@ -58,6 +59,13 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
   const proximo = useMemo(
     () => proximoItem(grade, eventos, agora.hoje, agora.hhmm, filtro),
     [grade, eventos, agora, filtro],
+  );
+
+  // A timeline de hoje não depende de "agora" (mostra o dia inteiro, sem
+  // marcador do momento), só da data — por isso só recalcula ao virar o dia.
+  const itensHoje = useMemo(
+    () => itensDeHoje(grade, eventos, agora.hoje, filtro),
+    [grade, eventos, agora.hoje, filtro],
   );
 
   const segunda = addDias(segundaDaSemana(agora.hoje), semanaOffset * 7);
@@ -136,6 +144,16 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         </nav>
       </header>
 
+      <h2 className="slabel">Hoje</h2>
+      <HojeTimeline
+        itens={itensHoje}
+        materiaDe={materiaDe}
+        filtroAtivo={filtro !== null}
+      />
+
+      <h2 className="slabel">Filtrar por matéria</h2>
+      <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
+
       <h2 className="slabel">Próximo</h2>
       <HeroProximo
         item={proximo}
@@ -143,9 +161,6 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         hojeIso={agora.hoje}
         filtroAtivo={filtro !== null}
       />
-
-      <h2 className="slabel">Filtrar por matéria</h2>
-      <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
 
       <h2 className="slabel slabel-grade">Grade da semana</h2>
       <GradeSemanaSlider

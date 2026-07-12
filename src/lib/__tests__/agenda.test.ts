@@ -3,6 +3,7 @@ import {
   cancelamentoDa,
   cancelamentosDe,
   eventosFuturos,
+  itensDeHoje,
   montarSemana,
   proximoItem,
 } from "@/lib/agenda";
@@ -134,6 +135,77 @@ describe("proximoItem (o card Próximo)", () => {
 
   it("sem nada à frente devolve null", () => {
     expect(proximoItem([], [], HOJE, "10:00")).toBeNull();
+  });
+});
+
+describe("itensDeHoje (a timeline do dia)", () => {
+  it("lista as aulas de hoje em ordem de horário", () => {
+    const itens = itensDeHoje(GRADE, [], HOJE);
+    expect(itens.map((i) => [i.kind, i.materia_id, i.hora])).toEqual([
+      ["aula", "edados", "19:00"],
+      ["aula", "bd", "20:50"],
+    ]);
+  });
+
+  it("intercala eventos e aulas ordenados juntos pela hora", () => {
+    const prova = evento({
+      id: 1, tipo: "prova", data: HOJE, hora: "18:00", titulo: "Prova X", materia_id: "alglin",
+    });
+    const reuniao = evento({
+      id: 2, tipo: "evento", data: HOJE, hora: "20:00", titulo: "Reunião",
+    });
+    const itens = itensDeHoje(GRADE, [prova, reuniao], HOJE);
+    expect(itens.map((i) => [i.kind, i.hora])).toEqual([
+      ["evento", "18:00"], // prova
+      ["aula", "19:00"], // edados
+      ["evento", "20:00"], // reunião
+      ["aula", "20:50"], // bd
+    ]);
+  });
+
+  it("aula de matéria cancelada some da timeline", () => {
+    const cancel = evento({ id: 1, tipo: "cancelamento", data: HOJE, materia_id: "edados" });
+    const itens = itensDeHoje(GRADE, [cancel], HOJE);
+    expect(itens.map((i) => i.materia_id)).toEqual(["bd"]);
+  });
+
+  it("cancelamento de dia inteiro remove as aulas, mas os eventos ficam", () => {
+    const cancelDia = evento({ id: 1, tipo: "cancelamento", data: HOJE });
+    const prova = evento({
+      id: 2, tipo: "prova", data: HOJE, hora: "15:00", titulo: "Prova online", materia_id: "bd",
+    });
+    const itens = itensDeHoje(GRADE, [cancelDia, prova], HOJE);
+    expect(itens.map((i) => [i.kind, i.titulo])).toEqual([["evento", "Prova online"]]);
+  });
+
+  it("cancelamento sozinho não vira item da timeline", () => {
+    const cancel = evento({ id: 1, tipo: "cancelamento", data: HOJE, materia_id: "edados" });
+    // sexta (2026-07-10) não tem aula na GRADE, então só sobraria o cancelamento
+    expect(itensDeHoje(GRADE, [cancel], "2026-07-10")).toEqual([]);
+  });
+
+  it("dia sem aulas nem eventos devolve lista vazia", () => {
+    // 2026-07-10 é sexta; a GRADE não tem aula nesse dia
+    expect(itensDeHoje(GRADE, [], "2026-07-10")).toEqual([]);
+  });
+
+  it("evento sem hora vai para o fim (depois das aulas com horário)", () => {
+    const entrega = evento({
+      id: 1, tipo: "trabalho", data: HOJE, titulo: "Entrega", materia_id: "edados",
+    });
+    const itens = itensDeHoje(GRADE, [entrega], HOJE);
+    expect(itens.map((i) => i.hora)).toEqual(["19:00", "20:50", null]);
+  });
+
+  it("filtro por matéria restringe às aulas e eventos daquela matéria", () => {
+    const itens = itensDeHoje(GRADE, [], HOJE, "bd");
+    expect(itens.map((i) => [i.kind, i.materia_id])).toEqual([["aula", "bd"]]);
+  });
+
+  it("filtro por matéria esconde eventos gerais (materia_id null)", () => {
+    const geral = evento({ id: 1, tipo: "evento", data: HOJE, hora: "12:00", titulo: "Geral" });
+    const itens = itensDeHoje(GRADE, [geral], HOJE, "edados");
+    expect(itens.map((i) => i.materia_id)).toEqual(["edados"]);
   });
 });
 
