@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { EventoLinha } from "@/components/EventoLinha";
-import { eventosFuturos, itensDeHoje, montarSemana, proximoItem } from "@/lib/agenda";
+import { eventosFuturos, itensDeHoje, montarSemana, proximoEvento } from "@/lib/agenda";
 import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA } from "@/lib/config";
 import {
   addDias,
@@ -56,9 +55,11 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
   );
   const materiaDe = (id: string | null) => (id ? porId.get(id) : undefined);
 
+  // O "Próximo" mostra só EVENTOS (nunca aula/cancelamento) — vira o gatilho do
+  // menu de próximos eventos (1b).
   const proximo = useMemo(
-    () => proximoItem(grade, eventos, agora.hoje, agora.hhmm, filtro),
-    [grade, eventos, agora, filtro],
+    () => proximoEvento(eventos, agora.hoje, agora.hhmm, filtro),
+    [eventos, agora, filtro],
   );
 
   // A timeline de hoje não depende de "agora" (mostra o dia inteiro, sem
@@ -149,6 +150,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         itens={itensHoje}
         materiaDe={materiaDe}
         filtroAtivo={filtro !== null}
+        agoraHHMM={agora.hhmm}
       />
 
       <h2 className="slabel">Filtrar por matéria</h2>
@@ -156,9 +158,11 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
 
       <h2 className="slabel">Próximo</h2>
       <HeroProximo
-        item={proximo}
+        evento={proximo}
+        proximos={futuros}
         materiaDe={materiaDe}
         hojeIso={agora.hoje}
+        agoraHHMM={agora.hhmm}
         filtroAtivo={filtro !== null}
       />
 
@@ -172,26 +176,8 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         marcarPassados={marcarPassados}
       />
 
-      <h2 className="slabel">Próximos eventos</h2>
-      {/* key no filtro faz a lista re-nascer inteira ao trocar de matéria,
-          pra todas as linhas visíveis entrarem juntas em cascata (ver .ev-entra) */}
-      <div key={filtro ?? "todas"}>
-        {futuros.length === 0 ? (
-          <p className="empty-day">
-            Nenhum evento marcado{filtro ? " pra essa matéria" : ""}.
-          </p>
-        ) : (
-          futuros.map((e, i) => (
-            <EventoLinha
-              key={e.id}
-              evento={e}
-              materia={materiaDe(e.materia_id)}
-              hojeIso={agora.hoje}
-              indice={i}
-            />
-          ))
-        )}
-      </div>
+      {/* A antiga seção "Próximos eventos" saiu daqui: o card "Próximo" acima
+          abre o menu (ProximoDetalhe) que lista todos os eventos que vêm. */}
 
       <footer className="foot">
         {ASSINATURA_RODAPE} · <Link href="/admin">/admin</Link>

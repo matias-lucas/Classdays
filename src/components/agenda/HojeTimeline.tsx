@@ -8,16 +8,20 @@ interface Props {
   itens: ItemHoje[];
   materiaDe: (id: string | null) => Materia | undefined;
   filtroAtivo: boolean;
+  /** "agora" (HH:MM, fuso de Brasília) pra apagar o que já encerrou. */
+  agoraHHMM: string;
 }
 
 /**
  * A timeline de "Hoje": o dia inteiro numa linha vertical, aula e evento na
- * mesma régua de horário. Cada nó recebe a cor da matéria (`--sc`). Eventos
- * ganham selo pulsante (é o que exige olhar). NÃO existe marcador de "agora":
- * a timeline mostra o dia todo, sem cronômetro — o card "Próximo" é quem cuida
- * do "o que vem já". Sem nada hoje, um estado vazio calmo.
+ * mesma régua de horário — mas sem cards, só texto sobre o fundo (horário em
+ * cima, título, depois sala/estado). Cada nó recebe a cor da matéria (`--sc`).
+ * Eventos ganham selo pulsante (é o que exige olhar). O que já terminou fica
+ * apagado com "encerrada" (o nó vira anel vazio) — o único uso de "agora" aqui;
+ * não há marcador do momento nem cronômetro, disso cuida o card "Próximo".
+ * Sem nada hoje, um estado vazio calmo.
  */
-export function HojeTimeline({ itens, materiaDe, filtroAtivo }: Props) {
+export function HojeTimeline({ itens, materiaDe, filtroAtivo, agoraHHMM }: Props) {
   if (itens.length === 0) {
     return (
       <div className="hoje-vazio" key={filtroAtivo ? "vazio-filtro" : "vazio-geral"}>
@@ -36,18 +40,34 @@ export function HojeTimeline({ itens, materiaDe, filtroAtivo }: Props) {
         const ehAula = item.kind === "aula";
         // aula: o nome da matéria é o título. evento: o próprio título.
         const titulo = ehAula ? (materia?.nome ?? "Aula") : item.titulo;
-        // linha de cima: prof (aula) ou nome da matéria/"Turma" (evento).
-        const contexto = ehAula
-          ? (materia?.prof ?? "Aula da grade")
-          : (materia?.nome ?? "Turma");
 
-        const meta = [item.hora ? fmtHora(item.hora) : "dia todo", item.sala]
+        // horário: aula mostra o intervalo (19h00 – 20h40); evento é um
+        // instante (só o horário), ou "dia todo" quando não tem hora.
+        const quando = item.hora
+          ? ehAula && item.hora_fim
+            ? `${fmtHora(item.hora)} – ${fmtHora(item.hora_fim)}`
+            : fmtHora(item.hora)
+          : "dia todo";
+
+        // "encerrada": a aula termina no hora_fim; o evento, no seu horário.
+        // Sem horário (dia todo) não dá pra saber que passou → nunca encerra.
+        const fimRef = ehAula ? item.hora_fim : item.hora;
+        const encerrada = fimRef != null && fimRef < agoraHHMM;
+
+        // linha de baixo: aula = sala; evento = matéria (o contexto). "encerrada"
+        // se junta no fim. (o professor saiu da timeline — vive no card Próximo.)
+        const meta = [
+          ehAula ? item.sala : (materia?.nome ?? "Turma"),
+          encerrada ? "encerrada" : null,
+        ]
           .filter(Boolean)
           .join(" · ");
 
         return (
           <li
-            className={`hoje-item ${ehAula ? "is-aula" : "is-evento"}`}
+            className={`hoje-item ${ehAula ? "is-aula" : "is-evento"}${
+              encerrada ? " is-passada" : ""
+            }`}
             key={`${item.kind}-${item.materia_id}-${item.hora}-${titulo}`}
             style={
               {
@@ -59,13 +79,13 @@ export function HojeTimeline({ itens, materiaDe, filtroAtivo }: Props) {
             <div className="hoje-node" aria-hidden="true">
               <span className="hoje-dot" />
             </div>
-            <div className="hoje-card">
-              <div className="hoje-top">
-                <span className="hoje-ctx">{contexto}</span>
-                {ehAula ? <Badge tipo="aula" /> : <Badge tipo={item.tipo!} />}
+            <div className="hoje-corpo">
+              <div className="hoje-quando">{quando}</div>
+              <div className="hoje-title-row">
+                <span className="hoje-title">{titulo}</span>
+                {!ehAula && <Badge tipo={item.tipo!} />}
               </div>
-              <div className="hoje-title">{titulo}</div>
-              <div className="hoje-meta">{meta}</div>
+              {meta && <div className="hoje-meta">{meta}</div>}
               {item.observacao && <p className="hoje-obs">{item.observacao}</p>}
             </div>
           </li>

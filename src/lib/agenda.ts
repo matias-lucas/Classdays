@@ -88,88 +88,37 @@ export function montarSemana(
 }
 
 // ---------------------------------------------------------------------------
-// "Próximo" (o card-herói do topo)
+// "Próximo" (o card-herói do topo) — SÓ EVENTOS
 // ---------------------------------------------------------------------------
 
-export interface ItemProximo {
-  kind: "aula" | "evento";
-  tipo: TipoEvento | null; // null quando é aula da grade
-  titulo: string;
-  materia_id: string | null;
-  data: string;
-  hora: string | null;
-  sala: string | null;
-  observacao: string | null;
-}
-
-/** Quantos dias de futuro vasculhar atrás da próxima aula. */
-const HORIZONTE_DIAS = 28;
-
 /**
- * O que vem agora? Junta as próximas ocorrências de aula (pulando as
- * canceladas) com os eventos futuros e pega o mais próximo no tempo.
- * Itens de hoje só contam se a hora ainda não passou (sem hora = vale o
- * dia todo). Cancelamentos não competem: eles são ausência de coisa,
- * e aparecem na grade e na lista.
+ * O próximo EVENTO (prova/trabalho/atividade/evento) — nunca aula, nunca
+ * cancelamento. É o que o card "Próximo" mostra: aula da grade não é destino,
+ * e cancelamento é ausência de coisa (aparece na grade e na lista, não aqui).
+ * Eventos de hoje só contam se a hora ainda não passou (sem hora = vale o dia
+ * todo). Devolve o `Evento` cru (a UI resolve matéria/cor), ou null.
  */
-export function proximoItem(
-  grade: AulaFixa[],
+export function proximoEvento(
   eventos: Evento[],
   hojeIso: string,
   agoraHHMM: string,
   filtroMateria: string | null = null,
-): ItemProximo | null {
-  const cancelamentos = cancelamentosDe(eventos);
-  const pool: ItemProximo[] = [];
-
-  // ocorrências futuras das aulas fixas
-  for (let i = 0; i < HORIZONTE_DIAS; i++) {
-    const data = addDias(hojeIso, i);
-    for (const g of grade) {
-      if (g.dia_semana !== diaSemanaDe(data)) continue;
-      if (cancelamentoDa(cancelamentos, data, g.materia_id)) continue;
-      pool.push({
-        kind: "aula",
-        tipo: null,
-        titulo: "", // a UI mostra o nome da matéria
-        materia_id: g.materia_id,
-        data,
-        hora: g.hora_ini,
-        sala: g.sala,
-        observacao: null,
-      });
-    }
-  }
-
-  // eventos pontuais (provas, trabalhos, …) — cancelamento não entra
-  for (const e of eventos) {
-    if (e.tipo === "cancelamento") continue;
-    pool.push({
-      kind: "evento",
-      tipo: e.tipo,
-      titulo: e.titulo,
-      materia_id: e.materia_id,
-      data: e.data,
-      hora: e.hora,
-      sala: null,
-      observacao: e.observacao,
-    });
-  }
-
-  const candidatos = pool
-    .filter((x) => (filtroMateria ? x.materia_id === filtroMateria : true))
-    .filter((x) => {
-      if (x.data > hojeIso) return true;
-      if (x.data < hojeIso) return false;
-      return x.hora === null || x.hora >= agoraHHMM; // hoje: só o que ainda vem
-    })
-    .sort(
-      (a, b) =>
-        a.data.localeCompare(b.data) ||
-        (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
-    );
-
-  return candidatos[0] ?? null;
+): Evento | null {
+  return (
+    eventos
+      .filter((e) => e.tipo !== "cancelamento")
+      .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true))
+      .filter((e) => {
+        if (e.data > hojeIso) return true;
+        if (e.data < hojeIso) return false;
+        return e.hora === null || e.hora >= agoraHHMM; // hoje: só o que ainda vem
+      })
+      .sort(
+        (a, b) =>
+          a.data.localeCompare(b.data) ||
+          (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
+      )[0] ?? null
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -182,6 +131,7 @@ export interface ItemHoje {
   titulo: string; // "" quando é aula (a UI mostra o nome da matéria)
   materia_id: string | null;
   hora: string | null;
+  hora_fim: string | null; // fim da aula; null em evento (evento é um instante)
   sala: string | null;
   observacao: string | null;
 }
@@ -214,6 +164,7 @@ export function itensDeHoje(
       titulo: "",
       materia_id: g.materia_id,
       hora: g.hora_ini,
+      hora_fim: g.hora_fim,
       sala: g.sala,
       observacao: null,
     });
@@ -229,6 +180,7 @@ export function itensDeHoje(
       titulo: e.titulo,
       materia_id: e.materia_id,
       hora: e.hora,
+      hora_fim: null, // evento é um instante na régua, não tem duração
       sala: null,
       observacao: e.observacao,
     });

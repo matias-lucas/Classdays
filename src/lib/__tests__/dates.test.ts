@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDias,
+  contagemRegressiva,
   diaSemanaDe,
   diffDias,
   faixaHorario,
@@ -101,5 +102,53 @@ describe("formatação pt-BR", () => {
     expect(faixaHorario("20:50", "22:30")).toBe("tarde");
     expect(faixaHorario("19:00", "22:00")).toBe("full"); // noite inteira
     expect(faixaHorario("19:00", "22:30")).toBe("full");
+  });
+});
+
+describe("contagemRegressiva (o relógio do card expressivo 1b)", () => {
+  // "agora": terça 2026-07-07, 18:30.
+  const AGORA = "18:30";
+
+  it("mesmo dia, ainda vai começar: quebra em horas e minutos", () => {
+    const c = contagemRegressiva(TER, AGORA, TER, "20:45");
+    expect(c).toMatchObject({ dias: 0, horas: 2, minutos: 15, temHora: true });
+    expect(c.totalMin).toBe(135);
+  });
+
+  it("faltando menos de uma hora conta só minutos", () => {
+    const c = contagemRegressiva(TER, AGORA, TER, "18:50");
+    expect(c).toMatchObject({ dias: 0, horas: 0, minutos: 20 });
+    expect(c.totalMin).toBe(20);
+  });
+
+  it("dias à frente somam com o delta de horário do dia", () => {
+    // 3 dias inteiros (4320 min) + (19:00 − 18:30 = 30 min) = 4350
+    const c = contagemRegressiva(TER, AGORA, "2026-07-10", "19:00");
+    expect(c).toMatchObject({ dias: 3, horas: 0, minutos: 30, temHora: true });
+    expect(c.totalMin).toBe(4350);
+  });
+
+  it("hora-alvo mais cedo que agora empurra a quebra pro dia anterior", () => {
+    // amanhã 08:00, faltando de hoje 18:30: 1440 + (480 − 1110) = 810 min = 13h30
+    const c = contagemRegressiva(TER, AGORA, "2026-07-08", "08:00");
+    expect(c).toMatchObject({ dias: 0, horas: 13, minutos: 30 });
+    expect(c.totalMin).toBe(810);
+  });
+
+  it("evento de dia inteiro conta só em dias (temHora:false)", () => {
+    const c = contagemRegressiva(TER, AGORA, "2026-07-10", null);
+    expect(c).toMatchObject({ dias: 3, horas: 0, minutos: 0, temHora: false });
+    expect(c.totalMin).toBe(4320);
+  });
+
+  it("dia inteiro hoje: zero dias, mas ainda 'é hoje' (temHora:false)", () => {
+    const c = contagemRegressiva(TER, AGORA, TER, null);
+    expect(c).toMatchObject({ dias: 0, temHora: false, totalMin: 0 });
+  });
+
+  it("instante já passado: totalMin negativo e a quebra zera (não conta pra trás)", () => {
+    const c = contagemRegressiva(TER, AGORA, TER, "17:00");
+    expect(c.totalMin).toBe(-90);
+    expect(c).toMatchObject({ dias: 0, horas: 0, minutos: 0 });
   });
 });
