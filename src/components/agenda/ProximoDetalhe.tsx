@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Badge } from "@/components/Badge";
 import { COR_TURMA, EventoLinha } from "@/components/EventoLinha";
 import {
@@ -29,9 +30,12 @@ interface Props {
 /**
  * O "Próximo" expressivo (tela 1b) virou o **menu de próximos eventos**: um
  * overlay que sobe por cima da agenda, com o próximo evento em destaque —
- * banhado na cor da matéria, contagem regressiva grande e viva — seguido da
- * lista de todos os outros eventos que vêm. Por isso a seção "Próximos eventos"
- * saiu da home: este menu a substitui.
+ * banhado na cor do TIPO (`--tc`: vermelho de prova, azul de trabalho…), que é
+ * o que dá urgência ao destaque, com contagem regressiva grande e viva
+ * (números gigantes, unidades menores) — seguido da lista de todos os outros
+ * eventos que vêm. A cor da matéria (`--sc`) segue no ponto do assunto e nas
+ * linhas da lista: os dois códigos não se misturam, cada um no seu posto. Por
+ * isso a seção "Próximos eventos" saiu da home: este menu a substitui.
  *
  * Fica sempre montado (a classe `.on` anima entrada/saída, e `visibility:hidden`
  * no CSS o tira da tabulação quando fechado). Aberto: trava o scroll do fundo,
@@ -51,6 +55,16 @@ export function ProximoDetalhe({
   onFechar,
 }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Portal: o DOM do menu vai direto pro <body>, fora da árvore do HeroProximo.
+  // `position: fixed` deixa de ser relativo à viewport quando um ancestral tem
+  // `transform` (ele vira o containing block) — e o .hero-wrap aplica transform
+  // no hover do desktop. Sem o portal, abrir o menu com o mouse sobre o card
+  // prendia scrim e folha dentro do card: scrim encolhido, folha no topo e a
+  // grade da semana pintando por cima. No servidor não existe `document`, então
+  // só montamos no cliente — fechado ele é visibility:hidden, ninguém nota.
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +127,9 @@ export function ProximoDetalhe({
   // a lista mostra o resto — o evento em destaque não se repete embaixo
   const resto = proximos.filter((e) => e.id !== evento.id);
 
-  return (
+  if (!montado) return null;
+
+  return createPortal(
     <>
       <div
         className={`scrim${open ? " on" : ""}`}
@@ -127,7 +143,12 @@ export function ProximoDetalhe({
         aria-modal="true"
         aria-label="Próximos eventos"
         aria-hidden={!open}
-        style={{ "--sc": cor } as React.CSSProperties}
+        style={
+          {
+            "--sc": cor,
+            "--tc": `var(--badge-${evento.tipo}-fg)`,
+          } as React.CSSProperties
+        }
       >
         <div className="pd-glow" aria-hidden="true" />
         <button
@@ -152,7 +173,7 @@ export function ProximoDetalhe({
 
           <div className="pd-count">
             {lead && <span className="pd-lead">{lead}</span>}
-            <span className="pd-big">{big}</span>
+            <span className="pd-big">{comUnidadesMenores(big)}</span>
           </div>
 
           <div className="pd-quando">{quando}</div>
@@ -175,7 +196,8 @@ export function ProximoDetalhe({
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 
@@ -202,4 +224,23 @@ function partesContagem(c: Contagem): { lead: string; big: string } {
   if (c.horas === 0) return { lead: "começa em", big: `${c.minutos} min` };
   if (c.minutos === 0) return { lead: "começa em", big: `${c.horas}h` };
   return { lead: "começa em", big: `${c.horas}h ${c.minutos}min` };
+}
+
+/**
+ * A tipografia do mock aprovado: dígitos gigantes, unidades menores penduradas
+ * na base ("2h 15min" → 2 e 15 grandes, "h"/"min" pequenos). Palavras sem
+ * dígito ("hoje", "amanhã", "agora") não têm unidade — ficam inteiras no
+ * tamanho cheio.
+ */
+function comUnidadesMenores(big: string): React.ReactNode {
+  if (!/\d/.test(big)) return big;
+  return big.split(/(\d+)/).map((parte, i) => {
+    if (parte === "") return null;
+    if (/^\d+$/.test(parte)) return <span key={i}>{parte}</span>;
+    return (
+      <span key={i} className="pd-big-un">
+        {parte}
+      </span>
+    );
+  });
 }

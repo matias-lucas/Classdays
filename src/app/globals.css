@@ -294,11 +294,53 @@ h1 {
    (entrada + pulso) — numa CSS animation sempre vence uma transition na
    mesma propriedade, então hover precisa morar num elemento sem animação */
 .hero-wrap {
+  position: relative;
   transition: transform 200ms var(--ease);
 }
 @media (hover: hover) and (pointer: fine) {
   .hero-wrap:hover {
     transform: translateY(-2px);
+  }
+}
+
+/* pilha de "cartas" atrás do hero: bordas dos próximos eventos aparecendo
+   embaixo dizem, sem uma palavra, que este card é o topo de uma lista.
+   data-pilha="1|2" = quantos itens o menu tem além do destaque (máx. 2).
+   z-index negativo: pintam atrás do .hero sem criar stacking context novo. */
+.hero-wrap[data-pilha]::before,
+.hero-wrap[data-pilha="2"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -7px;
+  height: 36px;
+  z-index: -1;
+  border-radius: var(--radius-hero);
+  background: color-mix(in srgb, var(--sc, var(--ink)) 8%, var(--surface));
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transition: transform var(--t-med) var(--ease);
+}
+.hero-wrap[data-pilha="2"]::after {
+  left: 28px;
+  right: 28px;
+  bottom: -13px;
+  z-index: -2;
+  opacity: 0.65;
+}
+/* a pilha invade o espaço abaixo do card; abre respiro antes da próxima seção */
+.hero-wrap[data-pilha] {
+  margin-bottom: 15px;
+}
+/* no hover o card sobe (-2px no wrap) e as cartas "ficam" (compensam +2/+4):
+   o baralho abre uma fresta — reforço físico de que dá pra puxar a lista */
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap[data-pilha]:hover::before {
+    transform: translateY(3px);
+  }
+  .hero-wrap[data-pilha="2"]:hover::after {
+    transform: translateY(5px);
   }
 }
 
@@ -315,35 +357,40 @@ h1 {
     hero-pulse 3200ms ease-in-out 900ms infinite;
 }
 /* quando o próximo é um EVENTO, o card inteiro é o botão que abre o 1b.
-   herda font/cor do reset de button; reabre à esquerda o filete da matéria e
-   abre espaço à direita pra seta. Aula da grade continua sendo um <div> mudo. */
+   herda font/cor do reset de button. Aula da grade continua sendo <div> mudo. */
 .hero-clicavel {
   display: block;
   width: 100%;
   text-align: left;
-  padding-right: 46px;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
 }
-/* seta de "abrir": pista discreta na cor da matéria, cutuca no hover */
-.hero-seta {
-  position: absolute;
-  top: 50%;
-  right: 18px;
-  transform: translateY(-50%);
-  font-size: 26px;
+/* rodapé-CTA: diz em texto o que o toque faz ("Ver os 4 próximos eventos") —
+   a affordance é anunciada, não sugerida. Texto tinge a cor da matéria no
+   --ink (mesmo truque do .countdown): expressivo nos dois temas sem perder
+   contraste AA. */
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--sc, var(--ink)) 16%, var(--line-soft));
+  font-size: 13.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--sc, var(--ink)) 42%, var(--ink));
+}
+.hero-cta-seta {
+  font-size: 20px;
   line-height: 1;
-  color: var(--sc, var(--ink-faint));
-  opacity: 0.5;
-  transition:
-    transform var(--t-med) var(--ease),
-    opacity var(--t-med) var(--ease);
+  transition: transform var(--t-med) var(--ease);
 }
 @media (hover: hover) and (pointer: fine) {
-  .hero-wrap:hover .hero-seta {
-    transform: translateY(-50%) translateX(3px);
-    opacity: 0.85;
+  .hero-wrap:hover .hero-cta-seta {
+    transform: translateX(3px);
   }
 }
 /* só transform: o conteúdo nunca depende da animação pra ficar visível
@@ -460,10 +507,15 @@ h1 {
   bottom: 0;
   z-index: 50;
   max-height: 92vh;
-  overflow: hidden auto;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-faint) transparent;
+  /* a atmosfera do destaque é a cor do TIPO (--tc): vermelho de prova avisa
+     "é prova" antes de qualquer leitura. A cor da matéria (--sc) segue no
+     ponto do assunto e nas linhas da lista. */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--sc, var(--ink)) 14%, var(--surface)) 0%,
+    color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 18%, var(--surface)) 0%,
     var(--surface) 46%
   );
   border-radius: 22px 22px 0 0;
@@ -479,7 +531,7 @@ h1 {
   transform: none;
   visibility: visible;
 }
-/* aurora da cor da matéria vazando do topo (o overflow recorta a metade de cima) */
+/* aurora da cor do tipo vazando do topo (o overflow recorta a metade de cima) */
 .pd-glow {
   position: absolute;
   top: -120px;
@@ -489,7 +541,7 @@ h1 {
   transform: translateX(-50%);
   background: radial-gradient(
     50% 60% at 50% 50%,
-    color-mix(in srgb, var(--sc, var(--ink)) 42%, transparent),
+    color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 46%, transparent),
     transparent 72%
   );
   pointer-events: none;
@@ -566,17 +618,29 @@ h1 {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-faint);
+  /* cinza puro sobre fundo tingido fica lavado — o lead fala um tom contido
+     da mesma cor do countdown (e ganha contraste sobre o ink-faint de antes) */
+  color: color-mix(in srgb, var(--tc, var(--ink-faint)) 55%, var(--ink-soft));
 }
 .pd-big {
   font-family: var(--font-display), sans-serif;
   font-weight: 700;
-  font-size: 52px;
+  font-size: 60px;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: color-mix(in srgb, var(--sc, var(--ink)) 42%, var(--ink));
+  /* o countdown fala na cor do tipo — os tokens --badge-*-fg já nascem AA nos
+     dois temas; um fio de ink ancora o vermelho/azul no resto da página */
+  color: color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 86%, var(--ink));
   font-variant-numeric: tabular-nums;
   text-wrap: balance;
+}
+/* unidades menores que os dígitos ("2h 15min"): o número carrega o impacto,
+   a unidade só rotula — tipografia do mock aprovado */
+.pd-big-un {
+  font-size: 0.44em;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-right: -0.00px;
 }
 .pd-quando {
   font-family: var(--font-mono), monospace;
@@ -1868,37 +1932,68 @@ h1 {
   color: var(--ink-faint);
 }
 
-/* controle segmentado (Claro | Escuro) */
-.seg {
-  display: flex;
-  gap: 4px;
-  background: var(--line-soft);
-  border-radius: var(--radius-ctrl);
-  padding: 4px;
+/* toggle de tema. Desligado (escuro): trilho apagado com lua crescente em
+   --ink, recortada por box-shadow interno deslocado sobre a bolinha (que tem a
+   cor do trilho, então só a "fatia" aparece). Ligado (claro): trilho em --ink
+   — a linguagem de controle de alta ênfase do sistema — com bolinha cheia em
+   --on-ink fazendo as vezes de sol. */
+.toggle-tema {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 32px;
 }
-.seg-opt {
-  flex: 1;
-  border: none;
-  background: transparent;
-  border-radius: 7px;
-  padding: 9px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-soft);
+/* invisível mas focável (display:none tiraria o toggle da navegação por Tab) */
+.toggle-tema-check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
   cursor: pointer;
+}
+.toggle-tema-slider {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--line-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
   transition:
-    background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+    background-color var(--t-med) var(--ease),
+    border-color var(--t-med) var(--ease);
 }
-.seg-opt.on {
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: var(--shadow);
+.toggle-tema-check:hover ~ .toggle-tema-slider {
+  border-color: var(--ink-faint);
 }
-@media (pointer: coarse) {
-  .seg-opt {
-    padding: 12px 10px;
-  }
+.toggle-tema-check:checked ~ .toggle-tema-slider {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+.toggle-tema-check:focus-visible ~ .toggle-tema-slider {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.toggle-tema-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--line-soft);
+  box-shadow: inset 10px -3px 0 0 var(--ink);
+  transition:
+    transform var(--t-med) var(--ease),
+    background-color var(--t-med) var(--ease),
+    box-shadow var(--t-med) var(--ease);
+}
+.toggle-tema-check:checked ~ .toggle-tema-slider::before {
+  transform: translateX(24px);
+  background-color: var(--on-ink);
+  box-shadow: none;
 }
 
 /* ============================================================================
