@@ -2281,6 +2281,66 @@ h1 {
 }
 
 /* ============================================================================
+   splash de entrada (1x por sessão — ver Splash.tsx e o script no layout)
+   ========================================================================== */
+
+/* invisível por padrão; só o data-splash pré-pintura no <html> o liga. O
+   overlay é opaco na cor do fundo — cobre o conteúdo sem precisar escondê-lo. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background-color: var(--bg);
+}
+html[data-splash="on"] .splash {
+  display: flex;
+}
+.splash-logo {
+  width: 96px;
+  height: 96px;
+  animation: splash-entrada 480ms var(--ease) both;
+}
+.splash-nome {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: splash-entrada 480ms var(--ease) 120ms both;
+}
+@keyframes splash-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* saída: as peças viajam (transform via JS) enquanto o fundo some por cima do
+   conteúdo real. O transitionend do background-color encerra o splash. */
+.splash-logo,
+.splash-nome {
+  transition: transform 560ms var(--ease);
+  will-change: transform;
+}
+.splash.is-saindo {
+  background-color: transparent;
+  transition: background-color 260ms var(--ease) 300ms;
+  pointer-events: none;
+}
+.splash.is-saindo .splash-logo,
+.splash.is-saindo .splash-nome {
+  animation: none;
+}
+
+/* ============================================================================
    movimento reduzido: tudo instantâneo
    ========================================================================== */
 

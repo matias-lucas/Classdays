@@ -14,6 +14,7 @@ import {
 } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { MenuLateral } from "@/components/MenuLateral";
+import { Splash } from "@/components/Splash";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
@@ -109,6 +110,8 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
 
   return (
     <div className="wrap">
+      {/* overlay de abertura; mora aqui pra medir a topbar real (FLIP) */}
+      <Splash />
       <div className="topbar">
           <img src="/icon.svg" alt="Logo Classdays" className="logo" />
           <h1>Classdays</h1>

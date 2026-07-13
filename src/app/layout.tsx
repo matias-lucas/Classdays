@@ -62,6 +62,15 @@ export default function RootLayout({
             __html: `(function(){try{var s=localStorage.getItem("classdays-theme");var d=s==="dark"||(s!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",d?"#0e1424":"#edf0f6");}catch(e){}})();`,
           }}
         />
+        {/* Splash de entrada: decide ANTES da primeira pintura se aparece
+            (1x por sessão; nunca com movimento reduzido). O atributo liga o
+            overlay via CSS; o componente <Splash /> cuida da animação e de
+            removê-lo. Qualquer erro → sem atributo → app normal. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(!sessionStorage.getItem("classdays-splash")&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.splash="on";}}catch(e){}})();`,
+          }}
+        />
         {/* Sem nenhum listener de touch, o Safari do iOS ignora :active
             no toque — os botões e chips ficariam "mudos" ao tocar. */}
         <script
