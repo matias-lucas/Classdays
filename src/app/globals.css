@@ -614,14 +614,17 @@ h1 {
   box-shadow: var(--shadow-hero);
   padding: 34px 24px calc(30px + env(safe-area-inset-bottom, 0px));
   transform: translateY(100%);
+  /* mesmo esquema do .drawer: some com delay ao fechar, aparece na hora ao
+     abrir — senão o focus() do focus-trap falha no primeiro frame */
   visibility: hidden;
   transition:
     transform var(--t-med) var(--ease),
-    visibility var(--t-med) var(--ease);
+    visibility 0s linear var(--t-med);
 }
 .pd-sheet.on {
   transform: none;
   visibility: visible;
+  transition: transform var(--t-med) var(--ease);
 }
 /* aurora da cor do tipo vazando do topo (o overflow recorta a metade de cima) */
 .pd-glow {
@@ -780,11 +783,14 @@ h1 {
     transition:
       transform var(--t-med) var(--ease),
       opacity var(--t-med) var(--ease),
-      visibility var(--t-med) var(--ease);
+      visibility 0s linear var(--t-med);
   }
   .pd-sheet.on {
     transform: translate(-50%, -50%);
     opacity: 1;
+    transition:
+      transform var(--t-med) var(--ease),
+      opacity var(--t-med) var(--ease);
   }
 }
 
@@ -2059,14 +2065,18 @@ h1 {
   padding: 16px 18px 24px;
   overflow-y: auto;
   transform: translateX(100%);
+  /* fechado: a visibility só some DEPOIS do slide (delay). Aberto, ela vira
+     na hora — numa transition ela ainda vale "hidden" no primeiro frame e o
+     focus() do focus-trap falharia em silêncio (foco nunca entrava no dialog) */
   visibility: hidden;
   transition:
     transform var(--t-med) var(--ease),
-    visibility var(--t-med) var(--ease);
+    visibility 0s linear var(--t-med);
 }
 .drawer.on {
   transform: none;
   visibility: visible;
+  transition: transform var(--t-med) var(--ease);
 }
 .drawer-head {
   display: flex;
@@ -2102,6 +2112,12 @@ h1 {
   border-color: var(--ink-faint);
   color: var(--ink);
 }
+@media (pointer: coarse) {
+  .drawer-fechar {
+    width: 44px;
+    height: 44px;
+  }
+}
 .drawer-sec {
   display: flex;
   flex-direction: column;
@@ -2136,6 +2152,15 @@ h1 {
   margin: 0;
   opacity: 0;
   cursor: pointer;
+}
+/* no toque, a área clicável do switch cresce pra ≥44px sem mudar o desenho
+   (o input é invisível; só o hit-test estica) */
+@media (pointer: coarse) {
+  .toggle-tema-check {
+    inset: -6px -4px;
+    width: auto;
+    height: auto;
+  }
 }
 .toggle-tema-slider {
   position: absolute;
