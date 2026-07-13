@@ -1,5 +1,6 @@
 /**
  * Tema (claro/escuro) — a única configuração de aparência que vira ajuste real
+ * e persistido (ver docs/ROADMAP.md).
  *
  * O tema resolvido mora no atributo `data-theme` do <html>. Um script de boot
  * inline (layout.tsx) grava esse atributo ANTES da primeira pintura, lendo a
