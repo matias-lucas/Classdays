@@ -18,7 +18,6 @@ import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
 import { HojeTimeline } from "./HojeTimeline";
-import iconSvg from '@/public/icon.svg';
 
 interface Props {
   materias: Materia[];
@@ -122,7 +121,7 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
           <p className="eyebrow">
           {NOME_CURSO} · {NOME_INST}
           </p>
-
+          <p className="eyebrow2">{NOME_TURMA}</p>
         </div>
       </header>
 

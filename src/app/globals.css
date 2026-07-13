@@ -145,6 +145,8 @@ body {
   /* o painel lateral fica fora da tela (translateX) quando fechado; clip evita
      que ele crie uma barra de rolagem horizontal, sem travar o scroll vertical */
   overflow-x: clip;
+  overflow-y: scroll;
+  scrollbar-width: none;
 }
 a {
   color: inherit;
@@ -182,6 +184,15 @@ button {
   font-size: 11px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+.eyebrow2 {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  justify-self: center;
   color: var(--ink-faint);
   font-weight: 500;
 }
@@ -550,8 +561,8 @@ h1 {
   bottom: 0;
   z-index: 50;
   max-height: 92vh;
-  overflow-y: scroll;
-  scrollbar-width: thin;
+  overflow-y: auto;
+  scrollbar-width: none;
   scrollbar-color: var(--ink-faint) transparent;
   /* a atmosfera do destaque é a cor do TIPO (--tc): vermelho de prova avisa
      "é prova" antes de qualquer leitura. A cor da matéria (--sc) segue no

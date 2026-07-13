@@ -90,7 +90,7 @@ describe("formatação pt-BR", () => {
   });
 
   it("rótulos de semana (cabeçalho da agenda)", () => {
-    expect(rotuloSemana(0)).toBe("Esta semana");
+    expect(rotuloSemana(0)).toBe("Semana atual");
     expect(rotuloSemana(1)).toBe("Semana que vem");
     expect(rotuloSemana(-1)).toBe("Semana passada");
     expect(rotuloSemana(3)).toBe("Em 3 semanas");
