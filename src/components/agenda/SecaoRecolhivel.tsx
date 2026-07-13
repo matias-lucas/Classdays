@@ -14,9 +14,17 @@ import { useEffect, useId, useState, type ReactNode } from "react";
  * servidor rende TUDO aberto (primeira visita = tudo aberto, ver roadmap §8)
  * e o efeito recolhe depois de montar — servidor e primeira pintura do client
  * idênticos, sem hydration mismatch (mesmo padrão da dica de arraste da grade).
+ *
+ * Navegação externa: o <h2> ganha id `sec-{id}` (ex.: "sec-proximo") — âncora
+ * estável mesmo com o corpo recolhido — e a seção escuta o CustomEvent
+ * `classdays:expandir-secao` (detail = id) para se abrir programaticamente
+ * (usado pelo menu lateral).
  */
 
 const CHAVE_RECOLHIDAS = "classdays.secoesRecolhidas";
+
+/** Nome do evento que pede a uma seção que se expanda (detail = id dela). */
+export const EVENTO_EXPANDIR_SECAO = "classdays:expandir-secao";
 
 function lerRecolhidas(): string[] {
   try {
@@ -68,6 +76,17 @@ export function SecaoRecolhivel({
     if (lerRecolhidas().includes(id)) setAberta(false);
   }, [id]);
 
+  // Abre a seção quando alguém (ex.: menu lateral) pede via evento custom.
+  useEffect(() => {
+    const abrir = (ev: Event) => {
+      if ((ev as CustomEvent<string>).detail !== id) return;
+      setAberta(true);
+      salvarRecolhida(id, false);
+    };
+    window.addEventListener(EVENTO_EXPANDIR_SECAO, abrir);
+    return () => window.removeEventListener(EVENTO_EXPANDIR_SECAO, abrir);
+  }, [id]);
+
   const alternar = () => {
     setAberta((estava) => {
       salvarRecolhida(id, estava);
@@ -81,7 +100,7 @@ export function SecaoRecolhivel({
 
   return (
     <>
-      <h2 className={classeLabel ? `slabel ${classeLabel}` : "slabel"}>
+      <h2 id={`sec-${id}`} className={classeLabel ? `slabel ${classeLabel}` : "slabel"}>
         <button
           type="button"
           className="slabel-toggle"
