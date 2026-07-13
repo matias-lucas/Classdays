@@ -67,6 +67,10 @@
 
   /* easing padrão (ease-out) e durações de interação */
   --ease: cubic-bezier(0.22, 0.7, 0.3, 1);
+  /* ease-out-expo: chega rápido e assenta devagar — reservado pras ENTRADAS
+     de painéis (drawer, folha de próximos), onde o exagero da desaceleração
+     é o que dá a sensação de peso físico */
+  --ease-exp: cubic-bezier(0.16, 1, 0.3, 1);
   --t-fast: 150ms;
   --t-med: 200ms;
 }
@@ -259,10 +263,15 @@ h1 {
   place-items: center;
   transition:
     background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+    color var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
 }
 .weeknav button + button {
   border-left: 1px solid var(--line);
+}
+/* aperto físico: o segmento afunda um tico (mesma linguagem do .chip:active) */
+.weeknav button:active:not(:disabled) {
+  transform: scale(0.93);
 }
 @media (hover: hover) and (pointer: fine) {
   .weeknav button:hover:not(:disabled) {
@@ -344,17 +353,57 @@ h1 {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
-/* largura fixa: ▾ e › têm caixas diferentes e o título não pode dançar */
+/* um só glifo (›) que gira 90° quando aberto — girar transiciona, trocar
+   caractere não. Largura fixa pro título não dançar. */
 .slabel-caret {
   width: 1.1em;
   text-align: center;
   font-size: 13.5px;
+  transition: transform var(--t-med) var(--ease);
+}
+.slabel-toggle[aria-expanded="true"] .slabel-caret {
+  transform: rotate(90deg);
 }
 
-/* Corpo de seção recolhido. SEMPRE via classe — display inline no protótipo
-   sobrescrevia o display do herocard <a> ao reexpandir e o quebrava. */
-.sec-hidden {
-  display: none;
+/* Corpo de seção recolhível. SEMPRE via classe — display inline no protótipo
+   sobrescrevia o display do herocard <a> ao reexpandir e o quebrava.
+
+   A altura anima via grid: a única linha vai de 1fr (aberta) a 0fr (recolhida)
+   e o .sec-corpo-inner (min-height: 0) encolhe junto — `height: auto` não é
+   animável, grid-template-rows é. A classe .sec-anim só existe durante o
+   gesto (posta pelo React, com fallback de timeout p/ reduced-motion): é ela
+   que liga a transição — restaurar do localStorage no load continua snap — e
+   o overflow: hidden, que aberto de vez cortaria a sombra dos cards. */
+.sec-corpo {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.sec-corpo-inner {
+  min-height: 0;
+}
+.sec-corpo.sec-hidden {
+  grid-template-rows: 0fr;
+}
+.sec-corpo.sec-hidden > .sec-corpo-inner,
+.sec-corpo.sec-anim > .sec-corpo-inner {
+  overflow: hidden;
+}
+.sec-corpo.sec-hidden > .sec-corpo-inner {
+  opacity: 0;
+  visibility: hidden;
+}
+.sec-corpo.sec-anim {
+  transition: grid-template-rows 280ms var(--ease);
+}
+.sec-corpo.sec-anim > .sec-corpo-inner {
+  transition: opacity 200ms var(--ease);
+}
+/* fechando (destino = recolhida): visibility só vira hidden no FIM da
+   transição; abrindo, o seletor acima vale e ela volta na hora */
+.sec-corpo.sec-anim.sec-hidden > .sec-corpo-inner {
+  transition:
+    opacity 200ms var(--ease),
+    visibility 0s linear 280ms;
 }
 
 /* "‹‹ voltar" — atalho pra semana atual, na ponta oposta do rótulo da grade.
@@ -629,7 +678,50 @@ h1 {
 .pd-sheet.on {
   transform: none;
   visibility: visible;
-  transition: transform var(--t-med) var(--ease);
+  /* subida longa com o expo assentando devagar; fechar segue no t-med */
+  transition: transform 420ms var(--ease-exp);
+}
+
+/* Cascata do conteúdo (mesma coreografia do drawer, eixo vertical): selo,
+   título, contagem e lista sobem um passo atrás da folha — a contagem grande
+   é o clímax, não o primeiro frame. Fechando: fade curto sem delay. */
+.pd-corpo > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 120ms var(--ease),
+    transform 120ms var(--ease);
+}
+.pd-sheet.on .pd-corpo > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 300ms var(--ease),
+    transform 440ms var(--ease-exp);
+}
+.pd-sheet.on .pd-corpo > *:nth-child(1) {
+  transition-delay: 80ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(2) {
+  transition-delay: 130ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(3) {
+  transition-delay: 180ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(4) {
+  transition-delay: 230ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(n + 5) {
+  transition-delay: 280ms;
+}
+/* a aurora acende por último, quando a folha já parou */
+.pd-sheet .pd-glow {
+  opacity: 0;
+  transition: opacity 120ms var(--ease);
+}
+.pd-sheet.on .pd-glow {
+  opacity: 1;
+  transition: opacity 600ms var(--ease) 180ms;
 }
 /* aurora da cor do tipo vazando do topo (o overflow recorta a metade de cima) */
 .pd-glow {
@@ -794,8 +886,8 @@ h1 {
     transform: translate(-50%, -50%);
     opacity: 1;
     transition:
-      transform var(--t-med) var(--ease),
-      opacity var(--t-med) var(--ease);
+      transform 420ms var(--ease-exp),
+      opacity 260ms var(--ease);
   }
 }
 
@@ -1118,6 +1210,14 @@ h1 {
   background: var(--ink);
   color: var(--on-ink);
   border-color: var(--ink);
+  /* pulso único ao ser escolhido: sai do "afundado" do :active e assenta.
+     É animation (não transition) de propósito: replay a cada seleção. */
+  animation: chip-assenta 260ms var(--ease-exp);
+}
+@keyframes chip-assenta {
+  from {
+    transform: scale(0.94);
+  }
 }
 .chip.on .dot {
   box-shadow: 0 0 0 1.5px var(--dot-ring);
@@ -1934,7 +2034,7 @@ h1 {
   }
   /* tudo segue numa coluna de leitura central, MENOS a grade da semana
      (.sec-grade = corpo recolhível que embrulha o .grade-viewport) */
-  .wrap > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade) {
+  .wrap > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade):not(.splash) {
     max-width: 720px;
     margin-inline: auto;
   }
@@ -2051,7 +2151,11 @@ h1 {
     height: 44px;
   }
 }
-/* três barras = ícone de menu (mais nítido que um glifo) */
+/* três barras = ícone de menu (mais nítido que um glifo). Com o drawer
+   aberto (aria-expanded) as barras se dobram num X: a de cima e a de baixo
+   giram até o centro (5px = altura da barra + gap) e a do meio se recolhe.
+   O botão continua visível por trás do scrim, então o morph também é
+   informação: "isto agora fecha". */
 .menu-ico {
   display: flex;
   flex-direction: column;
@@ -2062,6 +2166,19 @@ h1 {
   height: 2px;
   background: currentColor;
   border-radius: 2px;
+  transition:
+    transform var(--t-med) var(--ease),
+    opacity var(--t-fast) var(--ease);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(1) {
+  transform: translateY(5px) rotate(45deg);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.4);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(3) {
+  transform: translateY(-5px) rotate(-45deg);
 }
 
 /* ============================================================================
@@ -2108,14 +2225,64 @@ h1 {
 .drawer.on {
   transform: none;
   visibility: visible;
-  transition: transform var(--t-med) var(--ease);
+  /* abrir é mais longo e mais "físico" que fechar (o expo assenta devagar);
+     fechar continua rápido — o usuário já decidiu ir embora */
+  transition: transform 380ms var(--ease-exp);
+}
+
+/* Cascata do conteúdo: cabeçalho e seções entram deslizando junto com o
+   painel, cada um um passo atrás — o drawer "chega e se arruma". Fechado,
+   voltam ao ponto de partida com um fade curto e SEM delay, pra não sumirem
+   secos enquanto o painel ainda desliza pra fora. Com movimento reduzido o
+   kill-switch global zera as transitions e isto tudo vira estado instantâneo. */
+.drawer-head,
+.drawer-corpo > * {
+  opacity: 0;
+  transform: translateX(18px);
+  transition:
+    opacity 120ms var(--ease),
+    transform 120ms var(--ease);
+}
+.drawer.on .drawer-head,
+.drawer.on .drawer-corpo > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 280ms var(--ease),
+    transform 400ms var(--ease-exp);
+}
+.drawer.on .drawer-head {
+  transition-delay: 40ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(1) {
+  transition-delay: 90ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(2) {
+  transition-delay: 150ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(n + 3) {
+  transition-delay: 210ms;
 }
 .drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 22px;
+}
+/* logo + nome, eco da topbar */
+.drawer-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.drawer-logo {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
 }
 .drawer-titulo {
   font-family: var(--font-display), sans-serif;
@@ -2181,6 +2348,7 @@ h1 {
 .drawer-nav-item {
   display: flex;
   align-items: center;
+  gap: 12px;
   width: 100%;
   min-height: 44px;
   padding: 0 10px;
@@ -2197,28 +2365,63 @@ h1 {
   text-align: left;
   transition:
     background-color var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+    color var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
 }
 .drawer-nav-item:hover {
   background-color: var(--line-soft);
+}
+/* aperto: a linha afunda de leve — mesmo gesto do .chip e do .menu-btn */
+.drawer-nav-item:active {
+  transform: scale(0.98);
 }
 .drawer-nav-item:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: -2px;
 }
-
-/* toggle de tema. Desligado (escuro): trilho apagado com lua crescente em
-   --ink, recortada por box-shadow interno deslocado sobre a bolinha (que tem a
-   cor do trilho, então só a "fatia" aparece). Ligado (claro): trilho em --ink
-   — a linguagem de controle de alta ênfase do sistema — com bolinha cheia em
-   --on-ink fazendo as vezes de sol. */
-.toggle-tema {
-  position: relative;
-  display: block;
-  width: 56px;
-  height: 32px;
+/* ícone do item: caixa fixa pra alinhar os rótulos; a cor sobe junto do hover */
+.drawer-nav-ico {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--ink-soft);
+  transition:
+    color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
-/* invisível mas focável (display:none tiraria o toggle da navegação por Tab) */
+.drawer-nav-item:hover .drawer-nav-ico {
+  color: var(--ink);
+  transform: scale(1.12);
+}
+
+/* toggle de tema: uma linha do menu (ícone sol/lua + rótulo) com o switch à
+   direita. A linha inteira é o <label> — alvo ≥44px sem gambiarra de hit-test.
+   Ligado (claro): trilho em --ink, a linguagem de controle de alta ênfase do
+   sistema; desligado (escuro): trilho apagado. */
+.tema-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background-color var(--t-fast) var(--ease);
+}
+.tema-linha:hover {
+  background-color: var(--line-soft);
+}
+.tema-linha:hover .drawer-nav-ico {
+  color: var(--ink);
+}
+/* invisível mas focável, cobrindo a linha toda (display:none tiraria o toggle
+   da navegação por Tab) */
 .toggle-tema-check {
   position: absolute;
   inset: 0;
@@ -2228,18 +2431,16 @@ h1 {
   opacity: 0;
   cursor: pointer;
 }
-/* no toque, a área clicável do switch cresce pra ≥44px sem mudar o desenho
-   (o input é invisível; só o hit-test estica) */
-@media (pointer: coarse) {
-  .toggle-tema-check {
-    inset: -6px -4px;
-    width: auto;
-    height: auto;
-  }
+.toggle-tema-check:focus-visible ~ .toggle-tema-slider {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .toggle-tema-slider {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  margin-left: auto;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
   pointer-events: none;
   background-color: var(--line-soft);
   border: 1px solid var(--line);
@@ -2248,36 +2449,54 @@ h1 {
     background-color var(--t-med) var(--ease),
     border-color var(--t-med) var(--ease);
 }
-.toggle-tema-check:hover ~ .toggle-tema-slider {
+.tema-linha:hover .toggle-tema-slider {
   border-color: var(--ink-faint);
 }
 .toggle-tema-check:checked ~ .toggle-tema-slider {
   background-color: var(--ink);
   border-color: var(--ink);
 }
-.toggle-tema-check:focus-visible ~ .toggle-tema-slider {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
 .toggle-tema-slider::before {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--line-soft);
-  box-shadow: inset 10px -3px 0 0 var(--ink);
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  /* --ink-soft contrasta com o trilho apagado nos dois temas (--surface quase
+     sumiria no escuro) */
+  background-color: var(--ink-soft);
   transition:
     transform var(--t-med) var(--ease),
-    background-color var(--t-med) var(--ease),
-    box-shadow var(--t-med) var(--ease);
+    width var(--t-fast) var(--ease),
+    background-color var(--t-med) var(--ease);
 }
 .toggle-tema-check:checked ~ .toggle-tema-slider::before {
-  transform: translateX(24px);
+  transform: translateX(18px);
   background-color: var(--on-ink);
-  box-shadow: none;
+}
+/* segurando o dedo/clique, o pino se ESTICA na direção do trilho (estilo
+   iOS): 4px a mais de largura. Ligado, compensa o translateX pra borda
+   direita não vazar da pílula. Área minúscula e isolada — animar width aqui
+   não mexe em layout nenhum fora do próprio pino. */
+.tema-linha:active .toggle-tema-slider::before {
+  width: 24px;
+}
+.tema-linha:active .toggle-tema-check:checked ~ .toggle-tema-slider::before {
+  transform: translateX(14px);
+}
+
+/* o sol/lua troca com um giro curto de "amanhecer" — o span remonta com
+   key={tema}, então a animação replay a cada troca (e na abertura do menu) */
+.tema-linha .drawer-nav-ico svg {
+  animation: tema-amanhece 340ms var(--ease-exp) both;
+}
+@keyframes tema-amanhece {
+  from {
+    opacity: 0;
+    transform: rotate(-50deg) scale(0.55);
+  }
 }
 
 /* ============================================================================

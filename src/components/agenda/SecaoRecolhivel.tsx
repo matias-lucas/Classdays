@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 /**
  * Seção recolhível (Fase 5): o rótulo `.slabel` vira um botão de
@@ -9,6 +9,12 @@ import { useEffect, useId, useState, type ReactNode } from "react";
  * O corpo some via a CLASSE `.sec-hidden`, nunca `display` inline: no
  * protótipo, o inline sobrescrevia o display do herocard `<a>` ao reexpandir
  * e o quebrava.
+ *
+ * Animação: `.sec-corpo` é um grid de uma linha (1fr aberto, 0fr recolhido) —
+ * a altura anima sem animar `height`. A classe `.sec-anim` (que habilita a
+ * transição e o overflow hidden) só existe durante o gesto do usuário: o
+ * recolhimento restaurado do localStorage no mount continua sendo um snap,
+ * senão a página carregaria "se fechando".
  *
  * Persistência: o conjunto de seções recolhidas vive em `localStorage`. O
  * servidor rende TUDO aberto (primeira visita = tudo aberto, ver roadmap §8)
@@ -70,16 +76,36 @@ export function SecaoRecolhivel({
   children,
 }: Props) {
   const [aberta, setAberta] = useState(true);
+  // true só enquanto uma transição disparada pelo usuário está no ar.
+  const [animando, setAnimando] = useState(false);
+  const timerAnim = useRef<number | undefined>(undefined);
   const corpoId = useId();
+
+  // Dispara a janela de animação. O timeout é o plano B do transitionend:
+  // com prefers-reduced-motion a transição vira `none` e o evento nunca chega.
+  const iniciarAnimacao = () => {
+    setAnimando(true);
+    window.clearTimeout(timerAnim.current);
+    timerAnim.current = window.setTimeout(() => setAnimando(false), 450);
+  };
+
+  const fimDaTransicao = (ev: React.TransitionEvent<HTMLDivElement>) => {
+    if (ev.target !== ev.currentTarget) return;
+    if (ev.propertyName !== "grid-template-rows") return;
+    window.clearTimeout(timerAnim.current);
+    setAnimando(false);
+  };
 
   useEffect(() => {
     if (lerRecolhidas().includes(id)) setAberta(false);
+    return () => window.clearTimeout(timerAnim.current);
   }, [id]);
 
   // Abre a seção quando alguém (ex.: menu lateral) pede via evento custom.
   useEffect(() => {
     const abrir = (ev: Event) => {
       if ((ev as CustomEvent<string>).detail !== id) return;
+      iniciarAnimacao();
       setAberta(true);
       salvarRecolhida(id, false);
     };
@@ -88,13 +114,19 @@ export function SecaoRecolhivel({
   }, [id]);
 
   const alternar = () => {
+    iniciarAnimacao();
     setAberta((estava) => {
       salvarRecolhida(id, estava);
       return !estava;
     });
   };
 
-  const classesCorpo = [classeCorpo, aberta ? null : "sec-hidden"]
+  const classesCorpo = [
+    "sec-corpo",
+    classeCorpo,
+    aberta ? null : "sec-hidden",
+    animando ? "sec-anim" : null,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -109,14 +141,14 @@ export function SecaoRecolhivel({
           onClick={alternar}
         >
           <span className="slabel-caret" aria-hidden="true">
-            {aberta ? "▾" : "›"}
+            ›
           </span>
           {titulo}
         </button>
         {extra}
       </h2>
-      <div id={corpoId} className={classesCorpo || undefined}>
-        {children}
+      <div id={corpoId} className={classesCorpo} onTransitionEnd={fimDaTransicao}>
+        <div className="sec-corpo-inner">{children}</div>
       </div>
     </>
   );

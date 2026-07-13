@@ -13,6 +13,14 @@ import {
 } from "@/lib/dates";
 import type { Evento, Materia } from "@/lib/types";
 import { ProximoDetalhe } from "./ProximoDetalhe";
+import { EVENTO_EXPANDIR_SECAO } from "./SecaoRecolhivel";
+
+/**
+ * Evento global que abre o menu de próximos eventos de fora (o item
+ * "Próximos eventos" do MenuLateral o dispara). Mesmo padrão do
+ * EVENTO_EXPANDIR_SECAO: quem conhece o estado (este componente) escuta.
+ */
+export const EVENTO_ABRIR_PROXIMOS = "classdays:abrir-proximos";
 
 interface Props {
   /** O próximo EVENTO (nunca aula/cancelamento), ou null se não há nenhum. */
@@ -47,6 +55,24 @@ export function HeroProximo({
   const temEvento = evento !== null;
   useEffect(() => {
     if (!temEvento) setAberto(false);
+  }, [temEvento]);
+
+  // Pedido de fora (MenuLateral): abre o menu. Sem evento não há menu — cai
+  // pro comportamento antigo (expande e rola até a seção, que explica o vazio).
+  useEffect(() => {
+    const abrir = () => {
+      if (temEvento) {
+        setAberto(true);
+        return;
+      }
+      window.dispatchEvent(new CustomEvent(EVENTO_EXPANDIR_SECAO, { detail: "proximo" }));
+      const reduz = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      document
+        .getElementById("sec-proximo")
+        ?.scrollIntoView({ behavior: reduz ? "auto" : "smooth", block: "start" });
+    };
+    window.addEventListener(EVENTO_ABRIR_PROXIMOS, abrir);
+    return () => window.removeEventListener(EVENTO_ABRIR_PROXIMOS, abrir);
   }, [temEvento]);
 
   if (!evento) {
