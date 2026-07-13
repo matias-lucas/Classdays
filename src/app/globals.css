@@ -168,11 +168,19 @@ button {
 /* ============================================================================
    cabeçalho da página
    ========================================================================== */
-
+.topbar {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
+}
+.topbar h1 {
+  flex: 1;
+  text-align: center;
+}
 .eyebrow {
   font-family: var(--font-mono), monospace;
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--ink-faint);
   font-weight: 500;
@@ -180,14 +188,19 @@ button {
 .head-row {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   margin: 6px 0 22px;
+}
+.logo {
+  width: 64px;
+  height: 64px;
+  justify-self: start;
 }
 h1 {
   font-family: var(--font-display), sans-serif;
   font-weight: 700;
-  font-size: 30px;
+  font-size: 48px;
   letter-spacing: -0.02em;
   line-height: 1.05;
   text-wrap: balance;
@@ -201,9 +214,14 @@ h1 {
 }
 
 /* navegação de semana ( ‹ hoje › ) */
+/* No celular a navegação de semanas é o ARRASTE da grade (+ "‹‹ voltar"), então
+   as setinhas ‹ › HOJE somem — o cabeçalho fica só com o menu. No desktop
+   (≥1000px, sem arraste — o quadro é intocado) elas reaparecem: lá são o único
+   jeito de trocar de semana. */
 .weeknav {
-  display: flex;
+  display: none;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   flex-shrink: 0;
 }
@@ -229,7 +247,7 @@ h1 {
   }
 }
 .weeknav button:active:not(:disabled) {
-  background: var(--line-soft);
+  background: var(--line-soft) transparent;
   border-color: var(--ink-faint);
   transform: scale(0.92);
 }
@@ -283,6 +301,31 @@ h1 {
   flex: 1;
   height: 1px;
   background: var(--line);
+}
+
+/* "‹‹ voltar" — atalho pra semana atual, na ponta oposta do rótulo da grade.
+   Só existe quando a semana na tela NÃO é a atual. `order: 1` o joga pra
+   depois da régua (::after), fechando a linha: título — régua — botão. */
+.slabel-voltar {
+  order: 1;
+  border: 0;
+  background: none;
+  font: inherit; /* herda o mono/tamanho/tracking do .slabel */
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: var(--ink-soft);
+  cursor: pointer;
+  /* área de toque ≥44px sem engordar a linha: padding compensado por margin */
+  padding: 14px 8px;
+  margin: -14px -8px -14px 0;
+  animation: fadein 200ms var(--ease) both;
+}
+.slabel-voltar:hover {
+  color: var(--ink);
+}
+.slabel-voltar:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* ============================================================================
@@ -1011,6 +1054,9 @@ h1 {
   padding-block: 8px;
   margin-block: -8px;
   animation: fadein 260ms var(--ease) both; /* só na primeira carga */
+  /* o arraste é horizontal: cedemos o eixo vertical pro scroll da página seguir
+     rolando, e capturamos só o movimento horizontal (a trava de eixo é no JS). */
+  touch-action: pan-y;
 }
 /* trilho com as duas semanas lado a lado; desliza inteiro num movimento só */
 .grade-track {
@@ -1044,6 +1090,94 @@ h1 {
   }
   to {
     transform: translateX(0);
+  }
+}
+
+/* ARRASTE: trilho de 3 painéis [anterior][atual][próxima]. O trilho fica com
+   width: 100% e cada painel com flex-basis: 100% — os painéis TRANSBORDAM de
+   propósito, então translateX(-100%) = exatamente 1 semana (o % de translate é
+   relativo à largura do próprio trilho). O respiro entre as semanas é o gap
+   (`--vao-semanas`), que o JS soma na conta do transform. Ao soltar, o JS
+   adiciona `.assentando` pra deslizar até a semana escolhida (ou de volta). */
+.grade-rail {
+  --vao-semanas: 24px;
+  display: flex;
+  width: 100%;
+  gap: var(--vao-semanas);
+  will-change: transform;
+}
+.grade-rail > .grade-panel {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+.grade-rail.assentando {
+  /* mais lento que o slide dos botões de propósito: vem depois de um gesto
+     físico, então assenta com calma — desacelera longo, sem pressa no final */
+  transition: transform 480ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* etiqueta que cada painel carrega: "esta semana · 14–18 jul" — viaja com o
+   painel no arraste, então nunca há dúvida de qual semana está na tela */
+.grade-etiqueta {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin: 0 2px 10px;
+}
+/* fora da semana atual ela sobe um degrau de presença — é quando importa */
+.grade-etiqueta.fora {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* Dica de descoberta: no primeiro uso avisa que dá pra arrastar; some pra sempre
+   depois do primeiro gesto. Discreta, cutuca de leve pros dois lados. */
+.grade-dica {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+.grade-dica span {
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink-soft);
+  animation: dica-cutuca 1.8s var(--ease) infinite;
+}
+.grade-dica span:last-child {
+  animation-delay: 0.9s;
+}
+@keyframes dica-cutuca {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  35% {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+}
+.grade-dica span:first-child {
+  animation-name: dica-cutuca-esq;
+}
+@keyframes dica-cutuca-esq {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  35% {
+    transform: translateX(-3px);
+    opacity: 1;
   }
 }
 
@@ -1717,6 +1851,11 @@ h1 {
     margin-inline: auto;
   }
 
+  /* sem arraste no desktop → as setinhas ‹ › HOJE voltam a ser a navegação */
+  .weeknav {
+    display: flex;
+  }
+
   /* as 5 colunas de dias, todas da mesma altura (align-items: stretch) */
   .grade-days {
     display: grid;
@@ -1790,15 +1929,10 @@ h1 {
    barra do topo + botão de menu
    ========================================================================== */
 
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
 .menu-btn {
   width: 36px;
   height: 36px;
+  justify-self: flex-end;
   flex-shrink: 0;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -1837,7 +1971,7 @@ h1 {
   width: 16px;
 }
 .menu-ico i {
-  height: 1.7px;
+  height: 2px;
   background: currentColor;
   border-radius: 2px;
 }

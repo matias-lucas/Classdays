@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { eventosFuturos, itensDeHoje, montarSemana, proximoEvento } from "@/lib/agenda";
-import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA } from "@/lib/config";
+import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA, NOME_INST } from "@/lib/config";
 import {
   addDias,
   fmtDiaMesPartes,
@@ -18,6 +18,7 @@ import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
 import { HojeTimeline } from "./HojeTimeline";
+import iconSvg from '@/public/icon.svg';
 
 interface Props {
   materias: Materia[];
@@ -33,7 +34,9 @@ interface Props {
   agoraInicial: string;
 }
 
-type DirecaoSemana = "inicial" | "prox" | "ant";
+// "arraste" = a semana trocou por gesto (o próprio arraste já fez o
+// assentamento), então o slider NÃO deve rodar a transição de botão por cima.
+type DirecaoSemana = "inicial" | "prox" | "ant" | "arraste";
 
 export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicial }: Props) {
   const [semanaOffset, setSemanaOffset] = useState(0);
@@ -74,6 +77,17 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
     () => montarSemana(grade, eventos, segunda),
     [grade, eventos, segunda],
   );
+  // Semanas vizinhas: alimentam o arraste (o trilho de 3 painéis do slider) sem
+  // esperar troca de estado. São puras/baratas (montarSemana), então recalcular
+  // a cada navegação não pesa.
+  const semanaAnterior = useMemo(
+    () => montarSemana(grade, eventos, addDias(segunda, -7)),
+    [grade, eventos, segunda],
+  );
+  const semanaProxima = useMemo(
+    () => montarSemana(grade, eventos, addDias(segunda, 7)),
+    [grade, eventos, segunda],
+  );
   // Dias já passados da semana ATUAL viram "passados": no celular somem da
   // grade (a gente cruza no corredor querendo o que falta); no desktop ficam
   // apagados, pra grade seguir com as 5 colunas e não abrir buracos.
@@ -96,18 +110,78 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
   return (
     <div className="wrap">
       <div className="topbar">
-        <p className="eyebrow">
-          {NOME_CURSO} · {NOME_TURMA}
-        </p>
+          <img src="/icon.svg" alt="Logo Classdays" className="logo" />
+          <h1>Classdays</h1>
+          {/* <p className={`head-sub dir-${direcaoSemana}`} key={segunda}>
+            {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
+          </p> */}
         <MenuLateral />
       </div>
       <header className="head-row">
         <div>
-          <h1>Agenda</h1>
-          <p className={`head-sub dir-${direcaoSemana}`} key={segunda}>
-            {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
+          <p className="eyebrow">
+          {NOME_CURSO} · {NOME_INST}
           </p>
+
         </div>
+      </header>
+
+      <h2 className="slabel">Hoje</h2>
+      <HojeTimeline
+        itens={itensHoje}
+        materiaDe={materiaDe}
+        filtroAtivo={filtro !== null}
+        agoraHHMM={agora.hhmm}
+      />
+
+      <h2 className="slabel">Filtrar por matéria</h2>
+      <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
+
+      <h2 className="slabel">Próximos eventos</h2>
+      <HeroProximo
+        evento={proximo}
+        proximos={futuros}
+        materiaDe={materiaDe}
+        hojeIso={agora.hoje}
+        agoraHHMM={agora.hhmm}
+        filtroAtivo={filtro !== null}
+      />
+
+      <h2 className="slabel slabel-grade">
+        Grade da semana
+        {semanaOffset !== 0 && (
+          <button
+            type="button"
+            className="slabel-voltar"
+            aria-label="Voltar à semana atual"
+            onClick={() => {
+              setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
+              setSemanaOffset(0);
+            }}
+          >
+            ‹‹ voltar
+          </button>
+        )}
+      </h2>
+      <GradeSemanaSlider
+        semana={semana}
+        semanaAnterior={semanaAnterior}
+        semanaProxima={semanaProxima}
+        materiaDe={materiaDe}
+        hojeIso={agora.hoje}
+        filtro={filtro}
+        direcao={direcaoSemana}
+        marcarPassados={marcarPassados}
+        onArrastar={(dir) => {
+          setDirecaoSemana("arraste");
+          setSemanaOffset((s) => s + (dir === "prox" ? 1 : -1));
+        }}
+      />
+
+      {/* A antiga seção "Próximos eventos" saiu daqui: o card "Próximo" acima
+          abre o menu (ProximoDetalhe) que lista todos os eventos que vêm. */}
+
+      <footer className="foot">
         <nav className="weeknav" aria-label="Navegar entre semanas">
           <button
             type="button"
@@ -143,43 +217,6 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
             ›
           </button>
         </nav>
-      </header>
-
-      <h2 className="slabel">Hoje</h2>
-      <HojeTimeline
-        itens={itensHoje}
-        materiaDe={materiaDe}
-        filtroAtivo={filtro !== null}
-        agoraHHMM={agora.hhmm}
-      />
-
-      <h2 className="slabel">Filtrar por matéria</h2>
-      <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
-
-      <h2 className="slabel">Próximo</h2>
-      <HeroProximo
-        evento={proximo}
-        proximos={futuros}
-        materiaDe={materiaDe}
-        hojeIso={agora.hoje}
-        agoraHHMM={agora.hhmm}
-        filtroAtivo={filtro !== null}
-      />
-
-      <h2 className="slabel slabel-grade">Grade da semana</h2>
-      <GradeSemanaSlider
-        semana={semana}
-        materiaDe={materiaDe}
-        hojeIso={agora.hoje}
-        filtro={filtro}
-        direcao={direcaoSemana}
-        marcarPassados={marcarPassados}
-      />
-
-      {/* A antiga seção "Próximos eventos" saiu daqui: o card "Próximo" acima
-          abre o menu (ProximoDetalhe) que lista todos os eventos que vêm. */}
-
-      <footer className="foot">
         {ASSINATURA_RODAPE} · <Link href="/admin">/admin</Link>
       </footer>
     </div>

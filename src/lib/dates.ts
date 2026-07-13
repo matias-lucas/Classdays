@@ -235,7 +235,7 @@ export function contagemRegressiva(
 
 /** Qual semana é essa, em relação a hoje — pro cabeçalho da agenda. */
 export function rotuloSemana(offset: number): string {
-  if (offset === 0) return "Esta semana";
+  if (offset === 0) return "Semana atual";
   if (offset === 1) return "Semana que vem";
   if (offset === -1) return "Semana passada";
   if (offset > 1) return `Em ${offset} semanas`;
