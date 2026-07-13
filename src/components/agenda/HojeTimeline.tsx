@@ -4,6 +4,12 @@ import type { ItemHoje } from "@/lib/agenda";
 import { fmtHora } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
 
+/** "HH:MM" → minutos desde 00:00, pra medir a distância até o início. */
+function minutosDe(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
 interface Props {
   itens: ItemHoje[];
   materiaDe: (id: string | null) => Materia | undefined;
@@ -54,6 +60,15 @@ export function HojeTimeline({ itens, materiaDe, filtroAtivo, agoraHHMM }: Props
         const fimRef = ehAula ? item.hora_fim : item.hora;
         const encerrada = fimRef != null && fimRef < agoraHHMM;
 
+        // "iminente": falta ≤1h pro início — o dot pulsa avisando que vem aí.
+        // Itens "dia todo" (sem hora) nunca pulsam. agoraHHMM re-renderiza a
+        // cada minuto (relógio no AgendaAluno), então isso liga/desliga sozinho.
+        const iminente =
+          item.hora != null &&
+          !encerrada &&
+          item.hora > agoraHHMM &&
+          minutosDe(item.hora) - minutosDe(agoraHHMM) <= 60;
+
         // linha de baixo: aula = sala; evento = matéria (o contexto). "encerrada"
         // se junta no fim. (o professor saiu da timeline — vive no card Próximo.)
         const meta = [
@@ -67,7 +82,7 @@ export function HojeTimeline({ itens, materiaDe, filtroAtivo, agoraHHMM }: Props
           <li
             className={`hoje-item ${ehAula ? "is-aula" : "is-evento"}${
               encerrada ? " is-passada" : ""
-            }`}
+            }${iminente ? " is-iminente" : ""}`}
             key={`${item.kind}-${item.materia_id}-${item.hora}-${titulo}`}
             style={
               {

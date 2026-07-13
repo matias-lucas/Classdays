@@ -925,6 +925,33 @@ h1 {
     box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 0%, transparent);
   }
 }
+/* iminente (falta ≤1h): o nó pulsa uma onda na cor da matéria. O anel de
+   fundo (--bg) que fura a linha entra junto no keyframe pra não se perder. */
+.hoje-item.is-iminente .hoje-dot {
+  animation: dot-pulse 2000ms ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0% {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 3px color-mix(in srgb, var(--sc) 45%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 10px color-mix(in srgb, var(--sc) 0%, transparent);
+  }
+}
+/* com movimento reduzido a animação global é cortada; o aviso vira um halo
+   fixo na cor da matéria, pra informação não se perder */
+@media (prefers-reduced-motion: reduce) {
+  .hoje-item.is-iminente .hoje-dot {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 5px color-mix(in srgb, var(--sc) 40%, transparent);
+  }
+}
 /* estado vazio: nada hoje. Card calmo, com a mesma respirada do hero ao trocar
    o filtro (o key no elemento reinicia a animação) */
 .hoje-vazio {
