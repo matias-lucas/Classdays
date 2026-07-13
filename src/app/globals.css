@@ -2131,6 +2131,49 @@ h1 {
   text-transform: uppercase;
   color: var(--ink-faint);
 }
+.drawer-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* navegação do drawer: itens de linha inteira, alvo ≥44px, mesmo desenho para
+   <a> (rotas) e <button> (scroll até seção) */
+.drawer-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.drawer-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  text-align: left;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.drawer-nav-item:hover {
+  background-color: var(--line-soft);
+}
+.drawer-nav-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
 
 /* toggle de tema. Desligado (escuro): trilho apagado com lua crescente em
    --ink, recortada por box-shadow interno deslocado sobre a bolinha (que tem a
