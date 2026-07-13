@@ -3,5 +3,6 @@
  * Troque aqui quando a turma/período mudar.
  */
 export const NOME_CURSO = "Engenharia de Software";
+export const NOME_INST = "IFG Câmpus Inhumas";
 export const NOME_TURMA = "4º período";
-export const ASSINATURA_RODAPE = "Atualizado pela representação de turma";
+export const ASSINATURA_RODAPE = "Atualizado pela representação da turma";
