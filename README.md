@@ -83,7 +83,7 @@ src/
     parser/                regras locais + chamada ao Claude + schemas zod
     db/                    contrato + adaptadores (JSON local / Supabase)
 supabase/                  SQL: schema com RLS + seed
-docs/COMO-FUNCIONA.md      passeio guiado pelo código, decisão por decisão
+docs/ROADMAP.md            estado do projeto + o que vem depois
 ```
 
 ## Deploy (resumo)
@@ -94,7 +94,23 @@ docs/COMO-FUNCIONA.md      passeio guiado pelo código, decisão por decisão
 3. Com as variáveis do Supabase presentes, o app troca de banco sozinho — nenhuma
    linha de código muda.
 
+## Princípios de produto e design
+
+- **Dois públicos**: alunos abrem o link no celular e respondem em segundos
+  "o que vem agora? tem prova? cadê a sala?" — sem login, sem configuração.
+  O representante cadastra em uma frase no `/admin`.
+- **Responder antes de mostrar**: cada seção existe para responder uma pergunta;
+  a hierarquia segue a urgência, não a estética.
+- **Dois códigos de cor**: a cor da **matéria** (`--sc`) é o fio condutor
+  (filete, pontos); a cor do **tipo** vive só no selo (prova/trabalho/…).
+  Nunca disputam o mesmo elemento.
+- **Acessível por regra**: contraste AA, `prefers-reduced-motion`, foco visível,
+  teclado, alvos ≥44px no toque — critérios de pronto, não polimento posterior.
+
 ## Documentação
 
-- [`docs/COMO-FUNCIONA.md`](docs/COMO-FUNCIONA.md) — passeio guiado pelo código:
-  cada peça, o porquê de cada decisão, e o que estudar em cada arquivo.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — o que está feito, pendências de infra e
+  os Opcionais 1 e 2 (futuro).
+- `DESIGN.md` (local, fora do git) — anotações do sistema visual; a fonte da
+  verdade visual é
+  `src/app/globals.css`.
