@@ -314,6 +314,44 @@ h1 {
   background: var(--line);
 }
 
+/* O rótulo virou um disclosure (Fase 5): ▾ aberto / › recolhido.
+   O botão herda o visual do .slabel; área de toque ≥44px pelo mesmo truque
+   do .slabel-voltar (padding compensado por margin, sem engordar a linha). */
+.slabel-toggle {
+  border: 0;
+  background: none;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  margin: -14px -8px;
+  transition: transform 200ms var(--ease);
+}
+.slabel-toggle:hover {
+  color: var(--ink);
+}
+.slabel-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* largura fixa: ▾ e › têm caixas diferentes e o título não pode dançar */
+.slabel-caret {
+  width: 1.1em;
+  text-align: center;
+  font-size: 13.5px;
+}
+
+/* Corpo de seção recolhido. SEMPRE via classe — display inline no protótipo
+   sobrescrevia o display do herocard <a> ao reexpandir e o quebrava. */
+.sec-hidden {
+  display: none;
+}
+
 /* "‹‹ voltar" — atalho pra semana atual, na ponta oposta do rótulo da grade.
    Só existe quando a semana na tela NÃO é a atual. `order: 1` o joga pra
    depois da régua (::after), fechando a linha: título — régua — botão. */
@@ -1856,8 +1894,9 @@ h1 {
   .wrap {
     max-width: 1180px;
   }
-  /* tudo segue numa coluna de leitura central, MENOS a grade da semana */
-  .wrap > *:not(.slabel-grade):not(.grade-viewport) {
+  /* tudo segue numa coluna de leitura central, MENOS a grade da semana
+     (.sec-grade = corpo recolhível que embrulha o .grade-viewport) */
+  .wrap > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade) {
     max-width: 720px;
     margin-inline: auto;
   }

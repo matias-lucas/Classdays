@@ -18,6 +18,7 @@ import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
 import { HojeTimeline } from "./HojeTimeline";
+import { SecaoRecolhivel } from "./SecaoRecolhivel";
 
 interface Props {
   materias: Materia[];
@@ -125,57 +126,66 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
         </div>
       </header>
 
-      <h2 className="slabel">Hoje</h2>
-      <HojeTimeline
-        itens={itensHoje}
-        materiaDe={materiaDe}
-        filtroAtivo={filtro !== null}
-        agoraHHMM={agora.hhmm}
-      />
+      <SecaoRecolhivel id="hoje" titulo="Hoje">
+        <HojeTimeline
+          itens={itensHoje}
+          materiaDe={materiaDe}
+          filtroAtivo={filtro !== null}
+          agoraHHMM={agora.hhmm}
+        />
+      </SecaoRecolhivel>
 
-      <h2 className="slabel">Filtrar por matéria</h2>
-      <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
+      <SecaoRecolhivel id="filtro" titulo="Filtrar por matéria">
+        <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
+      </SecaoRecolhivel>
 
-      <h2 className="slabel">Próximos eventos</h2>
-      <HeroProximo
-        evento={proximo}
-        proximos={futuros}
-        materiaDe={materiaDe}
-        hojeIso={agora.hoje}
-        agoraHHMM={agora.hhmm}
-        filtroAtivo={filtro !== null}
-      />
+      <SecaoRecolhivel id="proximo" titulo="Próximos eventos">
+        <HeroProximo
+          evento={proximo}
+          proximos={futuros}
+          materiaDe={materiaDe}
+          hojeIso={agora.hoje}
+          agoraHHMM={agora.hhmm}
+          filtroAtivo={filtro !== null}
+        />
+      </SecaoRecolhivel>
 
-      <h2 className="slabel slabel-grade">
-        Grade da semana
-        {semanaOffset !== 0 && (
-          <button
-            type="button"
-            className="slabel-voltar"
-            aria-label="Voltar à semana atual"
-            onClick={() => {
-              setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
-              setSemanaOffset(0);
-            }}
-          >
-            ‹‹ voltar
-          </button>
-        )}
-      </h2>
-      <GradeSemanaSlider
-        semana={semana}
-        semanaAnterior={semanaAnterior}
-        semanaProxima={semanaProxima}
-        materiaDe={materiaDe}
-        hojeIso={agora.hoje}
-        filtro={filtro}
-        direcao={direcaoSemana}
-        marcarPassados={marcarPassados}
-        onArrastar={(dir) => {
-          setDirecaoSemana("arraste");
-          setSemanaOffset((s) => s + (dir === "prox" ? 1 : -1));
-        }}
-      />
+      <SecaoRecolhivel
+        id="grade"
+        titulo="Grade da semana"
+        classeLabel="slabel-grade"
+        classeCorpo="sec-grade"
+        extra={
+          semanaOffset !== 0 && (
+            <button
+              type="button"
+              className="slabel-voltar"
+              aria-label="Voltar à semana atual"
+              onClick={() => {
+                setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
+                setSemanaOffset(0);
+              }}
+            >
+              ‹‹ voltar
+            </button>
+          )
+        }
+      >
+        <GradeSemanaSlider
+          semana={semana}
+          semanaAnterior={semanaAnterior}
+          semanaProxima={semanaProxima}
+          materiaDe={materiaDe}
+          hojeIso={agora.hoje}
+          filtro={filtro}
+          direcao={direcaoSemana}
+          marcarPassados={marcarPassados}
+          onArrastar={(dir) => {
+            setDirecaoSemana("arraste");
+            setSemanaOffset((s) => s + (dir === "prox" ? 1 : -1));
+          }}
+        />
+      </SecaoRecolhivel>
 
       {/* A antiga seção "Próximos eventos" saiu daqui: o card "Próximo" acima
           abre o menu (ProximoDetalhe) que lista todos os eventos que vêm. */}
