@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { fmtDiaMesPartes, rotuloSemana, segundaDaSemana } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
+import { DESKTOP_MQ } from "@/lib/theme";
 import { GradeSemana } from "./GradeSemana";
 
 interface Props {
@@ -40,8 +41,7 @@ const LIMIAR_EIXO = 8; // px pra decidir se o gesto é horizontal ou vertical
 const CHAVE_DICA = "classdays.gradeDicaVista";
 
 const ehDesktop = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(min-width: 1000px)").matches;
+  typeof window !== "undefined" && window.matchMedia(DESKTOP_MQ).matches;
 
 const reduzMovimento = () =>
   typeof window !== "undefined" &&

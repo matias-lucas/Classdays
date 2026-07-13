@@ -10,6 +10,8 @@ cadastra eventos **escrevendo uma frase em português**:
 O sistema transforma isso em evento estruturado, mostra um **preview editável** e só
 salva quando o admin confirma.
 
+**No ar:** https://classdays.vercel.app
+
 ## Por que existe
 
 Notion não interpreta texto livre e a página pública não fica limpa; Google Agenda
@@ -46,7 +48,7 @@ Abra http://localhost:3000 — a agenda funciona na hora com um banco local
 banco é local; sem `ANTHROPIC_API_KEY` o input inteligente usa as regras locais.
 
 ```bash
-npm test          # 60 testes (datas relativas, cancelamentos, parser)
+npm test          # 79 testes (datas relativas, cancelamentos, parser)
 npm run build      # build de produção
 ```
 

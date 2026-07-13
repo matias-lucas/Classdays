@@ -16,6 +16,10 @@ export type Tema = "light" | "dark";
 
 export const THEME_KEY = "classdays-theme";
 
+/** Breakpoint "desktop" do layout (grade vira quadro, weeknav aparece etc). */
+export const DESKTOP_PX = 1000;
+export const DESKTOP_MQ = `(min-width: ${DESKTOP_PX}px)`;
+
 /** Cor da barra do navegador (meta theme-color) por tema. */
 export const THEME_COLOR: Record<Tema, string> = {
   light: "#edf0f6",
