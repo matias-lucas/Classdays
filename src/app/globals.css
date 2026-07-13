@@ -170,10 +170,15 @@ button {
 /* ============================================================================
    cabeçalho da página
    ========================================================================== */
+/* logo | título | menu num grid 1fr auto 1fr: o título fica no centro
+   geométrico e as pontas têm caixas de peso parecido (logo 42px vs botão
+   36–44px) — é isso que segura a simetria óptica. O padding devolve a altura
+   que a logo de 64px ocupava antes. */
 .topbar {
   display: grid;
   align-items: center;
   grid-template-columns: 1fr auto 1fr;
+  padding: 7px 0;
 }
 .topbar h1 {
   flex: 1;
@@ -204,8 +209,8 @@ button {
   margin: 6px 0 22px;
 }
 .logo {
-  width: 64px;
-  height: 64px;
+  width: 42px;
+  height: 42px;
   justify-self: start;
 }
 h1 {
