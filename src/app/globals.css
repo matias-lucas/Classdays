@@ -234,66 +234,66 @@ h1 {
    as setinhas ‹ › HOJE somem — o cabeçalho fica só com o menu. No desktop
    (≥1000px, sem arraste — o quadro é intocado) elas reaparecem: lá são o único
    jeito de trocar de semana. */
+/* Vive no rodapé, logo acima da assinatura: uma pílula única segmentada
+   ‹ | HOJE | › (um controle, três segmentos), em vez de três botões soltos. */
 .weeknav {
   display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-.weeknav button {
-  min-width: 36px;
-  height: 36px;
+  width: fit-content;
+  margin: 0 auto 14px;
+  align-items: stretch;
   border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: var(--radius-ctrl);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.weeknav button {
+  min-width: 42px;
+  height: 34px;
+  border: 0;
+  background: none;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
+  color: var(--ink-soft);
   display: grid;
   place-items: center;
   transition:
-    border-color var(--t-fast) var(--ease),
     background var(--t-fast) var(--ease),
-    transform 100ms var(--ease);
+    color var(--t-fast) var(--ease);
+}
+.weeknav button + button {
+  border-left: 1px solid var(--line);
 }
 @media (hover: hover) and (pointer: fine) {
   .weeknav button:hover:not(:disabled) {
-    border-color: var(--ink-faint);
+    background: var(--line-soft);
+    color: var(--ink);
   }
 }
 .weeknav button:active:not(:disabled) {
-  background: var(--line-soft) transparent;
-  border-color: var(--ink-faint);
-  transform: scale(0.92);
+  background: var(--line-soft);
+  color: var(--ink);
 }
-.weeknav button:disabled {
-  opacity: 0.45;
-  cursor: default;
+/* foco por segmento, desenhado por dentro pra não sumir sob o overflow da pílula */
+.weeknav button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
 }
 .weeknav .today-btn {
-  width: auto;
-  padding: 0 12px;
+  min-width: auto;
+  padding: 0 16px;
   font-family: var(--font-mono), monospace;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
 }
 /* desabilitado aqui não quer dizer "quebrado" — quer dizer "você já está
-   aqui". Some o cinza-apagado genérico e usa o mesmo tratamento do chip
-   ativo (fundo ink), pra ler como "estado atual", não como erro. */
+   aqui". Segmento central preenchido em ink, mesma linguagem do chip ativo:
+   lê como "estado atual", não como erro. */
 .weeknav .today-btn:disabled {
-  opacity: 1;
   background: var(--ink);
   color: var(--on-ink);
-  border-color: var(--ink);
   cursor: default;
-}
-/* dedo é menos preciso que cursor: alvo maior no toque */
-@media (pointer: coarse) {
-  .weeknav button {
-    min-width: 44px;
-    height: 44px;
-  }
 }
 
 /* ============================================================================
