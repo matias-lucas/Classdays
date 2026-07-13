@@ -33,24 +33,20 @@ export function MenuLateral() {
       <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Classdays">
         <div className="drawer-sec">
           <span className="drawer-label">Aparência</span>
-          <div className="seg" role="group" aria-label="Tema">
-            <button
-              type="button"
-              className={`seg-opt${tema === "light" ? " on" : ""}`}
-              aria-pressed={tema === "light"}
-              onClick={() => definir("light")}
-            >
-              Claro
-            </button>
-            <button
-              type="button"
-              className={`seg-opt${tema === "dark" ? " on" : ""}`}
-              aria-pressed={tema === "dark"}
-              onClick={() => definir("dark")}
-            >
-              Escuro
-            </button>
-          </div>
+          {/* Desmarcado = lua (tema escuro); marcado = bolinha cheia sobre o
+              trilho de alta ênfase (tema claro). O checkbox fica invisível mas
+              focável, para operar por teclado (Tab + Espaço). */}
+          <label className="toggle-tema">
+            <input
+              type="checkbox"
+              className="toggle-tema-check"
+              role="switch"
+              checked={tema === "light"}
+              onChange={(e) => definir(e.target.checked ? "light" : "dark")}
+              aria-label="Tema claro"
+            />
+            <span className="toggle-tema-slider" aria-hidden="true" />
+          </label>
         </div>
       </Drawer>
     </>

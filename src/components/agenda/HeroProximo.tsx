@@ -69,6 +69,15 @@ export function HeroProximo({
   const materia = materiaDe(evento.materia_id);
   const cor = materia?.cor ?? COR_TURMA;
 
+  // O rodapé-CTA anuncia o que o toque abre (o menu com todos os próximos) e
+  // de quebra informa quantos eventos vêm aí. Cancelamentos ficam de fora da
+  // conta — são avisos na lista, não "eventos" que a frase promete.
+  const totalEventos = proximos.filter((e) => e.tipo !== "cancelamento").length;
+
+  // Cartas "atrás" do hero = quantos itens o menu lista além do destaque
+  // (aqui cancelamentos contam: eles são linhas do menu). Máx. 2 camadas.
+  const camadas = Math.min(Math.max(proximos.length - 1, 0), 2);
+
   const meta = [
     `${DIAS_CURTOS[diaSemanaDe(evento.data)]} ${fmtDiaMes(evento.data)}`,
     evento.hora ? fmtHora(evento.hora) : null,
@@ -81,7 +90,7 @@ export function HeroProximo({
   const itemKey = `${evento.id}`;
 
   return (
-    <div className="hero-wrap">
+    <div className="hero-wrap" data-pilha={camadas > 0 ? camadas : undefined}>
       <button
         type="button"
         className="hero hero-clicavel"
@@ -106,8 +115,13 @@ export function HeroProximo({
             </span>
           </div>
           {evento.observacao && <p className="hero-obs">{evento.observacao}</p>}
-          <span className="hero-seta" aria-hidden="true">
-            ›
+          <span className="hero-cta">
+            {totalEventos > 1
+              ? `Ver os ${totalEventos} próximos eventos`
+              : "Ver detalhes"}
+            <span className="hero-cta-seta" aria-hidden="true">
+              ›
+            </span>
           </span>
         </div>
       </button>
