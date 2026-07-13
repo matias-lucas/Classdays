@@ -29,7 +29,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `Agenda — ${NOME_CURSO}`,
+  title: `Classdays`,
   description:
     "Grade da semana, provas, entregas e cancelamentos da turma — sempre atualizado.",
 };

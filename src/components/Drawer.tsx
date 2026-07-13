@@ -82,14 +82,25 @@ export function Drawer({ open, onFechar, titulo, children }: Props) {
         aria-hidden={!open}
       >
         <div className="drawer-head">
-          <span className="drawer-titulo">{titulo}</span>
+          <span className="drawer-marca">
+            <img className="drawer-logo" src="/icon.svg" alt="" />
+            <span className="drawer-titulo">{titulo}</span>
+          </span>
           <button
             type="button"
             className="drawer-fechar"
             aria-label="Fechar menu"
             onClick={onFechar}
           >
-            ×
+            {/* X de traço 1.6, mesmo peso dos ícones do menu */}
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+              <path
+                d="M5.5 5.5l9 9M14.5 5.5l-9 9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
         <div className="drawer-corpo">{children}</div>
