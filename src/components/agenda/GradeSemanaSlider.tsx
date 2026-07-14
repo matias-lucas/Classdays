@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useArrasteHorizontal } from "@/hooks/useArrasteHorizontal";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { fmtDiaMesPartes, rotuloSemana, segundaDaSemana } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
@@ -34,15 +35,6 @@ interface Transicao {
   token: number; // muda a cada troca → remonta o trilho e reinicia a animação
 }
 
-// Estado do gesto. `dx` é o quanto o dedo puxou (px, com resistência aplicada);
-// `assentando` guarda pra onde o trilho está deslizando ao soltar.
-interface Arraste {
-  dx: number;
-  assentando: "prox" | "ant" | "volta" | null;
-}
-
-const LIMIAR_TROCA = 64; // px pra confirmar a troca (o "snap threshold" do design)
-const LIMIAR_EIXO = 8; // px pra decidir se o gesto é horizontal ou vertical
 const CHAVE_DICA = "classdays.gradeDicaVista";
 
 const ehDesktop = () =>
@@ -81,7 +73,6 @@ export function GradeSemanaSlider({
 }: Props) {
   const identidade = semana[0]?.data;
   const [transicao, setTransicao] = useState<Transicao | null>(null);
-  const [arraste, setArraste] = useState<Arraste | null>(null);
   const [dicaVisivel, setDicaVisivel] = useState(false);
 
   // refs guardam o que estava na tela ANTES desta renderização, pra montar a
@@ -90,16 +81,19 @@ export function GradeSemanaSlider({
   const idAnterior = useRef(identidade);
 
   const viewportRef = useRef<HTMLDivElement>(null);
-  const gesto = useRef({
-    ativo: false, // travou no eixo horizontal?
-    avaliando: false, // dedo desceu, ainda decidindo o eixo
-    pointerId: -1,
-    x0: 0,
-    y0: 0,
-    largura: 0,
+
+  // A máquina do gesto (trava de eixo, resistência, limiar) mora no hook;
+  // aqui só entram o gatilho de habilitação e o que fazer quando confirma.
+  const { arraste, finalizar, handlers } = useArrasteHorizontal({
+    alvoRef: viewportRef,
+    habilitado: () => !ehDesktop() && !transicao,
+    aoConfirmar: (dir) => {
+      // só some com a dica quando a troca se concretiza; um arraste que
+      // volta não conta como descoberta do gesto.
+      dispensarDica();
+      onArrastar(dir);
+    },
   });
-  // evita confirmar a troca duas vezes (transitionend + timeout de segurança).
-  const finalizado = useRef(false);
 
   // --- Altura animada do viewport ------------------------------------------
   // As semanas têm alturas diferentes; sem isso, o que fica abaixo da grade
@@ -226,94 +220,6 @@ export function GradeSemanaSlider({
     } catch {}
   };
 
-  // --- Gesto de arraste ---------------------------------------------------
-  const podeArrastar = () => !ehDesktop() && !transicao;
-
-  // resistência: segue o dedo 1:1 dentro de uma semana; ao passar disso, freia,
-  // pra não dar pra "arremessar" várias semanas de uma vez.
-  const comResistencia = (dx: number, largura: number) => {
-    const max = largura || 320;
-    if (Math.abs(dx) <= max) return dx;
-    return Math.sign(dx) * (max + (Math.abs(dx) - max) * 0.2);
-  };
-
-  const finalizar = (dir: "prox" | "ant" | "volta") => {
-    if (finalizado.current) return;
-    finalizado.current = true;
-    if (dir === "prox" || dir === "ant") {
-      // só some com a dica quando a troca de semana se concretiza; um arraste
-      // que volta ("volta") não conta como descoberta do gesto.
-      dispensarDica();
-      onArrastar(dir);
-    }
-    setArraste(null);
-  };
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (!podeArrastar() || e.pointerType === "mouse") return;
-    const g = gesto.current;
-    g.avaliando = true;
-    g.ativo = false;
-    g.pointerId = e.pointerId;
-    g.x0 = e.clientX;
-    g.y0 = e.clientY;
-    g.largura = viewportRef.current?.clientWidth ?? 0;
-    finalizado.current = false;
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    const g = gesto.current;
-    if (g.pointerId !== e.pointerId) return;
-    const dx = e.clientX - g.x0;
-    const dy = e.clientY - g.y0;
-
-    if (g.avaliando) {
-      // ainda decidindo o eixo: horizontal → assume; vertical → deixa a página rolar
-      if (Math.abs(dx) < LIMIAR_EIXO && Math.abs(dy) < LIMIAR_EIXO) return;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        g.avaliando = false;
-        return;
-      }
-      g.avaliando = false;
-      g.ativo = true;
-      viewportRef.current?.setPointerCapture(e.pointerId);
-    }
-    if (!g.ativo) return;
-    setArraste({ dx: comResistencia(dx, g.largura), assentando: null });
-  };
-
-  const onPointerUp = (e: React.PointerEvent) => {
-    const g = gesto.current;
-    if (g.pointerId !== e.pointerId) return;
-    const foiAtivo = g.ativo;
-    g.ativo = false;
-    g.avaliando = false;
-    g.pointerId = -1;
-    if (!foiAtivo) return;
-
-    const dx = e.clientX - g.x0;
-    const dir: "prox" | "ant" | "volta" =
-      dx <= -LIMIAR_TROCA ? "prox" : dx >= LIMIAR_TROCA ? "ant" : "volta";
-
-    // Sem movimento: pula o assentamento e confirma/desfaz na hora.
-    if (reduzMovimento()) {
-      finalizar(dir);
-      return;
-    }
-    setArraste((a) => (a ? { ...a, assentando: dir } : null));
-  };
-
-  // Rede de segurança do assentamento: se o transitionend não vier, finaliza.
-  // Precisa ser MAIOR que a duração da transição no CSS (480ms), senão corta a
-  // animação no meio.
-  useEffect(() => {
-    if (!arraste?.assentando) return;
-    const dir = arraste.assentando;
-    const t = setTimeout(() => finalizar(dir), 700);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arraste?.assentando]);
-
   // --- Render -------------------------------------------------------------
   // Etiqueta que cada painel carrega: "esta semana · 14–18 jul". Viaja junto
   // no arraste, então a resposta de "que semana é essa?" está sempre colada na
@@ -418,10 +324,7 @@ export function GradeSemanaSlider({
     <div
       className="grade-viewport"
       ref={viewportRef}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      {...handlers}
     >
       {conteudo}
       {dicaVisivel && (
