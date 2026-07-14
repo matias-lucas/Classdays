@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { fmtDiaMesPartes, rotuloSemana, segundaDaSemana } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
@@ -95,8 +95,87 @@ export function GradeSemanaSlider({
   // evita confirmar a troca duas vezes (transitionend + timeout de segurança).
   const finalizado = useRef(false);
 
-  // --- Transição por BOTÃO (inalterada) -----------------------------------
-  useEffect(() => {
+  // --- Altura animada do viewport ------------------------------------------
+  // As semanas têm alturas diferentes; sem isso, o que fica abaixo da grade
+  // (o rodapé com ‹ › HOJE) pula duas vezes por troca: primeiro pra altura da
+  // semana mais alta (o trilho contém as duas) e depois pra da que entrou.
+  // Guardamos a altura "em repouso" e, durante a troca, animamos o viewport
+  // dela até a altura do painel de destino, clipando o resto (overflow hidden).
+  const alturaEstavel = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    // `idAnterior !== identidade` = a semana acabou de trocar e a transição
+    // ainda não montou: NÃO sobrescreve — a altura antiga é o "de" da animação.
+    if (!transicao && !arraste && idAnterior.current === identidade) {
+      alturaEstavel.current = viewportRef.current?.offsetHeight ?? null;
+    }
+  });
+
+  // altura-alvo = painel de destino + padding vertical do viewport (box-border)
+  const alturaAlvo = (painel: HTMLElement | null | undefined) => {
+    const vp = viewportRef.current;
+    if (!vp || !painel) return null;
+    const cs = getComputedStyle(vp);
+    return (
+      painel.offsetHeight + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+    );
+  };
+
+  // troca por BOTÃO: fixa a altura antiga e desliza até a nova junto do slide
+  useLayoutEffect(() => {
+    const vp = viewportRef.current;
+    if (!transicao || !vp || reduzMovimento()) return;
+    const entrando = vp.querySelector<HTMLElement>(".grade-panel:not([aria-hidden])");
+    const de = alturaEstavel.current;
+    const ate = alturaAlvo(entrando);
+    if (de == null || ate == null || de === ate) return;
+    vp.style.height = `${de}px`;
+    vp.style.transition = "height 460ms cubic-bezier(0.22, 1, 0.36, 1)";
+    requestAnimationFrame(() => {
+      vp.style.height = `${ate}px`;
+    });
+    return () => {
+      vp.style.height = "";
+      vp.style.transition = "";
+    };
+  }, [transicao]);
+
+  // ARRASTE: enquanto o dedo puxa, a altura fica congelada na da semana atual
+  // (o trilho de 3 painéis herdaria a do mais alto); ao assentar, anima até a
+  // altura do painel escolhido no mesmo ritmo do deslize.
+  useLayoutEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    if (!arraste) {
+      vp.style.height = "";
+      vp.style.transition = "";
+      return;
+    }
+    if (!arraste.assentando) {
+      if (alturaEstavel.current != null) {
+        vp.style.height = `${alturaEstavel.current}px`;
+      }
+      vp.style.transition = "";
+      return;
+    }
+    const paineis = vp.querySelectorAll<HTMLElement>(".grade-panel");
+    const alvo =
+      arraste.assentando === "prox"
+        ? paineis[2]
+        : arraste.assentando === "ant"
+          ? paineis[0]
+          : paineis[1];
+    const ate = alturaAlvo(alvo);
+    if (ate == null) return;
+    vp.style.transition = "height 480ms cubic-bezier(0.25, 1, 0.5, 1)";
+    vp.style.height = `${ate}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arraste]);
+
+  // --- Transição por BOTÃO -------------------------------------------------
+  // useLayoutEffect (e não useEffect): monta o trilho ANTES da pintura, senão
+  // a semana nova aparece um frame na altura final e o rodapé pisca.
+  useLayoutEffect(() => {
     if (idAnterior.current !== identidade) {
       // Sem movimento, primeira carga, ou troca por ARRASTE (já assentou):
       // troca seca, sem o carrossel de botão.

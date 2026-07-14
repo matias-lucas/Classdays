@@ -138,6 +138,10 @@
 }
 html {
   -webkit-text-size-adjust: 100%;
+  /* reserva o espaço da barra de rolagem mesmo quando ela some (drawer aberto
+     trava o scroll; semana mais curta encolhe a página) — sem isso, no Windows
+     a página inteira "pula" ~17px pra direita a cada aparição/sumiço da barra */
+  scrollbar-gutter: stable;
 }
 body {
   font-family: var(--font-body), system-ui, sans-serif;
@@ -1250,6 +1254,9 @@ h1 {
 .grade-track {
   display: flex;
   width: 200%;
+  /* cada painel mantém a própria altura (sem esticar até o mais alto) — o
+     viewport anima a altura entre a semana que sai e a que entra (JS) */
+  align-items: flex-start;
   will-change: transform;
 }
 .grade-track > .grade-panel {
@@ -1292,6 +1299,7 @@ h1 {
   display: flex;
   width: 100%;
   gap: var(--vao-semanas);
+  align-items: flex-start; /* mesmo motivo do .grade-track */
   will-change: transform;
 }
 .grade-rail > .grade-panel {
@@ -1327,13 +1335,13 @@ h1 {
   justify-content: center;
   gap: 8px;
   margin-top: 12px;
-  font-family: var(--mono);
+  font-family: var(--font-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.02em;
-  color: var(--ink-muted);
+  color: var(--ink-faint);
 }
 .grade-dica span {
-  font-family: var(--sans);
+  font-family: var(--font-body), sans-serif;
   font-size: 15px;
   color: var(--ink-soft);
   animation: dica-cutuca 1.8s var(--ease) infinite;
