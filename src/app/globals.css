@@ -1,7 +1,8 @@
 /* ============================================================================
    Classdays — sistema visual (fonte da verdade: DESIGN.md)
 
-   Portado do protótipo aprovado (calendario-aluno.html) com duas mudanças
+   Portado do protótipo aprovado (calendario-aluno.html, hoje só no histórico
+   do git) com duas mudanças
    conscientes:
    1. contraste: os cinzas "apagados" do protótipo (#8891A3) ficavam em 2.8:1
       sobre o fundo — abaixo do mínimo AA (4.5:1). Foram escurecidos; a

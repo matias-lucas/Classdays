@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { EventoLinha } from "@/components/EventoLinha";
+import { EventoLinha } from "@/components/ui/EventoLinha";
 import type { EventoParseado, ResultadoParse } from "@/lib/parser/tipos";
 import type { Evento, Materia } from "@/lib/types";
 import { PreviewEvento } from "./PreviewEvento";

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { EVENTO_ABRIR_PROXIMOS } from "./agenda/HeroProximo";
-import { EVENTO_EXPANDIR_SECAO } from "./agenda/SecaoRecolhivel";
+import { EVENTO_ABRIR_PROXIMOS } from "@/components/agenda/HeroProximo";
+import { EVENTO_EXPANDIR_SECAO } from "@/components/agenda/SecaoRecolhivel";
 import { Drawer } from "./Drawer";
-import { useTema } from "./useTema";
+import { useTema } from "@/hooks/useTema";
 
 /**
  * Botão de menu (no topo da agenda) + o painel lateral que ele abre: navegação

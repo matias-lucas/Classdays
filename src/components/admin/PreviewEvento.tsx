@@ -1,6 +1,6 @@
 "use client";
 
-import { COR_TURMA } from "@/components/EventoLinha";
+import { COR_TURMA } from "@/components/ui/EventoLinha";
 import type { EventoParseado } from "@/lib/parser/tipos";
 import type { Materia, TipoEvento } from "@/lib/types";
 import { TIPOS_EVENTO } from "@/lib/types";

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Badge } from "@/components/Badge";
-import { COR_TURMA, EventoLinha } from "@/components/EventoLinha";
+import { Badge } from "@/components/ui/Badge";
+import { COR_TURMA, EventoLinha } from "@/components/ui/EventoLinha";
 import {
   type Contagem,
   contagemRegressiva,
