@@ -75,11 +75,13 @@ export function Splash({ hoje }: Props) {
       peca.style.transform = `translate(${dx}px, ${dy}px) scale(${b.width / a.width})`;
     };
 
+    // espera o calendário se preencher, a data entrar (680ms) e a piscada do
+    // logo terminar (680 + 520 = 1200ms) antes de mandar as peças pra topbar
     const tParada = setTimeout(() => {
       el.classList.add("is-saindo");
       viajar(logoSplash, logoAlvo);
       viajar(nomeSplash, nomeAlvo);
-    }, 700);
+    }, 1350);
 
     // encerra quando o fundo do overlay terminou de sumir…
     const aoTransicionar = (ev: TransitionEvent) => {
@@ -87,7 +89,7 @@ export function Splash({ hoje }: Props) {
     };
     el.addEventListener("transitionend", aoTransicionar);
     // …ou, aconteça o que acontecer, no timeout de segurança
-    const tSeguranca = setTimeout(finalizar, 2500);
+    const tSeguranca = setTimeout(finalizar, 3200);
 
     return () => {
       clearTimeout(tParada);
