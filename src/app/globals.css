@@ -399,6 +399,10 @@ h1 {
 }
 .sec-corpo-inner {
   min-height: 0;
+  /* min-width TAMBÉM: grid item não encolhe abaixo do min-content por padrão,
+     e o trilho da troca de semana (2–3 painéis lado a lado) dobra o min-content
+     — sem isto o corpo estourava pra direita durante a animação. */
+  min-width: 0;
 }
 .sec-corpo.sec-hidden {
   grid-template-rows: 0fr;
