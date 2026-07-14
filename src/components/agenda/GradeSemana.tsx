@@ -1,4 +1,4 @@
-import { Badge } from "@/components/Badge";
+import { Badge } from "@/components/ui/Badge";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { DIAS_LONGOS, diaSemanaDe, faixaHorario, fmtDiaMes } from "@/lib/dates";
 import type { Materia } from "@/lib/types";

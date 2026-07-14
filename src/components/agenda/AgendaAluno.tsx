@@ -13,8 +13,8 @@ import {
   segundaDaSemana,
 } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
-import { MenuLateral } from "@/components/MenuLateral";
-import { Splash } from "@/components/Splash";
+import { MenuLateral } from "@/components/layout/MenuLateral";
+import { Splash } from "@/components/layout/Splash";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/Badge";
-import { COR_TURMA } from "@/components/EventoLinha";
+import { Badge } from "@/components/ui/Badge";
+import { COR_TURMA } from "@/components/ui/EventoLinha";
 import {
   DIAS_CURTOS,
   diaSemanaDe,

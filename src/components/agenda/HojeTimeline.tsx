@@ -1,5 +1,5 @@
-import { Badge } from "@/components/Badge";
-import { COR_TURMA } from "@/components/EventoLinha";
+import { Badge } from "@/components/ui/Badge";
+import { COR_TURMA } from "@/components/ui/EventoLinha";
 import type { ItemHoje } from "@/lib/agenda";
 import { fmtHora } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
