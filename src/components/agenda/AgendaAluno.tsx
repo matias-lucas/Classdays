@@ -42,6 +42,9 @@ type DirecaoSemana = "inicial" | "prox" | "ant" | "arraste";
 export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicial }: Props) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [direcaoSemana, setDirecaoSemana] = useState<DirecaoSemana>("inicial");
+  // "chegada em casa": marcada quando uma navegação TERMINA na semana atual —
+  // o selo "hoje" acena uma vez depois do slide. Nunca na primeira carga.
+  const [destaqueHoje, setDestaqueHoje] = useState(false);
   const [filtro, setFiltro] = useState<string | null>(null);
   const [agora, setAgora] = useState({ hoje: hojeInicial, hhmm: agoraInicial });
 
@@ -166,10 +169,27 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
               aria-label="Voltar à semana atual"
               onClick={() => {
                 setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
+                setDestaqueHoje(true);
                 setSemanaOffset(0);
               }}
             >
-              ‹‹ voltar
+              {/* o glifo aponta pra onde a semana atual está: ‹‹ vindo do
+                  futuro, ›› vindo do passado — mesma direção do slide */}
+              {semanaOffset > 0 ? (
+                <>
+                  <span className="vg vg-esq" aria-hidden="true">
+                    ‹‹
+                  </span>{" "}
+                  voltar
+                </>
+              ) : (
+                <>
+                  voltar{" "}
+                  <span className="vg vg-dir" aria-hidden="true">
+                    ››
+                  </span>
+                </>
+              )}
             </button>
           )
         }
@@ -183,9 +203,12 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
           filtro={filtro}
           direcao={direcaoSemana}
           marcarPassados={marcarPassados}
+          destaqueHoje={destaqueHoje}
           onArrastar={(dir) => {
+            const novo = semanaOffset + (dir === "prox" ? 1 : -1);
             setDirecaoSemana("arraste");
-            setSemanaOffset((s) => s + (dir === "prox" ? 1 : -1));
+            setDestaqueHoje(novo === 0);
+            setSemanaOffset(novo);
           }}
         />
       </SecaoRecolhivel>
@@ -200,16 +223,20 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
             aria-label="Semana anterior"
             onClick={() => {
               setDirecaoSemana("ant");
+              setDestaqueHoje(semanaOffset - 1 === 0);
               setSemanaOffset((s) => s - 1);
             }}
           >
-            ‹
+            <span className="wn-glifo" aria-hidden="true">
+              ‹
+            </span>
           </button>
           <button
             type="button"
             className="today-btn"
             onClick={() => {
               setDirecaoSemana(semanaOffset > 0 ? "ant" : "prox");
+              setDestaqueHoje(true);
               setSemanaOffset(0);
             }}
             disabled={semanaOffset === 0}
@@ -223,10 +250,13 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
             aria-label="Próxima semana"
             onClick={() => {
               setDirecaoSemana("prox");
+              setDestaqueHoje(semanaOffset + 1 === 0);
               setSemanaOffset((s) => s + 1);
             }}
           >
-            ›
+            <span className="wn-glifo" aria-hidden="true">
+              ›
+            </span>
           </button>
         </nav>
         {ASSINATURA_RODAPE} · <Link href="/admin">/admin</Link>

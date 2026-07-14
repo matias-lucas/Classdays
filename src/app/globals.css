@@ -309,6 +309,20 @@ h1 {
   color: var(--on-ink);
   cursor: default;
 }
+/* a seta aponta pra onde puxa: no hover o glifo desliza 2px na própria
+   direção — a navegação "avisa" pra que lado a semana vai correr */
+.wn-glifo {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .weeknav button:first-child:hover:not(:disabled) .wn-glifo {
+    transform: translateX(-2px);
+  }
+  .weeknav button:last-child:hover:not(:disabled) .wn-glifo {
+    transform: translateX(2px);
+  }
+}
 
 /* ============================================================================
    rótulo de seção (mono + régua)
@@ -426,10 +440,33 @@ h1 {
   /* área de toque ≥44px sem engordar a linha: padding compensado por margin */
   padding: 14px 8px;
   margin: -14px -8px -14px 0;
-  animation: fadein 200ms var(--ease) both;
+  /* entra deslizando do lado de fora da linha, junto do fade */
+  animation: voltar-entra 240ms var(--ease) both;
 }
 .slabel-voltar:hover {
   color: var(--ink);
+}
+@keyframes voltar-entra {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* os glifos ‹‹/›› apontam pra onde a semana atual está; no hover eles puxam
+   um tico nessa direção — mesmo idioma das setas da pílula (.wn-glifo) */
+.slabel-voltar .vg {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease);
+}
+.slabel-voltar:hover .vg-esq {
+  transform: translateX(-3px);
+}
+.slabel-voltar:hover .vg-dir {
+  transform: translateX(3px);
 }
 .slabel-voltar:focus-visible {
   outline: 2px solid var(--ink);
@@ -1487,6 +1524,26 @@ h1 {
   padding: 2px 6px;
   border-radius: 5px;
   text-transform: uppercase;
+}
+/* "chegada em casa": quando uma navegação TERMINA na semana atual, o selo
+   "hoje" acena — um anel em ink que respira uma vez, depois que o slide da
+   semana assenta (delay > duração do slide de 460ms). O .panel-chegou é
+   posto pelo GradeSemanaSlider só no painel que acabou de chegar. */
+.panel-chegou .today-tag {
+  animation: tag-chegou 700ms var(--ease) 480ms;
+}
+@keyframes tag-chegou {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 45%, transparent);
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12);
+  }
+  100% {
+    box-shadow: 0 0 0 11px color-mix(in srgb, var(--ink) 0%, transparent);
+    transform: scale(1);
+  }
 }
 
 .class-card {
