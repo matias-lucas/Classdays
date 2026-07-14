@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { DIAS_CURTOS, diaSemanaDe, fmtDiaMesPartes } from "@/lib/dates";
 
 /**
  * Splash de entrada (1x por sessão): logo grande no centro com o nome abaixo;
@@ -15,8 +16,18 @@ import { useEffect, useRef, useState } from "react";
  *
  * FLIP: mede o retângulo da peça no centro e o do alvo na topbar e transiciona
  * um transform até lá — a animação é só transform/background, barata de pintar.
+ *
+ * O logo aqui é o MESMO desenho do icon.svg, só que inline: dá pra animar as
+ * peças por dentro (as linhas do papel "se escrevem", a fita desce) — o
+ * calendário se preenchendo antes de viajar pra topbar. E a data de hoje em
+ * mono aparece sob o nome: o splash já responde a primeira pergunta do app.
  */
-export function Splash() {
+interface Props {
+  /** ISO de hoje vindo do SERVIDOR (mesmo padrão anti-hydration da agenda). */
+  hoje: string;
+}
+
+export function Splash({ hoje }: Props) {
   const [montado, setMontado] = useState(true);
   const raiz = useRef<HTMLDivElement>(null);
 
@@ -87,10 +98,26 @@ export function Splash() {
 
   if (!montado) return null;
 
+  const { dia, mes } = fmtDiaMesPartes(hoje);
+
   return (
     <div ref={raiz} className="splash" aria-hidden="true">
-      <img className="splash-logo" src="/icon.svg" alt="" />
+      {/* cópia inline do src/app/icon.svg — se o ícone mudar, mude aqui também */}
+      <svg className="splash-logo" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="14" fill="#16203A" />
+        <rect x="14" y="17" width="36" height="30" rx="7" fill="#EDF0F6" />
+        <path
+          d="M14 24 a7 7 0 0 1 7-7 v0 h-2 a5 5 0 0 0 -5 5 z"
+          fill="#EDF0F6"
+        />
+        <rect className="sl-fita" x="14" y="17" width="6" height="30" rx="3" fill="#5457C5" />
+        <rect className="sl-linha sl-linha1" x="26" y="25" width="17" height="4.5" rx="2.25" fill="#16203A" />
+        <rect className="sl-linha sl-linha2" x="26" y="34" width="11" height="4.5" rx="2.25" fill="#525D75" />
+      </svg>
       <div className="splash-nome">Classdays</div>
+      <div className="splash-data">
+        {DIAS_CURTOS[diaSemanaDe(hoje)]} · {dia} {mes}
+      </div>
     </div>
   );
 }
