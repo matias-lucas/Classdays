@@ -1,0 +1,131 @@
+/* ============================================================================
+   Classdays — sistema visual (fonte da verdade: DESIGN.md)
+
+   Portado do protótipo aprovado (calendario-aluno.html, hoje só no histórico
+   do git) com duas mudanças
+   conscientes:
+   1. contraste: os cinzas "apagados" do protótipo (#8891A3) ficavam em 2.8:1
+      sobre o fundo — abaixo do mínimo AA (4.5:1). Foram escurecidos; a
+      hierarquia continua vindo de tamanho/caixa alta/tracking.
+   2. estados: foco visível, disabled, loading e erro — o protótipo não
+      precisava deles, o app precisa.
+
+   Convenção de cor de matéria: o elemento recebe `--sc` (subject color) via
+   style inline e o CSS deriva filete/ponto/tints daí.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --bg: #edf0f6;
+  --surface: #ffffff;
+  --ink: #16203a;
+  --ink-soft: #525d75;
+  --ink-faint: #5e6983;
+  --line: #e2e6ee;
+  --line-soft: #edeff4;
+
+  /* selos de tipo */
+  --badge-prova-bg: #fce8e8;
+  --badge-prova-fg: #b4232a;
+  --badge-trabalho-bg: #e5edfb;
+  --badge-trabalho-fg: #2a50a8;
+  --badge-atividade-bg: #e2f2e8;
+  --badge-atividade-fg: #1f7a44;
+  --badge-evento-bg: #eee9f6;
+  --badge-evento-fg: #6a4d9c;
+  --badge-cancelamento-bg: #eceef3;
+  --badge-cancelamento-fg: #4e586e;
+
+  /* feedback */
+  --erro-fg: #b4232a;
+  --erro-bg: #fce8e8;
+  --ok-fg: #1f7a44;
+  --aviso-bg: #fdf3e3;
+  --aviso-fg: #7a4f06;
+  --erro-bg-hover: #f8d7d7;
+
+  /* controles de alta ênfase (fundo = --ink): no tema escuro o --ink vira claro,
+     então a cor do texto/anel/estados precisa virar junto — por isso são tokens.
+     --scrim/--hatch idem, pra lerem certo sobre fundo escuro. */
+  --on-ink: #ffffff;
+  --ink-hover: #232f52;
+  --dot-ring: rgba(255, 255, 255, 0.5);
+  --focus-ring: rgba(22, 32, 58, 0.12);
+  --hatch: rgba(22, 32, 58, 0.015);
+  --scrim: rgba(22, 32, 58, 0.42);
+
+  --radius-hero: 14px;
+  --radius-card: 11px;
+  --radius-ctrl: 9px;
+
+  --shadow:
+    0 1px 2px rgba(22, 32, 58, 0.04),
+    0 8px 24px rgba(22, 32, 58, 0.06);
+  --shadow-hero:
+    0 2px 4px rgba(22, 32, 58, 0.05),
+    0 18px 40px rgba(22, 32, 58, 0.1);
+
+  /* easing padrão (ease-out) e durações de interação */
+  --ease: cubic-bezier(0.22, 0.7, 0.3, 1);
+  /* ease-out-expo: chega rápido e assenta devagar — reservado pras ENTRADAS
+     de painéis (drawer, folha de próximos), onde o exagero da desaceleração
+     é o que dá a sensação de peso físico */
+  --ease-exp: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 150ms;
+  --t-med: 200ms;
+}
+
+/* ============================================================================
+   tema escuro
+
+   O script de boot (layout.tsx) grava data-theme="dark" no <html> antes da
+   primeira pintura, então não há "flash" de tema claro. Mesmos tokens, paleta
+   noturna: superfícies em tons de "navio" (o mesmo matiz do --ink claro),
+   contraste AA preservado, e sombras mais fortes porque sombra clara some sobre
+   fundo escuro. `color-scheme: dark` acerta scrollbars e date/time pickers.
+   ========================================================================== */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0e1424;
+  --surface: #171f33;
+  --ink: #eef1f8;
+  --ink-soft: #aab3c7;
+  --ink-faint: #949eb6;
+  --line: #2a3550;
+  --line-soft: #212b42;
+
+  --badge-prova-bg: #3d2427;
+  --badge-prova-fg: #f2a3a6;
+  --badge-trabalho-bg: #22314f;
+  --badge-trabalho-fg: #a9c2f2;
+  --badge-atividade-bg: #1e3a2b;
+  --badge-atividade-fg: #8fd6a8;
+  --badge-evento-bg: #322a4a;
+  --badge-evento-fg: #c6b4e8;
+  --badge-cancelamento-bg: #2a3145;
+  --badge-cancelamento-fg: #b6bfd1;
+
+  --erro-fg: #f2a3a6;
+  --erro-bg: #3d2427;
+  --erro-bg-hover: #4a2a2d;
+  --ok-fg: #8fd6a8;
+  --aviso-bg: #3a301c;
+  --aviso-fg: #e6c583;
+
+  --shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.38);
+  --shadow-hero:
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.5);
+
+  --on-ink: #0e1424;
+  --ink-hover: #d7ddec;
+  --dot-ring: rgba(14, 20, 36, 0.55);
+  --focus-ring: rgba(238, 241, 248, 0.18);
+  --hatch: rgba(255, 255, 255, 0.02);
+  --scrim: rgba(0, 0, 0, 0.6);
+}

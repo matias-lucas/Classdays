@@ -1,0 +1,455 @@
+/* ============================================================================
+   grade da semana — carrossel de troca de semana (GradeSemanaSlider)
+   ========================================================================== */
+
+/* o viewport corta tudo que passa das bordas: é por ele que a semana que sai
+   "some" pro lado da tela. padding/margin vertical compensados pra sombra dos
+   cards não ser cortada em cima/embaixo (overflow corta os dois eixos junto) */
+.grade-viewport {
+  overflow: hidden;
+  padding-block: 8px;
+  margin-block: -8px;
+  animation: fadein 260ms var(--ease) both; /* só na primeira carga */
+  /* o arraste é horizontal: cedemos o eixo vertical pro scroll da página seguir
+     rolando, e capturamos só o movimento horizontal (a trava de eixo é no JS). */
+  touch-action: pan-y;
+}
+/* trilho com as duas semanas lado a lado; desliza inteiro num movimento só */
+.grade-track {
+  display: flex;
+  width: 200%;
+  /* cada painel mantém a própria altura (sem esticar até o mais alto) — o
+     viewport anima a altura entre a semana que sai e a que entra (JS) */
+  align-items: flex-start;
+  will-change: transform;
+}
+.grade-track > .grade-panel {
+  flex: 0 0 50%;
+  min-width: 0;
+}
+/* avançar: [sai][entra], corre pra esquerda → a nova é puxada da direita */
+.grade-track.to-prox {
+  animation: week-slide-prox 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* voltar: [entra][sai], corre pra direita → a nova é puxada da esquerda */
+.grade-track.to-ant {
+  animation: week-slide-ant 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes week-slide-prox {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes week-slide-ant {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ARRASTE: trilho de 3 painéis [anterior][atual][próxima]. O trilho fica com
+   width: 100% e cada painel com flex-basis: 100% — os painéis TRANSBORDAM de
+   propósito, então translateX(-100%) = exatamente 1 semana (o % de translate é
+   relativo à largura do próprio trilho). O respiro entre as semanas é o gap
+   (`--vao-semanas`), que o JS soma na conta do transform. Ao soltar, o JS
+   adiciona `.assentando` pra deslizar até a semana escolhida (ou de volta). */
+.grade-rail {
+  --vao-semanas: 24px;
+  display: flex;
+  width: 100%;
+  gap: var(--vao-semanas);
+  align-items: flex-start; /* mesmo motivo do .grade-track */
+  will-change: transform;
+}
+.grade-rail > .grade-panel {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+.grade-rail.assentando {
+  /* mais lento que o slide dos botões de propósito: vem depois de um gesto
+     físico, então assenta com calma — desacelera longo, sem pressa no final */
+  transition: transform 480ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* etiqueta que cada painel carrega: "esta semana · 14–18 jul" — viaja com o
+   painel no arraste, então nunca há dúvida de qual semana está na tela */
+.grade-etiqueta {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin: 0 2px 10px;
+}
+/* fora da semana atual ela sobe um degrau de presença — é quando importa */
+.grade-etiqueta.fora {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* Dica de descoberta: no primeiro uso avisa que dá pra arrastar; some pra sempre
+   depois do primeiro gesto. Discreta, cutuca de leve pros dois lados. */
+.grade-dica {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
+}
+.grade-dica span {
+  font-family: var(--font-body), sans-serif;
+  font-size: 15px;
+  color: var(--ink-soft);
+  animation: dica-cutuca 1.8s var(--ease) infinite;
+}
+.grade-dica span:last-child {
+  animation-delay: 0.9s;
+}
+@keyframes dica-cutuca {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  35% {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+}
+.grade-dica span:first-child {
+  animation-name: dica-cutuca-esq;
+}
+@keyframes dica-cutuca-esq {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  35% {
+    transform: translateX(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0.5;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* o período no cabeçalho (`.head-sub`) acompanha, mas com um deslize curto —
+   é um texto pequeno, um carrossel inteiro nele ficaria estranho */
+.head-sub.dir-prox {
+  animation: slide-prox 280ms var(--ease) both;
+}
+.head-sub.dir-ant {
+  animation: slide-ant 280ms var(--ease) both;
+}
+@keyframes slide-prox {
+  from {
+    opacity: 0.35;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slide-ant {
+  from {
+    opacity: 0.35;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.day {
+  margin-bottom: 2px;
+}
+/* no celular, dia já passado da semana atual some (a classe `passou` só existe
+   quando faz sentido esconder — ver marcarPassados). No desktop ele reaparece
+   apagado, ver a seção "quadro de horários" lá embaixo. */
+.day.passou {
+  display: none;
+}
+/* wrapper das aulas do dia — neutro no mobile; vira grade de 2 linhas no desktop */
+
+.day-classes {
+  display: content;
+}
+/* @media (max-width: 879px) {
+  .day-classes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    flex: 1;
+  }
+  .day-classes > .slot-full {
+    grid-column: 1 / -1;
+  }
+  .day-classes > .slot-cedo {
+    grid-column: 1;
+  }
+  .day-classes > .slot-tarde {
+    grid-column: 2;
+  }
+  .day-classes > .empty-day {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}*/
+.day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 2px 5px;
+}
+.day-name {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.day-date {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.day.is-today .day-name {
+  color: var(--ink);
+}
+.today-tag {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  background: var(--ink);
+  color: var(--on-ink);
+  padding: 2px 6px;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+/* "chegada em casa": quando uma navegação TERMINA na semana atual, o selo
+   "hoje" acena — um anel em ink que respira uma vez, depois que o slide da
+   semana assenta (delay > duração do slide de 460ms). O .panel-chegou é
+   posto pelo GradeSemanaSlider só no painel que acabou de chegar. */
+.panel-chegou .today-tag {
+  animation: tag-chegou 700ms var(--ease) 480ms;
+}
+@keyframes tag-chegou {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 45%, transparent);
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12);
+  }
+  100% {
+    box-shadow: 0 0 0 11px color-mix(in srgb, var(--ink) 0%, transparent);
+    transform: scale(1);
+  }
+}
+
+.class-card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--sc, var(--ink-faint));
+  padding: 11px 14px;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: transform 120ms var(--ease);
+}
+/* linha só de leitura (sem onClick) — o deslize é uma pista pra mouse; em
+   touch, hover não corresponde a nada real, então fica de fora (senão o
+   toque "meio que" acontece, o que é pior que não acontecer) */
+@media (hover: hover) and (pointer: fine) {
+  .class-card:hover {
+    transform: translateX(2px);
+  }
+}
+.cc-left {
+  min-width: 0;
+}
+.cc-subj {
+  font-weight: 600;
+  font-size: 14.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.cc-prof {
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+.cc-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.cc-time {
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.cc-room {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+/* aviso de cancelamento / dia sem aula */
+.noclass {
+  padding: 10px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  color: var(--ink-faint);
+  font-size: 13px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 7px;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 8px,
+    var(--hatch) 8px,
+    var(--hatch) 16px
+  );
+}
+.noclass strong {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.noclass .motivo {
+  color: var(--ink-faint);
+}
+.empty-day {
+  padding: 8px 4px;
+  color: var(--ink-faint);
+  font-size: 13px;
+}
+/* ============================================================================
+   DESKTOP — a grade da semana vira um quadro de horários (5 colunas)
+
+   No celular a agenda é uma coluna única. Numa tela larga isso fica perdido no
+   vazio, então a partir de ~880px a GRADE DA SEMANA "quebra" pra fora numa
+   faixa larga com Seg–Sex lado a lado (como o quadro pregado na parede),
+   enquanto o resto (Próximo, filtros, eventos) segue numa coluna de leitura
+   central e calma. Identidade preservada: mesmos cards, mesmas cores, mesmos
+   selos — só reorganizados pro espaço que o desktop oferece.
+   ========================================================================== */
+
+@media (min-width: 1000px) {
+  .wrap {
+    max-width: 1180px;
+  }
+  /* tudo segue numa coluna de leitura central, MENOS a grade da semana
+     (.sec-grade = corpo recolhível que embrulha o .grade-viewport) */
+  .wrap > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade):not(.splash) {
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  /* sem arraste no desktop → as setinhas ‹ › HOJE voltam a ser a navegação */
+  .weeknav {
+    display: flex;
+  }
+
+  /* as 5 colunas de dias, todas da mesma altura (align-items: stretch) */
+  .grade-days {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    align-items: stretch;
+  }
+  .day {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+
+  }
+  /* dia passado da semana atual: reaparece (não some como no mobile), apagado */
+  .day.passou {
+    display: flex;
+    opacity: 0.45;
+  }
+
+  /* cada dia é uma grade de 2 linhas = os dois horários da noite.
+     `flex: 1` faz o bloco de aulas preencher a altura da coluna (que já é a da
+     coluna mais alta), e as 2 linhas iguais dividem esse espaço. */
+  .day-classes {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+  /* aula da noite inteira (19h–22h) ocupa as duas linhas → card "quadradão";
+     as de um horário só ocupam a linha certa. Colunas fecham na mesma altura. */
+  .day-classes > .slot-full {
+    grid-row: 1 / 3;
+    min-width: 156px;
+  }
+  .day-classes > .slot-cedo {
+    grid-row: 1;
+    min-width: 156px;
+  }
+  .day-classes > .slot-tarde {
+    grid-row: 2;
+    min-width: 156px;
+  }
+  .day-classes > .empty-day {
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* cards na vertical pra caber na coluna estreita: matéria+prof em cima,
+     hora+sala embaixo, tudo alinhado à esquerda */
+  .class-card {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 0;
+    height: 100%;
+  }
+  .cc-right {
+    text-align: left;
+  }
+  .noclass {
+    margin: 0;
+    height: 100%;
+    align-items: flex-start;
+  }
+}
