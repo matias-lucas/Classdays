@@ -2592,7 +2592,19 @@ html[data-splash="on"] .splash {
 .splash-logo {
   width: 96px;
   height: 96px;
-  animation: splash-entrada 480ms var(--ease) both;
+  /* entra, e quando a data aparece (680ms) dá uma piscada suave de "pronto" */
+  animation:
+    splash-entrada 480ms var(--ease) both,
+    sl-pisca 520ms ease-in-out 680ms;
+}
+@keyframes sl-pisca {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 .splash-nome {
   font-family: var(--font-display), sans-serif;
@@ -2654,13 +2666,14 @@ html[data-splash="on"] .splash {
 }
 
 /* a data de hoje, em mono — o splash já responde "que dia é hoje?".
-   Entra por último e NÃO viaja pra topbar: some rápido na saída. */
+   Entra por último (depois do calendário se preencher, junto da piscada do
+   logo) e NÃO viaja pra topbar: some rápido na saída. */
 .splash-data {
   font-family: var(--font-mono), monospace;
   font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--ink-soft);
-  animation: splash-entrada 360ms var(--ease) 260ms both;
+  animation: splash-entrada 360ms var(--ease) 680ms both;
 }
 /* saída: as peças viajam (transform via JS) enquanto o fundo some por cima do
    conteúdo real. O transitionend do background-color encerra o splash. */
@@ -2678,7 +2691,8 @@ html[data-splash="on"] .splash {
 .splash.is-saindo .splash-nome {
   animation: none;
 }
-/* na saída as peças internas já terminaram (620ms < 700ms da parada); cortar a
+/* na saída as peças internas já terminaram (piscada acaba aos 1200ms, parada é
+   aos 1350ms — ver Splash.tsx); cortar a
    animação as deixa no estado final, e a data some rápido (não tem alvo na
    topbar pra onde viajar) */
 .splash.is-saindo .sl-fita,
