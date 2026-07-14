@@ -19,6 +19,11 @@ interface Props {
   direcao: "inicial" | "prox" | "ant" | "arraste";
   /** Marcar os dias já passados (some no mobile, apaga no desktop). */
   marcarPassados: boolean;
+  /**
+   * "Chegada em casa": a navegação que trouxe esta semana terminou na semana
+   * ATUAL — o selo "hoje" acena uma vez quando o painel monta.
+   */
+  destaqueHoje: boolean;
   /** Confirma a troca de semana feita por gesto (arraste horizontal). */
   onArrastar: (dir: "prox" | "ant") => void;
 }
@@ -71,6 +76,7 @@ export function GradeSemanaSlider({
   filtro,
   direcao,
   marcarPassados,
+  destaqueHoje,
   onArrastar,
 }: Props) {
   const identidade = semana[0]?.data;
@@ -335,7 +341,12 @@ export function GradeSemanaSlider({
     passados: boolean,
     escondido = false,
   ) => (
-    <div className="grade-panel" aria-hidden={escondido || undefined}>
+    // `panel-chegou` só no painel em foco: quem carrega o aceno do selo "hoje"
+    // é a semana que ACABOU de chegar, nunca as vizinhas do trilho.
+    <div
+      className={`grade-panel${!escondido && destaqueHoje ? " panel-chegou" : ""}`}
+      aria-hidden={escondido || undefined}
+    >
       {etiqueta(dias)}
       <GradeSemana
         semana={dias}
