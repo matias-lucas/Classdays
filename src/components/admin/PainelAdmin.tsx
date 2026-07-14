@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { EventoLinha } from "@/components/ui/EventoLinha";
-import type { EventoParseado, ResultadoParse } from "@/lib/parser/tipos";
+import { EVENTO_VAZIO, useFluxoEvento } from "@/hooks/useFluxoEvento";
 import type { Evento, Materia } from "@/lib/types";
 import { PreviewEvento } from "./PreviewEvento";
 
@@ -16,129 +15,33 @@ interface Props {
   claudeAtivo: boolean;
 }
 
-const EXEMPLOS = [
-  "dia 13/07 haverá prova de álgebra linear",
-  "na próxima terça não haverá aula",
-  "entrega do projeto de banco de dados sexta que vem às 23h59",
-];
-
-interface Rascunho {
-  evento: EventoParseado;
-  origem: "claude" | "regras" | "manual";
-  avisos: string[];
-}
-
-const EVENTO_VAZIO: EventoParseado = {
-  tipo: "evento",
-  titulo: "",
-  materia_id: null,
-  data: null,
-  hora: null,
-  observacao: null,
-};
-
 /**
- * O painel do representante. Fluxo:
- * frase → /api/parse → card de preview EDITÁVEL → confirmar → /api/eventos.
- * Depois de salvar (ou apagar), router.refresh() pede a página de novo ao
- * servidor — a lista abaixo é sempre o retrato real do banco.
+ * O painel do representante — só a tela. O estado e as chamadas de rede do
+ * fluxo (frase → parse → preview editável → salvar/apagar) moram no hook
+ * useFluxoEvento.
  */
 export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }: Props) {
-  const router = useRouter();
-  const areaFrase = useRef<HTMLTextAreaElement>(null);
-
-  const [frase, setFrase] = useState("");
-  const [interpretando, setInterpretando] = useState(false);
-  const [rascunho, setRascunho] = useState<Rascunho | null>(null);
-  const [salvando, setSalvando] = useState(false);
-  const [feedback, setFeedback] = useState<{ ok: boolean; texto: string } | null>(null);
-  const [apagandoId, setApagandoId] = useState<number | null>(null);
-  const [confirmaId, setConfirmaId] = useState<number | null>(null);
+  const {
+    frase,
+    setFrase,
+    interpretando,
+    rascunho,
+    setRascunho,
+    salvando,
+    feedback,
+    apagandoId,
+    confirmaId,
+    setConfirmaId,
+    interpretar,
+    salvar,
+    apagar,
+    sair,
+  } = useFluxoEvento();
 
   const porId = useMemo(() => new Map(materias.map((m) => [m.id, m])), [materias]);
 
   const futuros = eventos.filter((e) => e.data >= hojeIso);
   const passados = eventos.filter((e) => e.data < hojeIso).reverse();
-
-  async function interpretar(e: React.FormEvent) {
-    e.preventDefault();
-    setInterpretando(true);
-    setFeedback(null);
-    try {
-      const r = await fetch("/api/parse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ frase }),
-      });
-      const corpo = await r.json().catch(() => null);
-      if (!r.ok) {
-        setFeedback({ ok: false, texto: corpo?.erro ?? "Não consegui interpretar." });
-        return;
-      }
-      const resultado = corpo as ResultadoParse;
-      setRascunho({
-        evento: resultado.evento,
-        origem: resultado.origem,
-        avisos: resultado.avisos,
-      });
-    } catch {
-      setFeedback({ ok: false, texto: "Sem conexão com o servidor." });
-    } finally {
-      setInterpretando(false);
-    }
-  }
-
-  async function salvar() {
-    if (!rascunho) return;
-    setSalvando(true);
-    setFeedback(null);
-    try {
-      const r = await fetch("/api/eventos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rascunho.evento),
-      });
-      const corpo = await r.json().catch(() => null);
-      if (!r.ok) {
-        setFeedback({ ok: false, texto: corpo?.erro ?? "Não consegui salvar." });
-        return;
-      }
-      setRascunho(null);
-      setFrase("");
-      setFeedback({ ok: true, texto: "Evento salvo — já está na agenda da turma." });
-      router.refresh(); // re-busca os dados do servidor (lista abaixo atualiza)
-    } catch {
-      setFeedback({ ok: false, texto: "Sem conexão com o servidor." });
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function apagar(id: number) {
-    setApagandoId(id);
-    try {
-      const r = await fetch(`/api/eventos/${id}`, { method: "DELETE" });
-      if (!r.ok) {
-        const corpo = await r.json().catch(() => null);
-        setFeedback({ ok: false, texto: corpo?.erro ?? "Não consegui apagar." });
-        return;
-      }
-      setConfirmaId(null);
-      router.refresh();
-    } finally {
-      setApagandoId(null);
-    }
-  }
-
-  async function sair() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    router.refresh();
-  }
-
-  function usarExemplo(texto: string) {
-    setFrase(texto);
-    areaFrase.current?.focus();
-  }
 
   return (
     <div className="wrap">
@@ -171,7 +74,6 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
         <label className="campo">
           <span>CADASTRAR EVENTOS · INPUT: </span>
           <textarea
-            ref={areaFrase}
             value={frase}
             onChange={(e) => setFrase(e.target.value)}
             placeholder={"Digite o que acontecerá..."}
@@ -180,17 +82,6 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
             autoFocus
           />
         </label>
-        {/* <p className="frase-dicas">
-          exemplos:{" "}
-          {EXEMPLOS.map((ex, i) => (
-            <span key={ex}>
-              {i > 0 && " · "}
-              <button type="button">
-                “{ex}”
-              </button>
-            </span>
-          ))}
-        </p> */}
         <div className="frase-acoes">
           <button
             type="submit"

@@ -17,22 +17,12 @@
 
 export const TIMEZONE = "America/Sao_Paulo";
 
-// ─── TEMP (teste local) ─────────────────────────────────────────────────────
-// Finge que "hoje" é segunda-feira 13/07/2026 e que "agora" são 12h, só pra
-// conferir a timeline de "Hoje" no localhost. Vale pro servidor E pro relógio
-// do cliente (que reusa estas funções a cada 60s). PARA VOLTAR AO RELÓGIO REAL:
-// apague este bloco e os dois `return TEMP_*` marcados logo abaixo.
-// const TEMP_HOJE = "2026-07-13";
-// const TEMP_AGORA = "12:00";
-// ────────────────────────────────────────────────────────────────────────────
-
 // ---------------------------------------------------------------------------
 // "hoje" e "agora" no fuso de Brasília
 // ---------------------------------------------------------------------------
 
 /** Data de hoje em Brasília, como "AAAA-MM-DD". (locale en-CA formata exatamente assim) */
 export function hojeISO(agora: Date = new Date()): string {
-  // if (TEMP_HOJE) return TEMP_HOJE; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
     year: "numeric",
@@ -43,7 +33,6 @@ export function hojeISO(agora: Date = new Date()): string {
 
 /** Hora atual em Brasília, como "HH:MM" (24h). */
 export function horaAgora(agora: Date = new Date()): string {
-  // if (TEMP_AGORA) return TEMP_AGORA; // TEMP: apague esta linha pra voltar ao relógio real
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIMEZONE,
     hour: "2-digit",
