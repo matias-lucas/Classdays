@@ -227,7 +227,7 @@ function partesContagem(c: Contagem): { lead: string; big: string } {
 }
 
 /**
- * A tipografia do mock aprovado: dígitos gigantes, unidades menores penduradas
+ * Tipografia da contagem: dígitos gigantes, unidades menores penduradas
  * na base ("2h 15min" → 2 e 15 grandes, "h"/"min" pequenos). Palavras sem
  * dígito ("hoje", "amanhã", "agora") não têm unidade — ficam inteiras no
  * tamanho cheio.

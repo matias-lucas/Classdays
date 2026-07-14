@@ -10,7 +10,7 @@
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  /* sem scrollbar: o fade + a seta comunicam o overflow (intenção do design) */
+  /* sem scrollbar: o fade nas bordas + a seta comunicam o overflow */
   scrollbar-width: none;
   padding: 2px 2px 6px;
   margin: 0 -2px;

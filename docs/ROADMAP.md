@@ -60,4 +60,4 @@ notificação degradam bem; sheet correto com teclado/scrim/Esc.
 
 ## Referência de design
 
-O sistema visual vigente é o do repo (`globals.css` + `DESIGN.md`).
+O sistema visual vigente é o do repo (`src/styles/` + `DESIGN.md`).
