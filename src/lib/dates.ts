@@ -140,7 +140,7 @@ export function fmtDiaMesPartes(iso: string): { dia: string; mes: string } {
   return { dia, mes: MESES_CURTOS[Number(mes) - 1] };
 }
 
-/** "19:00" → "19h00" (estilo brasileiro, como no protótipo) */
+/** "19:00" → "19h00" (estilo brasileiro) */
 export function fmtHora(hora: string): string {
   return hora.replace(":", "h");
 }

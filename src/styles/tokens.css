@@ -1,14 +1,10 @@
 /* ============================================================================
-   Classdays — sistema visual (fonte da verdade: DESIGN.md)
+   Tokens do sistema visual (fonte da verdade: DESIGN.md)
 
-   Portado do protótipo aprovado (calendario-aluno.html, hoje só no histórico
-   do git) com duas mudanças
-   conscientes:
-   1. contraste: os cinzas "apagados" do protótipo (#8891A3) ficavam em 2.8:1
-      sobre o fundo — abaixo do mínimo AA (4.5:1). Foram escurecidos; a
-      hierarquia continua vindo de tamanho/caixa alta/tracking.
-   2. estados: foco visível, disabled, loading e erro — o protótipo não
-      precisava deles, o app precisa.
+   Todas as cores, sombras, raios e easings nascem aqui — os demais arquivos
+   de src/styles/ só consomem estas variáveis. Os cinzas de texto respeitam
+   contraste AA (≥4.5:1) sobre o fundo; a hierarquia vem de tamanho/caixa
+   alta/tracking, não de apagar a cor.
 
    Convenção de cor de matéria: o elemento recebe `--sc` (subject color) via
    style inline e o CSS deriva filete/ponto/tints daí.

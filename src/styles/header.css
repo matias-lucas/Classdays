@@ -119,7 +119,7 @@ h1 {
   min-width: auto;
   padding: 0 16px;
   font-family: var(--font-mono), monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -169,7 +169,7 @@ h1 {
   background: var(--line);
 }
 
-/* O rótulo virou um disclosure (Fase 5): ▾ aberto / › recolhido.
+/* O rótulo de seção também é um disclosure: ▾ aberto / › recolhido.
    O botão herda o visual do .slabel; área de toque ≥44px pelo mesmo truque
    do .slabel-voltar (padding compensado por margin, sem engordar a linha). */
 .slabel-toggle {
@@ -206,8 +206,8 @@ h1 {
   transform: rotate(90deg);
 }
 
-/* Corpo de seção recolhível. SEMPRE via classe — display inline no protótipo
-   sobrescrevia o display do herocard <a> ao reexpandir e o quebrava.
+/* Corpo de seção recolhível. Esconder SEMPRE via classe, nunca display
+   inline — o inline sobrescreveria o display do herocard <a> ao reexpandir.
 
    A altura anima via grid: a única linha vai de 1fr (aberta) a 0fr (recolhida)
    e o .sec-corpo-inner (min-height: 0) encolhe junto — `height: auto` não é

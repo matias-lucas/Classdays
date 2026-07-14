@@ -3,12 +3,11 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 /**
- * Seção recolhível (Fase 5): o rótulo `.slabel` vira um botão de
- * disclosure — ▾ aberto / › recolhido — que esconde o corpo da seção.
+ * Seção recolhível: o rótulo `.slabel` vira um botão de disclosure —
+ * ▾ aberto / › recolhido — que esconde o corpo da seção.
  *
- * O corpo some via a CLASSE `.sec-hidden`, nunca `display` inline: no
- * protótipo, o inline sobrescrevia o display do herocard `<a>` ao reexpandir
- * e o quebrava.
+ * O corpo some via a CLASSE `.sec-hidden`, nunca `display` inline: o inline
+ * sobrescreveria o display do herocard `<a>` ao reexpandir e o quebraria.
  *
  * Animação: `.sec-corpo` é um grid de uma linha (1fr aberto, 0fr recolhido) —
  * a altura anima sem animar `height`. A classe `.sec-anim` (que habilita a

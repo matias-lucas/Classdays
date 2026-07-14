@@ -76,7 +76,7 @@ describe("proximoDiaDaSemana (a alma do 'próxima terça')", () => {
 });
 
 describe("formatação pt-BR", () => {
-  it("datas e horas no estilo do protótipo", () => {
+  it("datas e horas no formato brasileiro", () => {
     expect(fmtDiaMes("2026-07-07")).toBe("07/07");
     expect(fmtDiaMesPartes("2026-07-07")).toEqual({ dia: "07", mes: "jul" });
     expect(fmtHora("19:00")).toBe("19h00");

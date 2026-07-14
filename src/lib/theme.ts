@@ -17,7 +17,7 @@ export type Tema = "light" | "dark";
 
 export const THEME_KEY = "classdays-theme";
 
-/** Breakpoint "desktop" do layout (grade vira quadro, weeknav aparece etc). */
+/** Breakpoint "desktop" do app (grade vira quadro, weeknav aparece etc). */
 export const DESKTOP_PX = 1000;
 export const DESKTOP_MQ = `(min-width: ${DESKTOP_PX}px)`;
 

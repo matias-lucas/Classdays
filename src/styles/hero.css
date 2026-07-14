@@ -394,7 +394,7 @@
   text-wrap: balance;
 }
 /* unidades menores que os dígitos ("2h 15min"): o número carrega o impacto,
-   a unidade só rotula — tipografia do mock aprovado */
+   a unidade só rotula */
 .pd-big-un {
   font-size: 0.44em;
   font-weight: 600;
