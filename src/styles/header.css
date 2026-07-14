@@ -1,0 +1,300 @@
+/* ============================================================================
+   cabeçalho da página
+   ========================================================================== */
+/* logo | título | menu num grid 1fr auto 1fr: o título fica no centro
+   geométrico e as pontas têm caixas de peso parecido (logo 42px vs botão
+   36–44px) — é isso que segura a simetria óptica. O padding devolve a altura
+   que a logo de 64px ocupava antes. */
+.topbar {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
+  padding: 7px 0;
+}
+.topbar h1 {
+  flex: 1;
+  text-align: center;
+}
+.eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+.eyebrow2 {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  justify-self: center;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+.head-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin: 6px 0 22px;
+}
+.logo {
+  width: 42px;
+  height: 42px;
+  justify-self: start;
+}
+h1 {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.head-sub {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* navegação de semana ( ‹ hoje › ) */
+/* No celular a navegação de semanas é o ARRASTE da grade (+ "‹‹ voltar"), então
+   as setinhas ‹ › HOJE somem — o cabeçalho fica só com o menu. No desktop
+   (≥1000px, sem arraste — o quadro é intocado) elas reaparecem: lá são o único
+   jeito de trocar de semana. */
+/* Vive no rodapé, logo acima da assinatura: uma pílula única segmentada
+   ‹ | HOJE | › (um controle, três segmentos), em vez de três botões soltos. */
+.weeknav {
+  display: none;
+  width: fit-content;
+  margin: 0 auto 14px;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.weeknav button {
+  min-width: 42px;
+  height: 34px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
+}
+.weeknav button + button {
+  border-left: 1px solid var(--line);
+}
+/* aperto físico: o segmento afunda um tico (mesma linguagem do .chip:active) */
+.weeknav button:active:not(:disabled) {
+  transform: scale(0.93);
+}
+@media (hover: hover) and (pointer: fine) {
+  .weeknav button:hover:not(:disabled) {
+    background: var(--line-soft);
+    color: var(--ink);
+  }
+}
+.weeknav button:active:not(:disabled) {
+  background: var(--line-soft);
+  color: var(--ink);
+}
+/* foco por segmento, desenhado por dentro pra não sumir sob o overflow da pílula */
+.weeknav button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+.weeknav .today-btn {
+  min-width: auto;
+  padding: 0 16px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+/* desabilitado aqui não quer dizer "quebrado" — quer dizer "você já está
+   aqui". Segmento central preenchido em ink, mesma linguagem do chip ativo:
+   lê como "estado atual", não como erro. */
+.weeknav .today-btn:disabled {
+  background: var(--ink);
+  color: var(--on-ink);
+  cursor: default;
+}
+/* a seta aponta pra onde puxa: no hover o glifo desliza 2px na própria
+   direção — a navegação "avisa" pra que lado a semana vai correr */
+.wn-glifo {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .weeknav button:first-child:hover:not(:disabled) .wn-glifo {
+    transform: translateX(-2px);
+  }
+  .weeknav button:last-child:hover:not(:disabled) .wn-glifo {
+    transform: translateX(2px);
+  }
+}
+
+/* ============================================================================
+   rótulo de seção (mono + régua)
+   ========================================================================== */
+
+.slabel {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 600;
+  margin: 28px 2px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* O rótulo virou um disclosure (Fase 5): ▾ aberto / › recolhido.
+   O botão herda o visual do .slabel; área de toque ≥44px pelo mesmo truque
+   do .slabel-voltar (padding compensado por margin, sem engordar a linha). */
+.slabel-toggle {
+  border: 0;
+  background: none;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  margin: -14px -8px;
+  transition: transform 200ms var(--ease);
+}
+.slabel-toggle:hover {
+  color: var(--ink);
+}
+.slabel-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* um só glifo (›) que gira 90° quando aberto — girar transiciona, trocar
+   caractere não. Largura fixa pro título não dançar. */
+.slabel-caret {
+  width: 1.1em;
+  text-align: center;
+  font-size: 13.5px;
+  transition: transform var(--t-med) var(--ease);
+}
+.slabel-toggle[aria-expanded="true"] .slabel-caret {
+  transform: rotate(90deg);
+}
+
+/* Corpo de seção recolhível. SEMPRE via classe — display inline no protótipo
+   sobrescrevia o display do herocard <a> ao reexpandir e o quebrava.
+
+   A altura anima via grid: a única linha vai de 1fr (aberta) a 0fr (recolhida)
+   e o .sec-corpo-inner (min-height: 0) encolhe junto — `height: auto` não é
+   animável, grid-template-rows é. A classe .sec-anim só existe durante o
+   gesto (posta pelo React, com fallback de timeout p/ reduced-motion): é ela
+   que liga a transição — restaurar do localStorage no load continua snap — e
+   o overflow: hidden, que aberto de vez cortaria a sombra dos cards. */
+.sec-corpo {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.sec-corpo-inner {
+  min-height: 0;
+  /* min-width TAMBÉM: grid item não encolhe abaixo do min-content por padrão,
+     e o trilho da troca de semana (2–3 painéis lado a lado) dobra o min-content
+     — sem isto o corpo estourava pra direita durante a animação. */
+  min-width: 0;
+}
+.sec-corpo.sec-hidden {
+  grid-template-rows: 0fr;
+}
+.sec-corpo.sec-hidden > .sec-corpo-inner,
+.sec-corpo.sec-anim > .sec-corpo-inner {
+  overflow: hidden;
+}
+.sec-corpo.sec-hidden > .sec-corpo-inner {
+  opacity: 0;
+  visibility: hidden;
+}
+.sec-corpo.sec-anim {
+  transition: grid-template-rows 280ms var(--ease);
+}
+.sec-corpo.sec-anim > .sec-corpo-inner {
+  transition: opacity 200ms var(--ease);
+}
+/* fechando (destino = recolhida): visibility só vira hidden no FIM da
+   transição; abrindo, o seletor acima vale e ela volta na hora */
+.sec-corpo.sec-anim.sec-hidden > .sec-corpo-inner {
+  transition:
+    opacity 200ms var(--ease),
+    visibility 0s linear 280ms;
+}
+
+/* "‹‹ voltar" — atalho pra semana atual, na ponta oposta do rótulo da grade.
+   Só existe quando a semana na tela NÃO é a atual. `order: 1` o joga pra
+   depois da régua (::after), fechando a linha: título — régua — botão. */
+.slabel-voltar {
+  order: 1;
+  border: 0;
+  background: none;
+  font: inherit; /* herda o mono/tamanho/tracking do .slabel */
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: var(--ink-soft);
+  cursor: pointer;
+  /* área de toque ≥44px sem engordar a linha: padding compensado por margin */
+  padding: 14px 8px;
+  margin: -14px -8px -14px 0;
+  /* entra deslizando do lado de fora da linha, junto do fade */
+  animation: voltar-entra 240ms var(--ease) both;
+}
+.slabel-voltar:hover {
+  color: var(--ink);
+}
+@keyframes voltar-entra {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* os glifos ‹‹/›› apontam pra onde a semana atual está; no hover eles puxam
+   um tico nessa direção — mesmo idioma das setas da pílula (.wn-glifo) */
+.slabel-voltar .vg {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease);
+}
+.slabel-voltar:hover .vg-esq {
+  transform: translateX(-3px);
+}
+.slabel-voltar:hover .vg-dir {
+  transform: translateX(3px);
+}
+.slabel-voltar:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}

@@ -1,0 +1,385 @@
+/* ============================================================================
+   barra do topo + botão de menu
+   ========================================================================== */
+
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  justify-self: flex-end;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .menu-btn:hover {
+    border-color: var(--ink-faint);
+    color: var(--ink);
+  }
+}
+.menu-btn:active {
+  background: var(--line-soft);
+  border-color: var(--ink-faint);
+  transform: scale(0.92);
+}
+@media (pointer: coarse) {
+  .menu-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+/* três barras = ícone de menu (mais nítido que um glifo). Com o drawer
+   aberto (aria-expanded) as barras se dobram num X: a de cima e a de baixo
+   giram até o centro (5px = altura da barra + gap) e a do meio se recolhe.
+   O botão continua visível por trás do scrim, então o morph também é
+   informação: "isto agora fecha". */
+.menu-ico {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 16px;
+}
+.menu-ico i {
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition:
+    transform var(--t-med) var(--ease),
+    opacity var(--t-fast) var(--ease);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(1) {
+  transform: translateY(5px) rotate(45deg);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.4);
+}
+.menu-btn[aria-expanded="true"] .menu-ico i:nth-child(3) {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+/* ============================================================================
+   painel lateral (Drawer)
+   ========================================================================== */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--t-med) var(--ease),
+    visibility var(--t-med) var(--ease);
+  z-index: 40;
+}
+.scrim.on {
+  opacity: 1;
+  visibility: visible;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 84vw);
+  background: var(--surface);
+  box-shadow: var(--shadow-hero);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  /* fechado: a visibility só some DEPOIS do slide (delay). Aberto, ela vira
+     na hora — numa transition ela ainda vale "hidden" no primeiro frame e o
+     focus() do focus-trap falharia em silêncio (foco nunca entrava no dialog) */
+  visibility: hidden;
+  transition:
+    transform var(--t-med) var(--ease),
+    visibility 0s linear var(--t-med);
+}
+.drawer.on {
+  transform: none;
+  visibility: visible;
+  /* abrir é mais longo e mais "físico" que fechar (o expo assenta devagar);
+     fechar continua rápido — o usuário já decidiu ir embora */
+  transition: transform 380ms var(--ease-exp);
+}
+
+/* Cascata do conteúdo: cabeçalho e seções entram deslizando junto com o
+   painel, cada um um passo atrás — o drawer "chega e se arruma". Fechado,
+   voltam ao ponto de partida com um fade curto e SEM delay, pra não sumirem
+   secos enquanto o painel ainda desliza pra fora. Com movimento reduzido o
+   kill-switch global zera as transitions e isto tudo vira estado instantâneo. */
+.drawer-head,
+.drawer-corpo > * {
+  opacity: 0;
+  transform: translateX(18px);
+  transition:
+    opacity 120ms var(--ease),
+    transform 120ms var(--ease);
+}
+.drawer.on .drawer-head,
+.drawer.on .drawer-corpo > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 280ms var(--ease),
+    transform 400ms var(--ease-exp);
+}
+.drawer.on .drawer-head {
+  transition-delay: 40ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(1) {
+  transition-delay: 90ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(2) {
+  transition-delay: 150ms;
+}
+.drawer.on .drawer-corpo > *:nth-child(n + 3) {
+  transition-delay: 210ms;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 22px;
+}
+/* logo + nome, eco da topbar */
+.drawer-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.drawer-logo {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.drawer-titulo {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.drawer-fechar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.drawer-fechar:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+@media (pointer: coarse) {
+  .drawer-fechar {
+    width: 44px;
+    height: 44px;
+  }
+}
+.drawer-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.drawer-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.drawer-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* navegação do drawer: itens de linha inteira, alvo ≥44px, mesmo desenho para
+   <a> (rotas) e <button> (scroll até seção) */
+.drawer-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.drawer-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  text-align: left;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    transform 100ms var(--ease);
+}
+.drawer-nav-item:hover {
+  background-color: var(--line-soft);
+}
+/* aperto: a linha afunda de leve — mesmo gesto do .chip e do .menu-btn */
+.drawer-nav-item:active {
+  transform: scale(0.98);
+}
+.drawer-nav-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+/* ícone do item: caixa fixa pra alinhar os rótulos; a cor sobe junto do hover */
+.drawer-nav-ico {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--ink-soft);
+  transition:
+    color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.drawer-nav-item:hover .drawer-nav-ico {
+  color: var(--ink);
+  transform: scale(1.12);
+}
+
+/* toggle de tema: uma linha do menu (ícone sol/lua + rótulo) com o switch à
+   direita. A linha inteira é o <label> — alvo ≥44px sem gambiarra de hit-test.
+   Ligado (claro): trilho em --ink, a linguagem de controle de alta ênfase do
+   sistema; desligado (escuro): trilho apagado. */
+.tema-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background-color var(--t-fast) var(--ease);
+}
+.tema-linha:hover {
+  background-color: var(--line-soft);
+}
+.tema-linha:hover .drawer-nav-ico {
+  color: var(--ink);
+}
+/* invisível mas focável, cobrindo a linha toda (display:none tiraria o toggle
+   da navegação por Tab) */
+.toggle-tema-check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.toggle-tema-check:focus-visible ~ .toggle-tema-slider {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.toggle-tema-slider {
+  position: relative;
+  margin-left: auto;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+  pointer-events: none;
+  background-color: var(--line-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition:
+    background-color var(--t-med) var(--ease),
+    border-color var(--t-med) var(--ease);
+}
+.tema-linha:hover .toggle-tema-slider {
+  border-color: var(--ink-faint);
+}
+.toggle-tema-check:checked ~ .toggle-tema-slider {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+.toggle-tema-slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  /* --ink-soft contrasta com o trilho apagado nos dois temas (--surface quase
+     sumiria no escuro) */
+  background-color: var(--ink-soft);
+  transition:
+    transform var(--t-med) var(--ease),
+    width var(--t-fast) var(--ease),
+    background-color var(--t-med) var(--ease);
+}
+.toggle-tema-check:checked ~ .toggle-tema-slider::before {
+  transform: translateX(18px);
+  background-color: var(--on-ink);
+}
+/* segurando o dedo/clique, o pino se ESTICA na direção do trilho (estilo
+   iOS): 4px a mais de largura. Ligado, compensa o translateX pra borda
+   direita não vazar da pílula. Área minúscula e isolada — animar width aqui
+   não mexe em layout nenhum fora do próprio pino. */
+.tema-linha:active .toggle-tema-slider::before {
+  width: 24px;
+}
+.tema-linha:active .toggle-tema-check:checked ~ .toggle-tema-slider::before {
+  transform: translateX(14px);
+}
+
+/* o sol/lua troca com um giro curto de "amanhecer" — o span remonta com
+   key={tema}, então a animação replay a cada troca (e na abertura do menu) */
+.tema-linha .drawer-nav-ico svg {
+  animation: tema-amanhece 340ms var(--ease-exp) both;
+}
+@keyframes tema-amanhece {
+  from {
+    opacity: 0;
+    transform: rotate(-50deg) scale(0.55);
+  }
+}

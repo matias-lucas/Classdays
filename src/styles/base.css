@@ -1,0 +1,67 @@
+/* ---- reset ---- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  /* reserva o espaço da barra de rolagem mesmo quando ela some (drawer aberto
+     trava o scroll; semana mais curta encolhe a página) — sem isso, no Windows
+     a página inteira "pula" ~17px pra direita a cada aparição/sumiço da barra */
+  scrollbar-gutter: stable;
+}
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  padding: 22px 16px 64px;
+  /* o painel lateral fica fora da tela (translateX) quando fechado; clip evita
+     que ele crie uma barra de rolagem horizontal, sem travar o scroll vertical */
+  overflow-x: clip;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* foco visível padrão (inputs redefinem com anel próprio) */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.foot {
+  text-align: center;
+  margin-top: 34px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+.foot a {
+  text-underline-offset: 3px;
+}
+/* ============================================================================
+   movimento reduzido: tudo instantâneo
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,164 @@
+/* ============================================================================
+   Hoje — a timeline do dia (HojeTimeline)
+
+   Linha vertical à esquerda com um nó por item (cor da matéria); à direita,
+   texto sobre o próprio fundo (SEM card): horário em cima, título, depois
+   sala/estado. O único uso de "agora": o que já terminou fica apagado com
+   "encerrada" e o nó vira anel vazio — não há marcador do momento nem
+   cronômetro. Eventos ganham um selo que pulsa — a única coisa que pede o olho.
+   ========================================================================== */
+
+.hoje {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+/* cada item é [nó | corpo]; o espaçamento vertical fica no padding (não em
+   margin) pra a linha do nó atravessar o vão e emendar no próximo nó */
+.hoje-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  column-gap: 12px;
+  padding-bottom: 18px;
+  animation: item-rise 260ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+/* a linha da timeline: percorre o item inteiro (inclui o padding), então
+   encosta na linha do item seguinte e vira um traço contínuo */
+.hoje-item::before {
+  content: "";
+  position: absolute;
+  left: 11px; /* centro da coluna do nó (22px / 2) */
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+/* primeiro nó: a linha nasce nele (nada acima); último: a linha morre nele.
+   9px = centro do nó, alinhado à primeira linha de texto (o horário) */
+.hoje-item:first-child::before {
+  top: 9px;
+}
+.hoje-item:last-child::before {
+  bottom: auto;
+  height: 9px;
+}
+.hoje-item:only-child::before {
+  display: none;
+}
+.hoje-node {
+  position: relative;
+}
+.hoje-dot {
+  display: block;
+  width: 11px;
+  height: 11px;
+  margin: 3px auto 0; /* centro ~9px do topo: casa com o offset da linha */
+  border-radius: 50%;
+  background: var(--sc, var(--ink-faint));
+  /* anel na cor do fundo "fura" a linha, deixando o nó nítido sobre ela */
+  box-shadow: 0 0 0 3px var(--bg);
+  position: relative;
+  z-index: 1;
+}
+.hoje-corpo {
+  min-width: 0;
+}
+/* horário: a primeira linha, mono e discreta (o intervalo da aula ou o
+   instante do evento). Alinha o nó a esta linha (ver offsets acima). */
+.hoje-quando {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.hoje-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.hoje-title {
+  font-weight: 600;
+  font-size: 15.5px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  min-width: 0;
+}
+.hoje-meta {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+.hoje-obs {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+/* encerrada: o que já passou recua — texto apagado e nó vira anel vazio. */
+.hoje-item.is-passada .hoje-corpo {
+  opacity: 0.55;
+}
+.hoje-item.is-passada .hoje-dot {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--line), 0 0 0 3px var(--bg);
+}
+.hoje-item.is-passada .badge {
+  animation: none; /* nada a pedir atenção depois que encerrou */
+}
+/* evento: o selo respira na própria cor de tipo — pista de que hoje tem algo
+   além da aula. currentColor no selo = a cor do tipo (prova/trabalho/…) */
+.hoje-item.is-evento:not(.is-passada) .badge {
+  animation: badge-pulse 2600ms ease-in-out infinite;
+}
+@keyframes badge-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 32%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+/* iminente (falta ≤1h): o nó pulsa uma onda na cor da matéria. O anel de
+   fundo (--bg) que fura a linha entra junto no keyframe pra não se perder. */
+.hoje-item.is-iminente .hoje-dot {
+  animation: dot-pulse 2000ms ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0% {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 3px color-mix(in srgb, var(--sc) 45%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 10px color-mix(in srgb, var(--sc) 0%, transparent);
+  }
+}
+/* com movimento reduzido a animação global é cortada; o aviso vira um halo
+   fixo na cor da matéria, pra informação não se perder */
+@media (prefers-reduced-motion: reduce) {
+  .hoje-item.is-iminente .hoje-dot {
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 0 5px color-mix(in srgb, var(--sc) 40%, transparent);
+  }
+}
+/* estado vazio: nada hoje. Card calmo, com a mesma respirada do hero ao trocar
+   o filtro (o key no elemento reinicia a animação) */
+.hoje-vazio {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  padding: 15px 14px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  animation: heroSwap 320ms var(--ease) both;
+}

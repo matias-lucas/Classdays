@@ -1,0 +1,459 @@
+/* ============================================================================
+   Próximo (o card-herói)
+   ========================================================================== */
+
+/* wrapper separado do .hero: o hover mexe em transform aqui, enquanto o
+   .hero por dentro já usa transform/box-shadow pras próprias animações
+   (entrada + pulso) — numa CSS animation sempre vence uma transition na
+   mesma propriedade, então hover precisa morar num elemento sem animação */
+.hero-wrap {
+  position: relative;
+  transition: transform 200ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* pilha de "cartas" atrás do hero: bordas dos próximos eventos aparecendo
+   embaixo dizem, sem uma palavra, que este card é o topo de uma lista.
+   data-pilha="1|2" = quantos itens o menu tem além do destaque (máx. 2).
+   z-index negativo: pintam atrás do .hero sem criar stacking context novo. */
+.hero-wrap[data-pilha]::before,
+.hero-wrap[data-pilha="2"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -7px;
+  height: 36px;
+  z-index: -1;
+  border-radius: var(--radius-hero);
+  background: color-mix(in srgb, var(--sc, var(--ink)) 8%, var(--surface));
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transition: transform var(--t-med) var(--ease);
+}
+.hero-wrap[data-pilha="2"]::after {
+  left: 28px;
+  right: 28px;
+  bottom: -13px;
+  z-index: -2;
+  opacity: 0.65;
+}
+/* a pilha invade o espaço abaixo do card; abre respiro antes da próxima seção */
+.hero-wrap[data-pilha] {
+  margin-bottom: 15px;
+}
+/* no hover o card sobe (-2px no wrap) e as cartas "ficam" (compensam +2/+4):
+   o baralho abre uma fresta — reforço físico de que dá pra puxar a lista */
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap[data-pilha]:hover::before {
+    transform: translateY(3px);
+  }
+  .hero-wrap[data-pilha="2"]:hover::after {
+    transform: translateY(5px);
+  }
+}
+
+.hero {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-hero);
+  box-shadow: var(--shadow-hero);
+  border: none;
+  border-left: 6px solid var(--sc, var(--ink-faint));
+  padding: 18px 20px;
+  animation:
+    rise 450ms var(--ease) both,
+    hero-pulse 3200ms ease-in-out 900ms infinite;
+}
+/* quando o próximo é um EVENTO, o card inteiro é o botão que abre o 1b.
+   herda font/cor do reset de button. Aula da grade continua sendo <div> mudo. */
+.hero-clicavel {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+/* rodapé-CTA: diz em texto o que o toque faz ("Ver os 4 próximos eventos") —
+   a affordance é anunciada, não sugerida. Texto tinge a cor da matéria no
+   --ink (mesmo truque do .countdown): expressivo nos dois temas sem perder
+   contraste AA. */
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--sc, var(--ink)) 16%, var(--line-soft));
+  font-size: 13.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--sc, var(--ink)) 42%, var(--ink));
+}
+.hero-cta-seta {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform var(--t-med) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-wrap:hover .hero-cta-seta {
+    transform: translateX(3px);
+  }
+}
+/* só transform: o conteúdo nunca depende da animação pra ficar visível
+   (renderizadores estáticos e abas ocultas pausam animações) */
+@keyframes rise {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+/* respiração bem sutil na cor da matéria — só o card-assinatura tem isso,
+   pra continuar chamando atenção sem virar decoração o resto da tela */
+@keyframes hero-pulse {
+  0%,
+  100% {
+    box-shadow:
+      var(--shadow-hero),
+      0 0 0 0 color-mix(in srgb, var(--sc, var(--ink)) 0%, transparent);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-hero),
+      0 0 0 5px color-mix(in srgb, var(--sc, var(--ink)) 12%, transparent);
+  }
+}
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+  flex-wrap: wrap;
+}
+.subj {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sc, var(--ink-faint));
+  flex-shrink: 0;
+  /* align-self: center; */
+}
+.hero-title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  text-wrap: balance;
+}
+.hero-meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+.countdown {
+  font-weight: 600;
+  background: color-mix(in srgb, var(--sc, var(--ink)) 12%, var(--surface));
+  color: color-mix(in srgb, var(--sc, var(--ink)) 60%, var(--ink));
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+.hero-empty {
+  color: var(--ink-soft);
+  font-size: 15px;
+  padding: 4px 0;
+}
+.hero-obs {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+}
+
+/* conteúdo do hero troca (filtro, ou o relógio avança pro próximo item):
+   uma respirada curta deixa claro que mudou de propósito, não é glitch */
+.hero-body {
+  animation: heroSwap 320ms var(--ease) both;
+}
+@keyframes heroSwap {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   Próximo expressivo — o detalhe 1b (ProximoDetalhe)
+
+   Overlay que sobe por cima da agenda, banhado na cor da matéria (--sc), com a
+   contagem regressiva grande. Reusa o .scrim do Drawer. No celular é uma folha
+   que sobe de baixo; no desktop, um cartão centralizado. Só EVENTO abre isto.
+   ========================================================================== */
+
+.pd-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  max-height: 92vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  scrollbar-color: var(--ink-faint) transparent;
+  /* a atmosfera do destaque é a cor do TIPO (--tc): vermelho de prova avisa
+     "é prova" antes de qualquer leitura. A cor da matéria (--sc) segue no
+     ponto do assunto e nas linhas da lista. */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 18%, var(--surface)) 0%,
+    var(--surface) 46%
+  );
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-hero);
+  padding: 34px 24px calc(30px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  /* mesmo esquema do .drawer: some com delay ao fechar, aparece na hora ao
+     abrir — senão o focus() do focus-trap falha no primeiro frame */
+  visibility: hidden;
+  transition:
+    transform var(--t-med) var(--ease),
+    visibility 0s linear var(--t-med);
+}
+.pd-sheet.on {
+  transform: none;
+  visibility: visible;
+  /* subida longa com o expo assentando devagar; fechar segue no t-med */
+  transition: transform 420ms var(--ease-exp);
+}
+
+/* Cascata do conteúdo (mesma coreografia do drawer, eixo vertical): selo,
+   título, contagem e lista sobem um passo atrás da folha — a contagem grande
+   é o clímax, não o primeiro frame. Fechando: fade curto sem delay. */
+.pd-corpo > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 120ms var(--ease),
+    transform 120ms var(--ease);
+}
+.pd-sheet.on .pd-corpo > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 300ms var(--ease),
+    transform 440ms var(--ease-exp);
+}
+.pd-sheet.on .pd-corpo > *:nth-child(1) {
+  transition-delay: 80ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(2) {
+  transition-delay: 130ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(3) {
+  transition-delay: 180ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(4) {
+  transition-delay: 230ms;
+}
+.pd-sheet.on .pd-corpo > *:nth-child(n + 5) {
+  transition-delay: 280ms;
+}
+/* a aurora acende por último, quando a folha já parou */
+.pd-sheet .pd-glow {
+  opacity: 0;
+  transition: opacity 120ms var(--ease);
+}
+.pd-sheet.on .pd-glow {
+  opacity: 1;
+  transition: opacity 600ms var(--ease) 180ms;
+}
+/* aurora da cor do tipo vazando do topo (o overflow recorta a metade de cima) */
+.pd-glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  width: 420px;
+  height: 300px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    50% 60% at 50% 50%,
+    color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 46%, transparent),
+    transparent 72%
+  );
+  pointer-events: none;
+}
+.pd-fechar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-ctrl);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.pd-fechar:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+@media (pointer: coarse) {
+  .pd-fechar {
+    width: 44px;
+    height: 44px;
+  }
+}
+.pd-corpo {
+  position: relative; /* acima da .pd-glow */
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: center;
+}
+.pd-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.pd-subj {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.pd-title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin-bottom: 26px;
+}
+.pd-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+.pd-lead {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* cinza puro sobre fundo tingido fica lavado — o lead fala um tom contido
+     da mesma cor do countdown (e ganha contraste sobre o ink-faint de antes) */
+  color: color-mix(in srgb, var(--tc, var(--ink-faint)) 55%, var(--ink-soft));
+}
+.pd-big {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  /* o countdown fala na cor do tipo — os tokens --badge-*-fg já nascem AA nos
+     dois temas; um fio de ink ancora o vermelho/azul no resto da página */
+  color: color-mix(in srgb, var(--tc, var(--sc, var(--ink))) 86%, var(--ink));
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+/* unidades menores que os dígitos ("2h 15min"): o número carrega o impacto,
+   a unidade só rotula — tipografia do mock aprovado */
+.pd-big-un {
+  font-size: 0.44em;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-right: -0.00px;
+}
+.pd-quando {
+  font-family: var(--font-mono), monospace;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.pd-obs {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+/* a lista de "todos os próximos" abaixo do destaque — alinhada à esquerda
+   (o cabeçalho é centralizado), separada por uma régua. Reusa o .ev do
+   EventoLinha, então fica igual à antiga seção que ela substitui. */
+.pd-lista {
+  text-align: left;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.pd-lista-label {
+  display: block;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+}
+@media (min-width: 1000px) {
+  .pd-sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(480px, 92vw);
+    max-height: 88vh;
+    border-radius: 22px;
+    transform: translate(-50%, -46%);
+    opacity: 0;
+    transition:
+      transform var(--t-med) var(--ease),
+      opacity var(--t-med) var(--ease),
+      visibility 0s linear var(--t-med);
+  }
+  .pd-sheet.on {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition:
+      transform 420ms var(--ease-exp),
+      opacity 260ms var(--ease);
+  }
+}
