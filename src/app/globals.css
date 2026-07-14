@@ -2612,6 +2612,56 @@ html[data-splash="on"] .splash {
     transform: none;
   }
 }
+
+/* o calendário se preenche: a fita desce e as duas linhas do papel "se
+   escrevem" (scaleX da esquerda), enquanto o tile ainda assenta da entrada.
+   transform-box: fill-box faz a origem ser a da própria peça no SVG. */
+.sl-fita,
+.sl-linha {
+  transform-box: fill-box;
+}
+.sl-fita {
+  transform-origin: center top;
+  animation: sl-desce 300ms var(--ease) 180ms both;
+}
+.sl-linha {
+  transform-origin: left center;
+  animation: sl-escreve 260ms var(--ease) both;
+}
+.sl-linha1 {
+  animation-delay: 300ms;
+}
+.sl-linha2 {
+  animation-delay: 400ms;
+}
+@keyframes sl-desce {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes sl-escreve {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* a data de hoje, em mono — o splash já responde "que dia é hoje?".
+   Entra por último e NÃO viaja pra topbar: some rápido na saída. */
+.splash-data {
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  animation: splash-entrada 360ms var(--ease) 260ms both;
+}
 /* saída: as peças viajam (transform via JS) enquanto o fundo some por cima do
    conteúdo real. O transitionend do background-color encerra o splash. */
 .splash-logo,
@@ -2627,6 +2677,18 @@ html[data-splash="on"] .splash {
 .splash.is-saindo .splash-logo,
 .splash.is-saindo .splash-nome {
   animation: none;
+}
+/* na saída as peças internas já terminaram (620ms < 700ms da parada); cortar a
+   animação as deixa no estado final, e a data some rápido (não tem alvo na
+   topbar pra onde viajar) */
+.splash.is-saindo .sl-fita,
+.splash.is-saindo .sl-linha {
+  animation: none;
+}
+.splash.is-saindo .splash-data {
+  opacity: 0;
+  animation: none;
+  transition: opacity 160ms var(--ease);
 }
 
 /* ============================================================================
