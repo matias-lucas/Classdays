@@ -19,36 +19,44 @@ html[data-splash="on"] .splash {
   display: flex;
 }
 .splash-logo {
-  width: 96px;
-  height: 96px;
+  width: 128px;
+  height: 128px;
+  display: block;
+  transform-origin: center center;
   /* entra, e quando a data aparece (680ms) dá uma piscada suave de "pronto" */
   animation:
     splash-entrada 480ms var(--ease) both,
-    sl-pisca 520ms ease-in-out 680ms;
+    sl-pisca 1s ease-in-out 250ms;
 }
 @keyframes sl-pisca {
   0%,
   100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.45;
+    opacity: 1;
+    transform: scale(1.2);
   }
 }
 .splash-nome {
   font-family: var(--font-display), sans-serif;
   font-weight: 700;
-  font-size: 40px;
+  font-size: 56px;
   letter-spacing: -0.02em;
   color: var(--ink);
-  animation: splash-entrada 480ms var(--ease) 120ms both;
+  animation: splash-entrada 800ms var(--ease) 250ms both;
 }
 @keyframes splash-entrada {
-  from {
+  0% {
+    letter-spacing: -0.5em;
     opacity: 0;
     transform: translateY(8px) scale(0.96);
   }
-  to {
+  40% {
+    opacity: 0.6;
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
