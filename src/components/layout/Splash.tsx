@@ -105,16 +105,28 @@ export function Splash({ hoje }: Props) {
   return (
     <div ref={raiz} className="splash" aria-hidden="true">
       {/* cópia inline do src/app/icon.svg — se o ícone mudar, mude aqui também */}
-      <svg className="splash-logo" viewBox="0 0 64 64">
-        <rect width="64" height="64" rx="14" fill="#16203A" />
-        <rect x="14" y="17" width="36" height="30" rx="7" fill="#EDF0F6" />
-        <path
-          d="M14 24 a7 7 0 0 1 7-7 v0 h-2 a5 5 0 0 0 -5 5 z"
-          fill="#EDF0F6"
-        />
-        <rect className="sl-fita" x="14" y="17" width="6" height="30" rx="3" fill="#5457C5" />
-        <rect className="sl-linha sl-linha1" x="26" y="25" width="17" height="4.5" rx="2.25" fill="#16203A" />
-        <rect className="sl-linha sl-linha2" x="26" y="34" width="11" height="4.5" rx="2.25" fill="#525D75" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        width="128"
+        height="128"
+        className="splash-logo"
+      >
+        <rect width="512" height="512" rx="112" fill="#16203A"/>
+        <rect x="80" y="64" width="368" height="384" rx="48" fill="#101830"/>
+        <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 176 416 176 H 264 Q 224 176 224 216 V 296 Q 224 336 264 336 H 416 Q 448 336 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z" fill="#EDF0F6"/>
+        <path d="M 128 64 H 416 Q 448 64 448 96 V 104 Q 448 84 424 84 H 132 Q 96 84 96 120 V 400 Q 96 436 132 436 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z" fill="#DDE2EE"/>
+        <path d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 136 V 64 Z" fill="#5457C5"/>
+        <g>
+          <circle cx="108" cy="120" r="18" fill="#EDF0F6"/><circle cx="108" cy="120" r="9" fill="#16203A"/><circle cx="104" cy="116" r="3" fill="#8B8EDB"/>
+          <circle cx="108" cy="256" r="18" fill="#EDF0F6"/><circle cx="108" cy="256" r="9" fill="#16203A"/><circle cx="104" cy="252" r="3" fill="#8B8EDB"/>
+          <circle cx="108" cy="392" r="18" fill="#EDF0F6"/><circle cx="108" cy="392" r="9" fill="#16203A"/><circle cx="104" cy="388" r="3" fill="#8B8EDB"/>
+        </g>
+        <line x1="240" y1="120" x2="400" y2="120" stroke="#16203A" strokeWidth="24" strokeLinecap="round" opacity="0.8"/>
+        <line x1="240" y1="392" x2="352" y2="392" stroke="#16203A" strokeWidth="24" strokeLinecap="round" opacity="0.45"/>
+        <rect x="264" y="228" width="120" height="56" rx="28" fill="#5457C5"/>
+        <rect x="264" y="228" width="120" height="56" rx="28" fill="none" stroke="#3F41A0" strokeWidth="3"/>
+        <line x1="286" y1="256" x2="330" y2="256" stroke="#EDF0F6" strokeWidth="12" strokeLinecap="round"/>
       </svg>
       <div className="splash-nome">Classdays</div>
       <div className="splash-data">
