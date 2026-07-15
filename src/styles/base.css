@@ -53,6 +53,99 @@ button {
 .foot a {
   text-underline-offset: 3px;
 }
+
+/* crédito do autor: ícone + nome escalam juntos no hover e o balão
+   "GitHub ↗" cresce à direita, saindo do gatinho (âncora: position relative) */
+.credito {
+  margin-top: 6px;
+}
+/* âncora estável do balão: não escala no hover, então o balão não entorta */
+.credito-ancora {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.credito-autor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: underline;
+  text-decoration-thickness: 0px;
+  color: inherit;
+  transition:
+    transform var(--t-med) var(--ease),
+    color var(--t-med) var(--ease);
+}
+/* o gatinho de contorno ao lado do nome: cede o palco pro balão no hover */
+.credito-autor > svg {
+  width: 14px;
+  height: 14px;
+  transition:
+    opacity var(--t-med) var(--ease),
+    transform var(--t-med) var(--ease);
+}
+.credito-autor:hover,
+.credito-autor:focus-visible {
+  transform: scale(1.05);
+  color: var(--ink);
+}
+.credito-autor:hover > svg,
+.credito-autor:focus-visible > svg {
+  opacity: 0;
+  transform: scale(0.4);
+}
+.credito-balao {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  /* o -50% vertical vive DENTRO do transform: o build (Next/lightningcss)
+     descarta a propriedade `translate` avulsa — não usar aqui */
+  transform: translateY(-50%) scale(0.6);
+  opacity: 0;
+  transform-origin: left center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  transition:
+    transform var(--t-med) var(--ease),
+    opacity var(--t-med) var(--ease);
+}
+/* a boquinha: triângulo da mesma cor do balão, apontando pro gatinho */
+.credito-balao::after {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--ink);
+}
+.credito-balao svg {
+  width: 16px;
+  height: 16px;
+}
+.credito-balao .balao-seta {
+  width: 12px;
+  height: 12px;
+}
+.credito-ancora:hover .credito-balao,
+.credito-ancora:has(:focus-visible) .credito-balao {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  /* a ENTRADA usa o ease-out-expo (chega rápido, assenta devagar) — mesma
+     regra dos painéis; a saída volta pro ease padrão, mais discreta */
+  transition:
+    transform var(--t-med) var(--ease-exp),
+    opacity var(--t-fast) var(--ease);
+}
 /* ============================================================================
    movimento reduzido: tudo instantâneo
    ========================================================================== */

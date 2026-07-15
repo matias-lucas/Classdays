@@ -128,3 +128,10 @@
     min-height: 44px;
   }
 }
+
+/* Amortecedor da troca de filtro (TrocaSuave): a altura anima via WAAPI no
+   componente; a classe só existe durante a animação e esconde o excesso —
+   solta, cortaria a sombra dos cards (mesma regra do .sec-anim). */
+.troca-suave.troca-anim {
+  overflow: hidden;
+}
