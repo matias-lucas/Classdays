@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B2749"/>
+      <stop offset="1" stop-color="#101830"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBFCFF"/>
+      <stop offset="1" stop-color="#DCE1EF"/>
+    </linearGradient>
+    <linearGradient id="spine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6B6EDA"/>
+      <stop offset="0.55" stop-color="#5457C5"/>
+      <stop offset="1" stop-color="#3E40A0"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6B6EDA"/>
+      <stop offset="1" stop-color="#4749B0"/>
+    </linearGradient>
+    <radialGradient id="gloss" cx="0.5" cy="0.1" r="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="10" result="o"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#gloss)"/>
+
+  <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 168 424 168 H 256 Q 208 168 208 208 V 304 Q 208 344 256 344 H 424 Q 448 344 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+        fill="#000000" opacity="0.28" transform="translate(0,16)" filter="url(#soft)"/>
+
+  <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 168 424 168 H 256 Q 208 168 208 208 V 304 Q 208 344 256 344 H 424 Q 448 344 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+        fill="url(#page)"/>
+  <path d="M 128 64 H 416 Q 448 64 448 96 V 104 Q 448 84 424 84 H 132 Q 96 84 96 120 V 400 Q 96 436 132 436 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+        fill="#ffffff" opacity="0.6"/>
+
+  <line x1="248" y1="117" x2="400" y2="117" stroke="#ffffff" stroke-width="19" stroke-linecap="round" opacity="0.5"/>
+  <line x1="248" y1="116" x2="400" y2="116" stroke="#868E9E" stroke-width="19" stroke-linecap="round"/>
+  <line x1="248" y1="397" x2="352" y2="397" stroke="#ffffff" stroke-width="19" stroke-linecap="round" opacity="0.5"/>
+  <line x1="248" y1="396" x2="352" y2="396" stroke="#868E9E" stroke-width="19" stroke-linecap="round"/>
+
+  <path d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 184 V 64 Z" fill="url(#spine)"/>
+  <path d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 132 V 64 Z" fill="#8487E0" opacity="0.55"/>
+  <rect x="180" y="64" width="10" height="384" fill="#000000" opacity="0.16"/>
+  <line x1="132" y1="120" x2="132" y2="392" stroke="#2C2E82" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+  <line x1="135" y1="120" x2="135" y2="392" stroke="#9C9FEC" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+  <rect x="256" y="224" width="128" height="64" rx="32" fill="#000000" opacity="0.22" transform="translate(0,6)"/>
+  <rect x="256" y="224" width="128" height="64" rx="32" fill="url(#pill)"/>
+  <rect x="256" y="224" width="128" height="30" rx="15" fill="#ffffff" opacity="0.14"/>
+</svg>
