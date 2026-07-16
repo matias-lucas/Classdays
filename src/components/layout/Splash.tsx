@@ -104,7 +104,10 @@ export function Splash({ hoje }: Props) {
 
   return (
     <div ref={raiz} className="splash" aria-hidden="true">
-      {/* cópia inline do public/icon.svg — se o ícone mudar, mude aqui também */}
+      {/* cópia inline do ícone oficial (public/icon-grande.svg, fonte também do
+          apple-icon/opengraph-image via scripts/generate-icons.mjs) — animável
+          por dentro (as linhas "se escrevem", a fita desce). Se o desenho
+          mudar, atualize os três: aqui, o .svg e rode o script de novo. */}
       <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 512 512" className="splash-logo">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">

@@ -29,6 +29,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://classdays.net"),
   title: `Classdays`,
   description:
     "Grade da semana, provas, entregas e cancelamentos da turma — sempre atualizado.",
@@ -37,7 +38,11 @@ export const metadata: Metadata = {
     // página, ignorando trocas no arquivo. Bump o número se trocar o ícone.
     icon: "/logo-sem-fundo.svg?v=2",
     shortcut: "/logo-sem-fundo.svg?v=2",
-    apple: "/logo-sem-fundo.svg?v=2",
+    // src/app/apple-icon.png é servido por convenção do App Router, mas o
+    // Next não injeta o <link rel="apple-touch-icon"> sozinho aqui — então
+    // ele entra declarado, igual ao icon/shortcut acima (fonte única, sem
+    // duplicidade: nenhum outro lugar do código referencia esse arquivo).
+    apple: "/apple-icon.png",
   },
 };
 
