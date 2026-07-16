@@ -13,10 +13,11 @@ import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function PaginaAluno() {
-  const [materias, grade, eventos] = await Promise.all([
+  const [materias, grade, eventos, gradeVisivel] = await Promise.all([
     db.getMaterias(),
     db.getGrade(),
     db.getEventos(),
+    db.getGradeVisivel(),
   ]);
 
   return (
@@ -26,6 +27,7 @@ export default async function PaginaAluno() {
       eventos={eventos}
       hojeInicial={hojeISO()}
       agoraInicial={horaAgora()}
+      gradeVisivel={gradeVisivel}
     />
   );
 }

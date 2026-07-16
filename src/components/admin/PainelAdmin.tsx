@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { EventoLinha } from "@/components/ui/EventoLinha";
 import { EVENTO_VAZIO, useFluxoEvento } from "@/hooks/useFluxoEvento";
+import { useGradeVisivel } from "@/hooks/useGradeVisivel";
 import type { Evento, Materia } from "@/lib/types";
 import { PreviewEvento } from "./PreviewEvento";
 
@@ -13,6 +14,7 @@ interface Props {
   hojeIso: string;
   backend: "supabase" | "local";
   claudeAtivo: boolean;
+  gradeVisivelInicial: boolean;
 }
 
 /**
@@ -20,7 +22,21 @@ interface Props {
  * fluxo (frase → parse → preview editável → salvar/apagar) moram no hook
  * useFluxoEvento.
  */
-export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }: Props) {
+export function PainelAdmin({
+  materias,
+  eventos,
+  hojeIso,
+  backend,
+  claudeAtivo,
+  gradeVisivelInicial,
+}: Props) {
+  const {
+    gradeVisivel,
+    salvando: salvandoGrade,
+    erro: erroGrade,
+    alternar: alternarGrade,
+  } = useGradeVisivel(gradeVisivelInicial);
+
   const {
     frase,
     setFrase,
@@ -69,6 +85,33 @@ export function PainelAdmin({ materias, eventos, hojeIso, backend, claudeAtivo }
           ? "Manutenção dos eventos — Interpretação por IA"
           : "Manutenção dos eventos — Interpretação por regras locais"}
       </p>
+
+      <div className="grade-toggle-card">
+        <label className="grade-toggle-linha">
+          <input
+            type="checkbox"
+            className="grade-toggle-check"
+            role="switch"
+            checked={gradeVisivel}
+            onChange={(e) => alternarGrade(e.target.checked)}
+            disabled={salvandoGrade}
+          />
+          <span className="grade-toggle-texto">
+            <strong>Grade de aulas divulgada</strong>
+            <small>
+              {gradeVisivel
+                ? '"Hoje" e a grade da semana aparecem normalmente pra turma.'
+                : 'A turma vê "Ainda não divulgado" em "Hoje" e na grade da semana.'}
+            </small>
+          </span>
+          <span className="grade-toggle-slider" aria-hidden="true" />
+        </label>
+        {erroGrade && (
+          <p className="msg-erro" style={{ marginTop: 8 }}>
+            {erroGrade}
+          </p>
+        )}
+      </div>
 
       <form className="frase-form" onSubmit={interpretar}>
         <label className="campo">

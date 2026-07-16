@@ -18,6 +18,9 @@ export interface Database {
   getEventos(): Promise<Evento[]>;
   addEvento(novo: NovoEvento): Promise<Evento>;
   deleteEvento(id: number): Promise<void>;
+  /** A grade fixa e o "Hoje" já foram divulgados pra turma? (liga/desliga no /admin) */
+  getGradeVisivel(): Promise<boolean>;
+  setGradeVisivel(visivel: boolean): Promise<void>;
 }
 
 /**

@@ -147,6 +147,92 @@
   background: var(--surface);
 }
 
+/* toggle "grade divulgada": liga/desliga se a turma vê "Hoje" e a grade da
+   semana, ou "Ainda não divulgado" no lugar. Mesma anatomia do switch de
+   tema do menu lateral (rótulo + descrição à esquerda, trilho à direita). */
+.grade-toggle-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 4px 14px;
+  margin-bottom: 18px;
+}
+.grade-toggle-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  cursor: pointer;
+}
+.grade-toggle-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.grade-toggle-texto strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.grade-toggle-texto small {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+.grade-toggle-check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.grade-toggle-check:disabled {
+  cursor: wait;
+}
+.grade-toggle-check:focus-visible ~ .grade-toggle-slider {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.grade-toggle-slider {
+  position: relative;
+  margin-left: auto;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+  pointer-events: none;
+  background-color: var(--line-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition:
+    background-color var(--t-med) var(--ease),
+    border-color var(--t-med) var(--ease);
+}
+.grade-toggle-check:checked ~ .grade-toggle-slider {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+.grade-toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background-color: var(--ink-soft);
+  transition:
+    transform var(--t-med) var(--ease),
+    background-color var(--t-med) var(--ease);
+}
+.grade-toggle-check:checked ~ .grade-toggle-slider::before {
+  transform: translateX(18px);
+  background-color: var(--on-ink);
+}
+
 /* caixa do input inteligente */
 .frase-form {
   display: flex;

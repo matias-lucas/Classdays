@@ -33,13 +33,23 @@ interface Props {
    */
   hojeInicial: string;
   agoraInicial: string;
+  /** Liga/desliga no /admin: enquanto falsa, "Hoje" e a grade da semana
+   *  mostram "Ainda não divulgado" em vez do horário. */
+  gradeVisivel: boolean;
 }
 
 // "arraste" = a semana trocou por gesto (o próprio arraste já fez o
 // assentamento), então o slider NÃO deve rodar a transição de botão por cima.
 type DirecaoSemana = "inicial" | "prox" | "ant" | "arraste";
 
-export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicial }: Props) {
+export function AgendaAluno({
+  materias,
+  grade,
+  eventos,
+  hojeInicial,
+  agoraInicial,
+  gradeVisivel,
+}: Props) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [direcaoSemana, setDirecaoSemana] = useState<DirecaoSemana>("inicial");
   // "chegada em casa": marcada quando uma navegação TERMINA na semana atual —
@@ -133,14 +143,18 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
       </header>
 
       <SecaoRecolhivel id="hoje" titulo="Hoje">
-        <TrocaSuave chave={filtro}>
-          <HojeTimeline
-            itens={itensHoje}
-            materiaDe={materiaDe}
-            filtroAtivo={filtro !== null}
-            agoraHHMM={agora.hhmm}
-          />
-        </TrocaSuave>
+        {gradeVisivel ? (
+          <TrocaSuave chave={filtro}>
+            <HojeTimeline
+              itens={itensHoje}
+              materiaDe={materiaDe}
+              filtroAtivo={filtro !== null}
+              agoraHHMM={agora.hhmm}
+            />
+          </TrocaSuave>
+        ) : (
+          <div className="hoje-vazio">Ainda não divulgado.</div>
+        )}
       </SecaoRecolhivel>
 
       <SecaoRecolhivel id="filtro" titulo="Filtrar por matéria">
@@ -198,25 +212,29 @@ export function AgendaAluno({ materias, grade, eventos, hojeInicial, agoraInicia
           )
         }
       >
-        <TrocaSuave chave={filtro}>
-          <GradeSemanaSlider
-            semana={semana}
-            semanaAnterior={semanaAnterior}
-            semanaProxima={semanaProxima}
-            materiaDe={materiaDe}
-            hojeIso={agora.hoje}
-            filtro={filtro}
-            direcao={direcaoSemana}
-            marcarPassados={marcarPassados}
-            destaqueHoje={destaqueHoje}
-            onArrastar={(dir) => {
-              const novo = semanaOffset + (dir === "prox" ? 1 : -1);
-              setDirecaoSemana("arraste");
-              setDestaqueHoje(novo === 0);
-              setSemanaOffset(novo);
-            }}
-          />
-        </TrocaSuave>
+        {gradeVisivel ? (
+          <TrocaSuave chave={filtro}>
+            <GradeSemanaSlider
+              semana={semana}
+              semanaAnterior={semanaAnterior}
+              semanaProxima={semanaProxima}
+              materiaDe={materiaDe}
+              hojeIso={agora.hoje}
+              filtro={filtro}
+              direcao={direcaoSemana}
+              marcarPassados={marcarPassados}
+              destaqueHoje={destaqueHoje}
+              onArrastar={(dir) => {
+                const novo = semanaOffset + (dir === "prox" ? 1 : -1);
+                setDirecaoSemana("arraste");
+                setDestaqueHoje(novo === 0);
+                setSemanaOffset(novo);
+              }}
+            />
+          </TrocaSuave>
+        ) : (
+          <div className="hoje-vazio">Ainda não divulgado.</div>
+        )}
       </SecaoRecolhivel>
 
       {/* A antiga seção "Próximos eventos" saiu daqui: o card "Próximo" acima
