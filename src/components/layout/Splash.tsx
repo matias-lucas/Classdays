@@ -104,29 +104,63 @@ export function Splash({ hoje }: Props) {
 
   return (
     <div ref={raiz} className="splash" aria-hidden="true">
-      {/* cópia inline do src/app/icon.svg — se o ícone mudar, mude aqui também */}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 512 512"
-        width="128"
-        height="128"
-        className="splash-logo"
-      >
-        <rect width="512" height="512" rx="112" fill="#16203A"/>
-        <rect x="80" y="64" width="368" height="384" rx="48" fill="#101830"/>
-        <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 176 416 176 H 264 Q 224 176 224 216 V 296 Q 224 336 264 336 H 416 Q 448 336 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z" fill="#EDF0F6"/>
-        <path d="M 128 64 H 416 Q 448 64 448 96 V 104 Q 448 84 424 84 H 132 Q 96 84 96 120 V 400 Q 96 436 132 436 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z" fill="#DDE2EE"/>
-        <path d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 136 V 64 Z" fill="#5457C5"/>
-        <g>
-          <circle cx="108" cy="120" r="18" fill="#EDF0F6"/><circle cx="108" cy="120" r="9" fill="#16203A"/><circle cx="104" cy="116" r="3" fill="#8B8EDB"/>
-          <circle cx="108" cy="256" r="18" fill="#EDF0F6"/><circle cx="108" cy="256" r="9" fill="#16203A"/><circle cx="104" cy="252" r="3" fill="#8B8EDB"/>
-          <circle cx="108" cy="392" r="18" fill="#EDF0F6"/><circle cx="108" cy="392" r="9" fill="#16203A"/><circle cx="104" cy="388" r="3" fill="#8B8EDB"/>
-        </g>
-        <line x1="240" y1="120" x2="400" y2="120" stroke="#16203A" strokeWidth="24" strokeLinecap="round" opacity="0.8"/>
-        <line x1="240" y1="392" x2="352" y2="392" stroke="#16203A" strokeWidth="24" strokeLinecap="round" opacity="0.45"/>
-        <rect x="264" y="228" width="120" height="56" rx="28" fill="#5457C5"/>
-        <rect x="264" y="228" width="120" height="56" rx="28" fill="none" stroke="#3F41A0" strokeWidth="3"/>
-        <line x1="286" y1="256" x2="330" y2="256" stroke="#EDF0F6" strokeWidth="12" strokeLinecap="round"/>
+      {/* cópia inline do public/icon.svg — se o ícone mudar, mude aqui também */}
+      <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 512 512" className="splash-logo">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#1B2749"/>
+            <stop offset="1" stopColor="#101830"/>
+          </linearGradient>
+          <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FBFCFF"/>
+            <stop offset="1" stopColor="#DCE1EF"/>
+          </linearGradient>
+          <linearGradient id="spine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#6B6EDA"/>
+            <stop offset="0.55" stopColor="#5457C5"/>
+            <stop offset="1" stopColor="#3E40A0"/>
+          </linearGradient>
+          <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#6B6EDA"/>
+            <stop offset="1" stopColor="#4749B0"/>
+          </linearGradient>
+          <radialGradient id="gloss" cx="0.5" cy="0.1" r="1">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0.10"/>
+            <stop offset="0.6" stopColor="#ffffff" stopOpacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+            <feOffset dy="10" result="o"/>
+            <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+      
+        <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+        <rect width="512" height="512" rx="112" fill="url(#gloss)"/>
+      
+        <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 168 424 168 H 256 Q 208 168 208 208 V 304 Q 208 344 256 344 H 424 Q 448 344 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+              fill="#000000" opacity="0.28" transform="translate(0,16)" filter="url(#soft)"/>
+      
+        <path d="M 128 64 H 416 Q 448 64 448 96 V 144 Q 448 168 424 168 H 256 Q 208 168 208 208 V 304 Q 208 344 256 344 H 424 Q 448 344 448 368 V 416 Q 448 448 416 448 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+              fill="url(#page)"/>
+        <path d="M 128 64 H 416 Q 448 64 448 96 V 104 Q 448 84 424 84 H 132 Q 96 84 96 120 V 400 Q 96 436 132 436 H 128 Q 80 448 80 400 V 112 Q 80 64 128 64 Z"
+              fill="#ffffff" opacity="0.6"/>
+      
+        <line className="sl-linha sl-linha1" x1="248" y1="117" x2="400" y2="117" stroke="#ffffff" strokeWidth="19" strokeLinecap="round" opacity="0.5"/>
+        <line className="sl-linha sl-linha1" x1="248" y1="116" x2="400" y2="116" stroke="#868E9E" strokeWidth="19" strokeLinecap="round"/>
+        <line className="sl-linha sl-linha2" x1="248" y1="397" x2="352" y2="397" stroke="#ffffff" strokeWidth="19" strokeLinecap="round" opacity="0.5"/>
+        <line className="sl-linha sl-linha2" x1="248" y1="396" x2="352" y2="396" stroke="#868E9E" strokeWidth="19" strokeLinecap="round"/>
+
+        <path className="sl-fita" d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 184 V 64 Z" fill="url(#spine)"/>
+        <path className="sl-fita" d="M 128 64 Q 80 64 80 112 V 400 Q 80 448 128 448 H 132 V 64 Z" fill="#8487E0" opacity="0.55"/>
+        <rect className="sl-fita" x="180" y="64" width="10" height="384" fill="#000000" opacity="0.16"/>
+        <line className="sl-fita" x1="132" y1="120" x2="132" y2="392" stroke="#2C2E82" strokeWidth="9" strokeLinecap="round" opacity="0.85"/>
+        <line className="sl-fita" x1="135" y1="120" x2="135" y2="392" stroke="#9C9FEC" strokeWidth="3" strokeLinecap="round" opacity="0.6"/>
+      
+        <rect x="256" y="224" width="128" height="64" rx="32" fill="#000000" opacity="0.22" transform="translate(0,6)"/>
+        <rect x="256" y="224" width="128" height="64" rx="32" fill="url(#pill)"/>
+        <rect x="256" y="224" width="128" height="30" rx="15" fill="#ffffff" opacity="0.14"/>
       </svg>
       <div className="splash-nome">Classdays</div>
       <div className="splash-data">

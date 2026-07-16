@@ -32,6 +32,13 @@ export const metadata: Metadata = {
   title: `Classdays`,
   description:
     "Grade da semana, provas, entregas e cancelamentos da turma — sempre atualizado.",
+  icons: {
+    // ?v=2: força o Chrome a buscar de novo — ele cacheia favicon por URL da
+    // página, ignorando trocas no arquivo. Bump o número se trocar o ícone.
+    icon: "/logo-sem-fundo.svg?v=2",
+    shortcut: "/logo-sem-fundo.svg?v=2",
+    apple: "/logo-sem-fundo.svg?v=2",
+  },
 };
 
 export const viewport: Viewport = {
