@@ -85,4 +85,17 @@ export const dbSupabase: Database = {
   async deleteEvento(id: number) {
     ouErro(await supabase().from("eventos").delete().eq("id", id));
   },
+
+  async getGradeVisivel() {
+    const linha = ouErro(
+      await supabase().from("config").select("grade_visivel").eq("id", 1).single(),
+    ) as { grade_visivel: boolean };
+    return linha.grade_visivel;
+  },
+
+  async setGradeVisivel(visivel: boolean) {
+    ouErro(
+      await supabase().from("config").update({ grade_visivel: visivel }).eq("id", 1),
+    );
+  },
 };

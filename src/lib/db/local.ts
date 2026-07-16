@@ -20,6 +20,7 @@ interface BancoLocal {
   materias: Materia[];
   grade: AulaFixa[];
   eventos: Evento[];
+  config: { gradeVisivel: boolean };
 }
 
 const ARQUIVO = path.join(process.cwd(), "data", "db.json");
@@ -29,13 +30,17 @@ function bancoInicial(): BancoLocal {
     materias: MATERIAS_SEED,
     grade: GRADE_SEED,
     eventos: EVENTOS_SEED,
+    config: { gradeVisivel: true },
   };
 }
 
 async function ler(): Promise<BancoLocal> {
   try {
     const bruto = await fs.readFile(ARQUIVO, "utf-8");
-    return JSON.parse(bruto) as BancoLocal;
+    const banco = JSON.parse(bruto) as BancoLocal;
+    // db.json de antes deste campo existir: nasce visível (comportamento antigo).
+    banco.config ??= { gradeVisivel: true };
+    return banco;
   } catch {
     // Arquivo ainda não existe (ou foi apagado): nasce do seed.
     const inicial = bancoInicial();
@@ -89,6 +94,16 @@ export const dbLocal: Database = {
   async deleteEvento(id: number) {
     const banco = await ler();
     banco.eventos = banco.eventos.filter((e) => e.id !== id);
+    await gravar(banco);
+  },
+
+  async getGradeVisivel() {
+    return (await ler()).config.gradeVisivel;
+  },
+
+  async setGradeVisivel(visivel: boolean) {
+    const banco = await ler();
+    banco.config.gradeVisivel = visivel;
     await gravar(banco);
   },
 };

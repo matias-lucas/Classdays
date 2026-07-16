@@ -30,9 +30,10 @@ export default async function PaginaAdmin() {
     return <LoginAdmin />;
   }
 
-  const [materias, eventos] = await Promise.all([
+  const [materias, eventos, gradeVisivel] = await Promise.all([
     db.getMaterias(),
     db.getEventos(),
+    db.getGradeVisivel(),
   ]);
 
   return (
@@ -42,6 +43,7 @@ export default async function PaginaAdmin() {
       hojeIso={hojeISO()}
       backend={nomeBackend}
       claudeAtivo={claudeDisponivel()}
+      gradeVisivelInicial={gradeVisivel}
     />
   );
 }
