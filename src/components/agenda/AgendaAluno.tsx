@@ -136,9 +136,8 @@ export function AgendaAluno({
       <header className="head-row">
         <div>
           <p className="eyebrow">
-          {NOME_CURSO} · {NOME_INST}
+          {NOME_CURSO} · {NOME_INST}<br />{NOME_TURMA}
           </p>
-          <p className="eyebrow2">{NOME_TURMA}</p>
         </div>
       </header>
 
