@@ -15,28 +15,37 @@
   gap: 14px;
   background-color: var(--bg);
 }
-html[data-splash="on"] .splash {
+/* "on" enquanto mostra, "saindo" durante a saída (Splash.tsx) */
+html[data-splash] .splash {
   display: flex;
+}
+/* sem scroll durante o splash: os alvos do FLIP não podem sair da tela */
+html[data-splash] body {
+  overflow-y: hidden;
+}
+/* as peças reais da topbar só aparecem quando as cópias pousam sobre elas */
+html[data-splash] .topbar .logo,
+html[data-splash] .topbar h1 {
+  opacity: 0;
 }
 .splash-logo {
   width: 128px;
   height: 128px;
   display: block;
   transform-origin: center center;
-  /* entra, e quando a data aparece (680ms) dá uma piscada suave de "pronto" */
+  /* entra, e quando a data aparece dá uma piscada suave de "pronto"; a piscada
+     só começa depois da entrada (as duas animam transform, sobrepor cortaria) */
   animation:
     splash-entrada 480ms var(--ease) both,
-    sl-pisca 1s ease-in-out 250ms;
+    sl-pisca 700ms ease-in-out 500ms;
 }
 @keyframes sl-pisca {
   0%,
   100% {
-    opacity: 1;
     transform: scale(1);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.2);
+    transform: scale(1.08);
   }
 }
 .splash-nome {
@@ -61,7 +70,6 @@ html[data-splash="on"] .splash {
     transform: none;
   }
 }
-
 /* o calendário se preenche: a fita desce e as duas linhas do papel "se
    escrevem" (scaleX da esquerda), enquanto o tile ainda assenta da entrada.
    transform-box: fill-box faz a origem ser a da própria peça no SVG. */
@@ -101,7 +109,6 @@ html[data-splash="on"] .splash {
     transform: scaleX(1);
   }
 }
-
 /* a data de hoje, em mono — o splash já responde "que dia é hoje?".
    Entra por último (depois do calendário se preencher, junto da piscada do
    logo) e NÃO viaja pra topbar: some rápido na saída. */
@@ -112,16 +119,18 @@ html[data-splash="on"] .splash {
   color: var(--ink-soft);
   animation: splash-entrada 360ms var(--ease) 680ms both;
 }
-/* saída: as peças viajam (transform via JS) enquanto o fundo some por cima do
-   conteúdo real. O transitionend do background-color encerra o splash. */
+/* saída: as peças viajam (transform via JS, ease-exp — mesma regra das
+   entradas de painel) enquanto o fundo some por cima do conteúdo real.
+   O transitionend do background-color encerra o splash. */
 .splash-logo,
 .splash-nome {
-  transition: transform 560ms var(--ease);
+  transition: transform 640ms var(--ease-exp);
   will-change: transform;
 }
 .splash.is-saindo {
   background-color: transparent;
-  transition: background-color 260ms var(--ease) 300ms;
+  /* o fundo só esvai na reta final do voo */
+  transition: background-color 340ms var(--ease) 320ms;
   pointer-events: none;
 }
 .splash.is-saindo .splash-logo,
@@ -140,4 +149,20 @@ html[data-splash="on"] .splash {
   opacity: 0;
   animation: none;
   transition: opacity 160ms var(--ease);
+}
+
+/* a página sobe suave enquanto a cortina esvai; a topbar fica de fora (alvo
+   do FLIP) e a subida termina antes do fim do splash (200+380 < 320+340ms) */
+html[data-splash="saindo"] .wrap > *:not(.splash):not(.topbar) {
+  animation: splash-revela 380ms var(--ease) 200ms both;
+}
+@keyframes splash-revela {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
