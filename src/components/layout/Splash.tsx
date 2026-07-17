@@ -76,8 +76,10 @@ export function Splash({ hoje }: Props) {
     };
 
     // espera o calendário se preencher, a data entrar (680ms) e a piscada do
-    // logo terminar (680 + 520 = 1200ms) antes de mandar as peças pra topbar
+    // logo terminar (500 + 700 = 1200ms) antes de mandar as peças pra topbar
     const tParada = setTimeout(() => {
+      // "saindo" guia a recepção do conteúdo (ver splash.css)
+      html.dataset.splash = "saindo";
       el.classList.add("is-saindo");
       viajar(logoSplash, logoAlvo);
       viajar(nomeSplash, nomeAlvo);
