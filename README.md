@@ -83,7 +83,6 @@ src/
     parser/                regras locais + chamada ao Claude + schemas zod
     db/                    contrato + adaptadores (JSON local / Supabase)
 supabase/                  SQL: schema com RLS + seed
-docs/ROADMAP.md            estado do projeto + o que vem depois
 ```
 
 ## Deploy (resumo)
@@ -109,7 +108,5 @@ docs/ROADMAP.md            estado do projeto + o que vem depois
 
 ## Documentação
 
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — o que está feito, pendências de infra e
-  os Opcionais 1 e 2 (futuro).
 - `DESIGN.md` (local, fora do git) — anotações do sistema visual; a fonte da
   verdade visual é `src/styles/` (importado pelo `src/app/globals.css`).
