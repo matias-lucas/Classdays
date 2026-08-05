@@ -31,11 +31,18 @@ entrega. Regras que valem para todas: uma branch por entrega, migrations
 sempre aditivas (preview e produção **compartilham o banco**), banco antes da
 interface, e parada obrigatória para confirmação entre uma entrega e a próxima.
 
-- ⬜ **E1 — Fundação + grade e matérias no `/admin`** *(prazo: 10/08, volta das
-  aulas)*. Banco local testável, helpers de rota, selo tolerante a tipo novo;
-  CRUD de `grade_horaria` e `materias` com exclusão bloqueada quando há
-  vínculo; página `/admin/grade`. **Pronto quando** a grade do 4º período for
-  cadastrada inteira pela interface, sem abrir o SQL Editor.
+- 🟡 **E1 — Fundação + grade e matérias no `/admin`** *(prazo: 10/08, volta das
+  aulas)*. Código em `main` e em produção (merge `b21150c`, 05/08/2026): banco
+  local testável, helpers de rota, selo tolerante a tipo novo, CRUD de
+  `grade_horaria` e `materias` com exclusão bloqueada quando há vínculo,
+  página `/admin/grade`. Verificado: `tsc`/`npm test` (136)/`npm run build`
+  limpos, smoke test manual de todas as rotas novas contra o adaptador local,
+  `/admin/grade` em produção sem sessão não vaza dado. **Falta para fechar**:
+  rodar `supabase/0004_grade_admin.sql` no SQL Editor do Supabase (ainda não
+  aplicado — ver docs/PLANO-V2.md §6 Passo 1) e cadastrar a grade real do 4º
+  período pela interface, corrigindo os professores placeholder. **Pronto
+  quando** isso estiver feito, sem o SQL Editor ter sido aberto para a grade
+  em si.
 - ⬜ **E2 — Eventos contínuos + editar eventos**. Coluna `data_fim`, faixa "em
   andamento", parser entendendo "de X a Y" nos dois caminhos, `PATCH
   /api/eventos/:id`. **Pronto quando** a renovação de matrícula virar um evento
