@@ -374,8 +374,13 @@
     max-width: 1180px;
   }
   /* tudo segue numa coluna de leitura central, MENOS a grade da semana
-     (.sec-grade = corpo recolhível que embrulha o .grade-viewport) */
-  .wrap > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade):not(.splash) {
+     (.sec-grade = corpo recolhível que embrulha o .grade-viewport) e, no
+     /admin/grade, a grade fixa editável (.editor-secao-grade) — mesmo
+     problema (5 colunas precisam de mais que 720px), mesma solução. */
+  .wrap
+    > *:not(.slabel-grade):not(.grade-viewport):not(.sec-grade):not(.splash):not(
+      .editor-secao-grade
+    ) {
     max-width: 720px;
     margin-inline: auto;
   }

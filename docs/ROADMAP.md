@@ -20,34 +20,42 @@
   dot "iminente" pulsando quando falta ≤1h; splash de entrada 1x por sessão;
   docs enxutos.
 
+- **Infra (07–07/2026)** — projeto Supabase criado e populado com a grade real
+  da turma, deploy na Vercel, `/admin` protegido, link divulgado.
+
+## Classdays v2 ⬜
+
+Plano completo (SQL, contratos, rotas, testes, QA, deploy) em
+**[`docs/PLANO-V2.md`](PLANO-V2.md)** — leia-o antes de começar qualquer
+entrega. Regras que valem para todas: uma branch por entrega, migrations
+sempre aditivas (preview e produção **compartilham o banco**), banco antes da
+interface, e parada obrigatória para confirmação entre uma entrega e a próxima.
+
+- ⬜ **E1 — Fundação + grade e matérias no `/admin`** *(prazo: 10/08, volta das
+  aulas)*. Banco local testável, helpers de rota, selo tolerante a tipo novo;
+  CRUD de `grade_horaria` e `materias` com exclusão bloqueada quando há
+  vínculo; página `/admin/grade`. **Pronto quando** a grade do 4º período for
+  cadastrada inteira pela interface, sem abrir o SQL Editor.
+- ⬜ **E2 — Eventos contínuos + editar eventos**. Coluna `data_fim`, faixa "em
+  andamento", parser entendendo "de X a Y" nos dois caminhos, `PATCH
+  /api/eventos/:id`. **Pronto quando** a renovação de matrícula virar um evento
+  só e der para corrigir um evento sem apagar e recriar.
+- ⬜ **E3 — Feriados e recessos**. Tipos novos reaproveitando o período; em dia
+  de feriado a grade mostra o destaque no lugar das aulas.
+- ⬜ **E4 — Meu Classdays**. `localStorage` com matérias ocultas; some de
+  Hoje/Grade/Próximo/Eventos; a agenda pública fica intacta para quem nunca
+  configurar.
+- ⬜ **E5 — Sino in-app**. Badge de não lidos sobre os eventos dos próximos
+  7 dias, sem servidor.
+- ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
+  no dia; iOS exige o app na tela de início.
+
 ## Pendências de infra ⬜
 
-- Criar o projeto **Supabase** juntos (aprendizado) e rodar `supabase/*.sql`.
-- Obter `ANTHROPIC_API_KEY` (parsing por Claude em produção).
-- Trocar o seed pela **grade real da turma**.
-- **Deploy final na Vercel** e compartilhar o link com a turma.
-
-## Opcional 1 — Meu Classdays ⬜
-
-Personalização por dispositivo (primeiro estado real no cliente):
-store em `localStorage` para matérias **favoritas/ocultas** + **lembretes
-pessoais**. Matéria oculta some de Hoje/Grade/Próximo/Eventos. Painel
-alcançável pelo menu lateral (a lista `ITENS_NAV` em `MenuLateral.tsx` já
-está pronta para receber o item). Estritamente client-side: sem servidor,
-sem auth; a agenda pública fica intacta para quem nunca abrir.
-
-**Pronto quando:** ocultar uma matéria a remove de todas as seções;
-favoritas/lembretes persistem; DoD completo.
-
-## Opcional 2 — Lembretes & Calendário ⬜
-
-**Bottom sheet** de exportação: `.ics` gerado no cliente, links Google/Apple
-Calendar e opt-in de **Web Notifications** (fluxo de permissão com
-degradação graciosa quando negado/não suportado). Aberto pelo drawer ou por
-um evento.
-
-**Pronto quando:** o `.ics` importa limpo num calendário real; toggles de
-notificação degradam bem; sheet correto com teclado/scrim/Esc.
+- Obter `ANTHROPIC_API_KEY` (parsing por Claude em produção; sem ela o parser
+  de regras assume e o app roda a custo zero).
+- Apontar o domínio **classdays.net** (o `metadataBase` do código já aponta
+  para lá) — passo a passo em `docs/PLANO-V2.md` §11.
 
 ## Definition of Done (toda etapa)
 

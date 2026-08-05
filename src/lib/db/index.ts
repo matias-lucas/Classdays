@@ -1,6 +1,15 @@
-import type { AulaFixa, Evento, Materia, NovoEvento } from "@/lib/types";
+import type {
+  AulaFixa,
+  EdicaoMateria,
+  Evento,
+  Materia,
+  NovaAula,
+  NovoEvento,
+} from "@/lib/types";
 import { dbLocal } from "./local";
 import { dbSupabase } from "./supabase";
+
+export { ConflitoBanco } from "./erros";
 
 /**
  * Contrato de acesso a dados do Classdays.
@@ -9,8 +18,10 @@ import { dbSupabase } from "./supabase";
  * os dados vêm de um JSON no disco ou do Supabase. Trocar de banco = trocar
  * qual adaptador é exportado aqui embaixo, e nada mais muda.
  *
- * Na v1 o admin só cria/apaga EVENTOS. Matérias e grade fixa mudam raramente
- * (uma vez por semestre), então são editadas direto no seed/banco.
+ * Desde a E1, o admin também cria/edita/apaga MATÉRIAS e a GRADE fixa pela
+ * interface (antes, só eventos — matérias e grade mudavam direto no
+ * seed/banco). Convenção dos métodos de escrita: `null`/`false` = não
+ * encontrado (a rota devolve 404); exceção = falha real (a rota devolve 500).
  */
 export interface Database {
   getMaterias(): Promise<Materia[]>;
@@ -21,6 +32,15 @@ export interface Database {
   /** A grade fixa e o "Hoje" já foram divulgados pra turma? (liga/desliga no /admin) */
   getGradeVisivel(): Promise<boolean>;
   setGradeVisivel(visivel: boolean): Promise<void>;
+
+  addMateria(nova: Materia): Promise<Materia>;
+  updateMateria(id: string, campos: EdicaoMateria): Promise<Materia | null>;
+  deleteMateria(id: string): Promise<boolean>;
+  addAula(nova: NovaAula): Promise<AulaFixa>;
+  updateAula(id: number, campos: NovaAula): Promise<AulaFixa | null>;
+  deleteAula(id: number): Promise<boolean>;
+  /** Quantas aulas e eventos apontam para esta matéria (trava a exclusão). */
+  contarUsos(materiaId: string): Promise<{ aulas: number; eventos: number }>;
 }
 
 /**

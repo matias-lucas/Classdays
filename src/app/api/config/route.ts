@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_SESSAO, sessaoValida } from "@/lib/auth";
+import { erro, exigirSessao } from "@/lib/api";
 import { db } from "@/lib/db";
 
 /**
@@ -7,23 +7,19 @@ import { db } from "@/lib/db";
  * (o toggle do /admin acima de "Hoje" e "Grade da semana").
  */
 export async function PATCH(req: NextRequest) {
-  if (!sessaoValida(req.cookies.get(COOKIE_SESSAO)?.value)) {
-    return NextResponse.json({ erro: "Faça login para usar o admin." }, { status: 401 });
-  }
+  const naoAutorizado = exigirSessao(req);
+  if (naoAutorizado) return naoAutorizado;
 
   const body = await req.json().catch(() => null);
   if (typeof body?.gradeVisivel !== "boolean") {
-    return NextResponse.json({ erro: "Campo gradeVisivel inválido." }, { status: 400 });
+    return erro("Campo gradeVisivel inválido.", 400);
   }
 
   try {
     await db.setGradeVisivel(body.gradeVisivel);
     return NextResponse.json({ gradeVisivel: body.gradeVisivel });
-  } catch (erro) {
-    console.error("[/api/config] falha ao salvar:", erro);
-    return NextResponse.json(
-      { erro: "Não consegui salvar. Veja o terminal do servidor." },
-      { status: 500 },
-    );
+  } catch (e) {
+    console.error("[/api/config] falha ao salvar:", e);
+    return erro("Não consegui salvar. Veja o terminal do servidor.", 500);
   }
 }

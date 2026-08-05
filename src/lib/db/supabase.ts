@@ -1,5 +1,12 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { NovoEvento } from "@/lib/types";
+import type {
+  AulaFixa,
+  EdicaoMateria,
+  Materia,
+  NovaAula,
+  NovoEvento,
+} from "@/lib/types";
+import { ConflitoBanco } from "./erros";
 import type { Database } from "./index";
 
 /**
@@ -40,6 +47,22 @@ function ouErro<T>(resultado: { data: T | null; error: { message: string } | nul
   return resultado.data as T;
 }
 
+/**
+ * Como `ouErro`, mas o código 23505 (violação de índice/chave única do
+ * Postgres) vira ConflitoBanco com uma frase humana — nunca a mensagem crua
+ * do banco chega à tela.
+ */
+function ouErroOuConflito<T>(
+  resultado: { data: T | null; error: { message: string; code?: string } | null },
+  mensagemConflito: string,
+): T {
+  if (resultado.error) {
+    if (resultado.error.code === "23505") throw new ConflitoBanco(mensagemConflito);
+    throw new Error(`Supabase: ${resultado.error.message}`);
+  }
+  return resultado.data as T;
+}
+
 /** Postgres devolve time como "19:00:00"; o app inteiro fala "19:00". */
 function hhmm<T extends string | null>(t: T): T {
   return (t ? t.slice(0, 5) : t) as T;
@@ -77,9 +100,10 @@ export const dbSupabase: Database = {
   },
 
   async addEvento(novo: NovoEvento) {
-    return ouErro(
+    const evento = ouErro(
       await supabase().from("eventos").insert(novo).select().single(),
-    );
+    ) as { hora: string | null } & Record<string, unknown>;
+    return { ...evento, hora: hhmm(evento.hora) } as never;
   },
 
   async deleteEvento(id: number) {
@@ -97,5 +121,65 @@ export const dbSupabase: Database = {
     ouErro(
       await supabase().from("config").update({ grade_visivel: visivel }).eq("id", 1),
     );
+  },
+
+  async addMateria(nova: Materia) {
+    return ouErroOuConflito(
+      await supabase().from("materias").insert(nova).select().single(),
+      `A matéria "${nova.id}" já existe.`,
+    );
+  },
+
+  async updateMateria(id: string, campos: EdicaoMateria) {
+    return ouErro(
+      await supabase().from("materias").update(campos).eq("id", id).select().maybeSingle(),
+    );
+  },
+
+  async deleteMateria(id: string) {
+    const linhas = ouErro(
+      await supabase().from("materias").delete().eq("id", id).select(),
+    ) as unknown[];
+    return linhas.length > 0;
+  },
+
+  async addAula(nova: NovaAula) {
+    const aula = ouErroOuConflito(
+      await supabase().from("grade_horaria").insert(nova).select().single(),
+      "Já existe uma aula desta matéria neste horário.",
+    ) as { hora_ini: string; hora_fim: string } & Record<string, unknown>;
+    return { ...aula, hora_ini: hhmm(aula.hora_ini), hora_fim: hhmm(aula.hora_fim) } as never;
+  },
+
+  async updateAula(id: number, campos: NovaAula) {
+    const aula = ouErroOuConflito(
+      await supabase().from("grade_horaria").update(campos).eq("id", id).select().maybeSingle(),
+      "Já existe uma aula desta matéria neste horário.",
+    ) as ({ hora_ini: string; hora_fim: string } & Record<string, unknown>) | null;
+    if (!aula) return null;
+    return { ...aula, hora_ini: hhmm(aula.hora_ini), hora_fim: hhmm(aula.hora_fim) } as never;
+  },
+
+  async deleteAula(id: number) {
+    const linhas = ouErro(
+      await supabase().from("grade_horaria").delete().eq("id", id).select(),
+    ) as unknown[];
+    return linhas.length > 0;
+  },
+
+  async contarUsos(materiaId: string) {
+    const aulas = await supabase()
+      .from("grade_horaria")
+      .select("*", { count: "exact", head: true })
+      .eq("materia_id", materiaId);
+    if (aulas.error) throw new Error(`Supabase: ${aulas.error.message}`);
+
+    const eventos = await supabase()
+      .from("eventos")
+      .select("*", { count: "exact", head: true })
+      .eq("materia_id", materiaId);
+    if (eventos.error) throw new Error(`Supabase: ${eventos.error.message}`);
+
+    return { aulas: aulas.count ?? 0, eventos: eventos.count ?? 0 };
   },
 };

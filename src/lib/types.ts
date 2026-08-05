@@ -45,3 +45,9 @@ export interface Evento {
 
 /** Evento ainda sem id/created_at — é o que o formulário/parser produz. */
 export type NovoEvento = Omit<Evento, "id" | "created_at">;
+
+/** Aula ainda sem id — o que o formulário da grade produz. */
+export type NovaAula = Omit<AulaFixa, "id">;
+
+/** Matéria sem o id (edição não muda a chave primária). */
+export type EdicaoMateria = Omit<Materia, "id">;
