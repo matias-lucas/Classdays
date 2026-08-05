@@ -75,6 +75,9 @@ export function PainelAdmin({
           >
             dados: {backend}
           </span>
+          <Link href="/admin/grade" className="btn btn-fantasma btn-mini">
+            Editar grade
+          </Link>
           <button type="button" className="btn btn-fantasma btn-mini" onClick={sair}>
             SAIR
           </button>

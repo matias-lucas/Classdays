@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_SESSAO, sessaoValida } from "@/lib/auth";
+import { corpoValidado, erro, exigirSessao, materiaExiste } from "@/lib/api";
 import { db } from "@/lib/db";
 import { NovoEventoSchema } from "@/lib/parser/schema";
 
@@ -8,38 +8,26 @@ import { NovoEventoSchema } from "@/lib/parser/schema";
  * Valida na fronteira: schema (zod) + matéria existente.
  */
 export async function POST(req: NextRequest) {
-  if (!sessaoValida(req.cookies.get(COOKIE_SESSAO)?.value)) {
-    return NextResponse.json({ erro: "Faça login para usar o admin." }, { status: 401 });
-  }
+  const naoAutorizado = exigirSessao(req);
+  if (naoAutorizado) return naoAutorizado;
 
-  const body = await req.json().catch(() => null);
-  const novo = NovoEventoSchema.safeParse(body);
-  if (!novo.success) {
-    const faltas = novo.error.issues.map((i) => i.path.join(".")).join(", ");
-    return NextResponse.json(
-      { erro: `Evento incompleto ou inválido (${faltas}).` },
-      { status: 400 },
-    );
-  }
+  const corpo = await corpoValidado(
+    req,
+    NovoEventoSchema,
+    (faltas) => `Evento incompleto ou inválido (${faltas}).`,
+  );
+  if (!corpo.ok) return corpo.resposta;
+  const novo = corpo.dados;
 
-  if (novo.data.materia_id !== null) {
-    const materias = await db.getMaterias();
-    if (!materias.some((m) => m.id === novo.data.materia_id)) {
-      return NextResponse.json(
-        { erro: `Matéria desconhecida: ${novo.data.materia_id}` },
-        { status: 400 },
-      );
-    }
+  if (novo.materia_id !== null && !(await materiaExiste(novo.materia_id))) {
+    return erro(`Matéria desconhecida: ${novo.materia_id}`, 400);
   }
 
   try {
-    const evento = await db.addEvento(novo.data);
+    const evento = await db.addEvento(novo);
     return NextResponse.json({ evento }, { status: 201 });
-  } catch (erro) {
-    console.error("[/api/eventos] falha ao salvar:", erro);
-    return NextResponse.json(
-      { erro: "Não consegui salvar. Veja o terminal do servidor." },
-      { status: 500 },
-    );
+  } catch (e) {
+    console.error("[/api/eventos] falha ao salvar:", e);
+    return erro("Não consegui salvar. Veja o terminal do servidor.", 500);
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_SESSAO, sessaoValida } from "@/lib/auth";
+import { corpoValidado, exigirSessao } from "@/lib/api";
 import { hojeISO } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { claudeDisponivel, parseComClaude } from "@/lib/parser/claude";
@@ -20,21 +20,18 @@ import type { ResultadoParse } from "@/lib/parser/tipos";
  * entra no banco quando o admin confirmar (POST /api/eventos).
  */
 export async function POST(req: NextRequest) {
-  if (!sessaoValida(req.cookies.get(COOKIE_SESSAO)?.value)) {
-    return NextResponse.json({ erro: "Faça login para usar o admin." }, { status: 401 });
-  }
+  const naoAutorizado = exigirSessao(req);
+  if (naoAutorizado) return naoAutorizado;
 
-  const body = await req.json().catch(() => null);
-  const pedido = PedidoParseSchema.safeParse(body);
-  if (!pedido.success) {
-    return NextResponse.json(
-      { erro: "Escreva uma frase entre 3 e 300 caracteres." },
-      { status: 400 },
-    );
-  }
+  const pedido = await corpoValidado(
+    req,
+    PedidoParseSchema,
+    "Escreva uma frase entre 3 e 300 caracteres.",
+  );
+  if (!pedido.ok) return pedido.resposta;
 
   const ctx = { hojeIso: hojeISO(), materias: await db.getMaterias() };
-  const { frase } = pedido.data;
+  const { frase } = pedido.dados;
 
   let resultado: ResultadoParse;
   if (claudeDisponivel()) {

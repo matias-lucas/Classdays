@@ -366,6 +366,15 @@
   color: var(--erro-fg);
   background: var(--erro-bg);
 }
+/* mesmo padrão de alvo de toque do resto do app (hero, drawer, filtros):
+   30px chega em ≥44px só quando o ponteiro é o dedo. */
+@media (pointer: coarse) {
+  .btn-apagar,
+  .btn-editar {
+    width: 44px;
+    height: 44px;
+  }
+}
 .confirmar-exclusao {
   display: flex;
   align-items: center;
@@ -421,3 +430,255 @@
   font-size: 12px;
   color: var(--ink-faint);
   text-underline-offset: 3px;
+}
+
+/* ============================================================================
+   editor de grade e matérias (/admin/grade)
+   ========================================================================== */
+
+.editor-secao {
+  margin-bottom: 28px;
+}
+.editor-secao-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* editar (✎): mesmo corpo do ✕ já existente, hover neutro em vez de vermelho */
+.btn-editar {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.btn-editar:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* --- matérias: uma linha por matéria ------------------------------------- */
+.lista-materias {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.linha-materia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 10px 12px;
+}
+.linha-materia .dot {
+  width: 10px;
+  height: 10px;
+}
+.linha-materia-nome {
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.linha-materia-prof {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+.linha-materia-acoes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.linha-materia-form {
+  /* .linha-materia base é flex-row (dot + nome + prof + ações); o formulário
+     não tem nada disso, e um filho único de flex-row não estica no eixo
+     principal por conta própria — vira bloco pra ocupar a linha inteira. */
+  display: block;
+  padding: 12px;
+}
+
+/* --- grade: cinco blocos, um por dia -------------------------------------- */
+.dias-grade {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+/* mesmo ponto de quebra do quadro desktop da agenda pública (grade.css):
+   é onde .editor-secao-grade escapa da coluna de leitura de 720px — abaixo
+   disso as 5 colunas não têm largura pra caber matéria + horário + ações. */
+@media (min-width: 1000px) {
+  .dias-grade {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.dia-bloco {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 12px;
+}
+.dia-bloco-titulo {
+  margin: 0 0 8px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lista-aulas {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.linha-aula {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.linha-aula:last-child {
+  border-bottom: none;
+}
+.linha-aula .dot {
+  margin-top: 5px;
+}
+.linha-aula-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.linha-aula-materia {
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+.linha-aula-horario {
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.linha-aula-acoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.linha-aula-form {
+  /* mesmo motivo do .linha-materia-form: sai do flex-row do .linha-aula */
+  display: block;
+  border-bottom: none;
+}
+.empty-day-mini {
+  padding: 4px 0;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+.btn-nova-aula {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* --- formulários inline (aula/matéria) — nunca modal ---------------------- */
+.form-aula,
+.form-materia {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 0 2px;
+}
+@media (min-width: 640px) {
+  .form-aula,
+  .form-materia {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    align-items: end;
+  }
+}
+.form-aula-msg {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.aviso-discreto {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--aviso-fg);
+}
+.form-aula-acoes,
+.form-materia-acoes {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+
+/* seletor de cor: picker nativo + atalhos da paleta do DESIGN.md */
+.cor-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cor-picker input[type="color"] {
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.cor-atalhos {
+  display: flex;
+  gap: 6px;
+}
+.cor-atalho {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--sc);
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.cor-atalho:hover {
+  transform: scale(1.08);
+}
+.cor-atalho[aria-pressed="true"] {
+  border-color: var(--ink);
+}
+.cor-atalho:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
