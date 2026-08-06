@@ -38,13 +38,21 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   página `/admin/grade`. Verificado em produção (05/08/2026): as 5 matérias
   do 4º período com professores reais (nenhum placeholder), grade com 5 aulas
   (uma por dia, seg–sex), cadastradas pela interface, sem abrir o SQL Editor
-  para a grade em si. Pendência menor, não bloqueante: confirmar se
-  `supabase/0004_grade_admin.sql` (constraints extras de defesa em profundidade,
-  ver docs/PLANO-V2.md §6 Passo 1) já rodou no SQL Editor.
-- ⬜ **E2 — Eventos contínuos + editar eventos**. Coluna `data_fim`, faixa "em
-  andamento", parser entendendo "de X a Y" nos dois caminhos, `PATCH
-  /api/eventos/:id`. **Pronto quando** a renovação de matrícula virar um evento
-  só e der para corrigir um evento sem apagar e recriar.
+  para a grade em si. `supabase/0004_grade_admin.sql` confirmado rodado em
+  produção (06/08/2026, via MCP do Supabase).
+- ✅ **E2 — Eventos contínuos + editar eventos** *(06/08/2026)*. Código em
+  `main` e em produção (merge `3a50e85`): coluna `data_fim` (aditiva, já
+  aplicada em produção), `fimDe`/`ehPeriodo`/`ativoEm`/`emAndamento`/
+  `continuosAtivos` em `agenda.ts`, parser (Claude e regras) entendendo
+  período nos dois caminhos, `PATCH /api/eventos/:id` (preserva id/created_at),
+  faixa "em andamento" em Hoje e na grade, "termina em N dias" no hero. 174
+  testes verdes, tsc/build limpos, preview e produção verificados por fetch
+  direto (sem erro, dados reais renderizando certo — ver §Pendências abaixo).
+  Pendência: a fusão dos eventos 21/22 de produção num único evento com
+  período (`docs/PLANO-V2.md` §7 Passo 1) ainda não rodou — o gate de
+  segurança do ambiente bloqueou o UPDATE/DELETE direto no banco de produção
+  e pediu confirmação explícita do Lucas. Rodar manualmente ou autorizar de
+  novo numa próxima sessão.
 - ⬜ **E3 — Feriados e recessos**. Tipos novos reaproveitando o período; em dia
   de feriado a grade mostra o destaque no lugar das aulas.
 - ⬜ **E4 — Meu Classdays**. `localStorage` com matérias ocultas; some de
