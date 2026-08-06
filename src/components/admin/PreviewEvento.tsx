@@ -8,7 +8,7 @@ import { TIPOS_EVENTO } from "@/lib/types";
 interface Props {
   evento: EventoParseado;
   materias: Materia[];
-  origem: "claude" | "regras" | "manual";
+  origem: "claude" | "regras" | "manual" | "edicao";
   avisos: string[];
   salvando: boolean;
   aoEditar: (evento: EventoParseado) => void;
@@ -20,6 +20,7 @@ const ROTULO_ORIGEM: Record<Props["origem"], string> = {
   claude: "interpretado pelo Claude",
   regras: "interpretado pelas regras locais",
   manual: "criação manual",
+  edicao: "edição",
 };
 
 /**
@@ -41,7 +42,10 @@ export function PreviewEvento({
 }: Props) {
   const materia = materias.find((m) => m.id === evento.materia_id);
   const cor = materia?.cor ?? (evento.tipo === "cancelamento" ? "var(--ink-faint)" : COR_TURMA);
-  const completo = evento.data !== null && evento.titulo.trim().length > 0;
+  const ehPeriodo = evento.data_fim !== null;
+  const periodoInvalido =
+    ehPeriodo && evento.data !== null && evento.data_fim !== null && evento.data_fim <= evento.data;
+  const completo = evento.data !== null && evento.titulo.trim().length > 0 && !periodoInvalido;
 
   function muda<K extends keyof EventoParseado>(campo: K, valor: EventoParseado[K]) {
     aoEditar({ ...evento, [campo]: valor });
@@ -124,6 +128,34 @@ export function PreviewEvento({
             onChange={(e) => muda("hora", e.target.value || null)}
           />
         </label>
+
+        <label className="campo campo-check col-2">
+          <input
+            type="checkbox"
+            checked={ehPeriodo}
+            onChange={(e) =>
+              muda("data_fim", e.target.checked ? (evento.data ?? "") : null)
+            }
+          />
+          <span>É um período (vários dias)</span>
+        </label>
+
+        {ehPeriodo && (
+          <label className="campo">
+            <span>Data final</span>
+            <input
+              type="date"
+              value={evento.data_fim ?? ""}
+              min={evento.data ?? undefined}
+              onChange={(e) => muda("data_fim", e.target.value || null)}
+              aria-invalid={periodoInvalido}
+              required
+            />
+            {periodoInvalido && (
+              <span className="campo-erro">A data final precisa ser depois da inicial.</span>
+            )}
+          </label>
+        )}
 
         <label className="campo col-2">
           <span>Observação (opcional)</span>

@@ -34,6 +34,12 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
         const aulas = filtro
           ? dia.aulas.filter((a) => a.aula.materia_id === filtro)
           : dia.aulas;
+        // eventos gerais (materia_id null) somem com o filtro ativo — mesma
+        // regra de itensDeHoje/eventosFuturos: filtro por matéria esconde o
+        // que não é dessa matéria.
+        const continuos = filtro
+          ? dia.continuos.filter((e) => e.materia_id === filtro)
+          : dia.continuos;
 
         const classesDia = [
           "day",
@@ -50,6 +56,16 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
               <span className="day-date">{fmtDiaMes(dia.data)}</span>
               {ehHoje && <span className="today-tag">hoje</span>}
             </div>
+
+            {continuos.length > 0 && (
+              <div className="day-continuos">
+                {continuos.map((e) => (
+                  <span className="day-continuo-chip" key={e.id}>
+                    {e.titulo}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="day-classes">
               {dia.cancelamentoDiaInteiro ? (

@@ -106,6 +106,14 @@ export const dbSupabase: Database = {
     return { ...evento, hora: hhmm(evento.hora) } as never;
   },
 
+  async updateEvento(id: number, campos: NovoEvento) {
+    const evento = ouErro(
+      await supabase().from("eventos").update(campos).eq("id", id).select().maybeSingle(),
+    ) as ({ hora: string | null } & Record<string, unknown>) | null;
+    if (!evento) return null;
+    return { ...evento, hora: hhmm(evento.hora) } as never;
+  },
+
   async deleteEvento(id: number) {
     ouErro(await supabase().from("eventos").delete().eq("id", id));
   },

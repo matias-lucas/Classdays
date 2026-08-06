@@ -38,6 +38,7 @@ export interface Evento {
   titulo: string;
   materia_id: string | null; // null = evento geral da turma
   data: string; // "AAAA-MM-DD"
+  data_fim: string | null; // "AAAA-MM-DD" > data; null = evento pontual (não período)
   hora: string | null; // "HH:MM" ou null (dia inteiro / sem hora definida)
   observacao: string | null;
   created_at: string; // ISO timestamp

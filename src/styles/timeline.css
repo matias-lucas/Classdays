@@ -8,6 +8,39 @@
    cronômetro. Eventos ganham um selo que pulsa — a única coisa que pede o olho.
    ========================================================================== */
 
+/* faixa "em andamento": períodos rolando hoje (renovação de matrícula…),
+   acima da timeline. Cor NEUTRA sempre — nunca a cor de matéria, pra não
+   disputar com o código de cor que a timeline usa logo abaixo. */
+.faixa-andamento {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.faixa-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--line-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-ctrl);
+  padding: 8px 12px;
+}
+.faixa-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.faixa-termina {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .hoje {
   list-style: none;
   display: flex;

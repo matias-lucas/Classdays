@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
 import {
   DIAS_CURTOS,
   diaSemanaDe,
@@ -36,13 +37,16 @@ interface Props {
 export function EventoLinha({ evento, materia, hojeIso, children, indice }: Props) {
   const cor = materia?.cor ?? COR_TURMA;
   const nome = materia?.nome ?? "GERAL";
+  const periodo = ehPeriodo(evento);
+  const emCurso = periodo && emAndamento(evento, hojeIso);
   const { dia, mes } = fmtDiaMesPartes(evento.data);
-  const dias = diffDias(hojeIso, evento.data);
+  const fimPartes = periodo ? fmtDiaMesPartes(fimDe(evento)) : null;
+  const dias = diffDias(hojeIso, periodo ? fimDe(evento) : evento.data);
 
   const quando = [
-    DIAS_CURTOS[diaSemanaDe(evento.data)],
-    evento.hora ? fmtHora(evento.hora) : null,
-    rotuloRelativo(dias),
+    periodo ? null : DIAS_CURTOS[diaSemanaDe(evento.data)],
+    !periodo && evento.hora ? fmtHora(evento.hora) : null,
+    emCurso ? `termina em ${rotuloRelativo(dias)}` : rotuloRelativo(dias),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -58,8 +62,21 @@ export function EventoLinha({ evento, materia, hojeIso, children, indice }: Prop
       style={style}
     >
       <div className="ev-date" aria-hidden="true">
-        <div className="ev-day">{dia}</div>
-        <div className="ev-mon">{mes}</div>
+        {fimPartes ? (
+          <>
+            <div className="ev-day ev-day-periodo">
+              {dia}
+              <span className="ev-arrow">→</span>
+              {fimPartes.dia}
+            </div>
+            <div className="ev-mon">{mes === fimPartes.mes ? mes : `${mes}–${fimPartes.mes}`}</div>
+          </>
+        ) : (
+          <>
+            <div className="ev-day">{dia}</div>
+            <div className="ev-mon">{mes}</div>
+          </>
+        )}
       </div>
       <div className="ev-body">
         <div className="ev-top">
@@ -67,6 +84,7 @@ export function EventoLinha({ evento, materia, hojeIso, children, indice }: Prop
             <span className="dot" style={{ background: cor }} />
             {nome}
           </span>
+          {emCurso && <span className="badge badge-andamento">em andamento</span>}
           <Badge tipo={evento.tipo} />
         </div>
         <div className="ev-title">{evento.titulo}</div>

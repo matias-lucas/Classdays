@@ -151,6 +151,66 @@ function acharData(normal: string, hojeIso: string): DataAchada | null {
 }
 
 // ---------------------------------------------------------------------------
+// período ("de X a Y") — tentado ANTES de acharData
+// ---------------------------------------------------------------------------
+
+interface PeriodoAchado {
+  iso: string; // início
+  isoFim: string; // fim (sempre > início)
+  trecho: string;
+  avisos: string[];
+}
+
+const REGEX_DATA_NUM = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/;
+
+/** "13/07" ou "13/07/2026" → ISO. Ano ausente = o ano de `hojeIso`, sem ajuste. */
+function parseDataNum(trecho: string, anoHoje: number): string | null {
+  const m = trecho.match(REGEX_DATA_NUM);
+  if (!m) return null;
+  const dia = Number(m[1]);
+  const mes = Number(m[2]);
+  let ano = m[3] ? Number(m[3]) : anoHoje;
+  if (ano < 100) ano += 2000;
+  if (!dataValida(ano, mes, dia)) return null;
+  return iso(ano, mes, dia);
+}
+
+const REGEX_DATA_TRECHO = String.raw`\d{1,2}\/\d{1,2}(?:\/\d{2,4})?`;
+const CONECTORES_PERIODO: RegExp[] = [
+  new RegExp(String.raw`\bde\s+(${REGEX_DATA_TRECHO})\s+(?:a|ate)\s+(${REGEX_DATA_TRECHO})\b`),
+  new RegExp(String.raw`\bdo\s+dia\s+(${REGEX_DATA_TRECHO})\s+ao\s+dia\s+(${REGEX_DATA_TRECHO})\b`),
+  new RegExp(String.raw`\bentre\s+os\s+dias\s+(${REGEX_DATA_TRECHO})\s+e\s+(${REGEX_DATA_TRECHO})\b`),
+  new RegExp(String.raw`\b(${REGEX_DATA_TRECHO})\s+a\s+(${REGEX_DATA_TRECHO})\b`),
+];
+
+/**
+ * "de 4/8 a 9/8", "recesso de 20/12 a 05/01", "entre os dias X e Y" — um
+ * período de dias, tentado antes de `acharData` (que só acha um dia).
+ *
+ * Armadilha da virada de ano: "recesso de 20/12 a 05/01" tem o fim num ano
+ * menor que o início (mesmo ano-base). Se o fim ficar antes do início, some
+ * 1 ano ao fim — sem isso o check do banco rejeitaria o período.
+ */
+function acharPeriodo(normal: string, hojeIso: string): PeriodoAchado | null {
+  const anoHoje = Number(hojeIso.slice(0, 4));
+
+  for (const re of CONECTORES_PERIODO) {
+    const m = normal.match(re);
+    if (!m) continue;
+    const ini = parseDataNum(m[1], anoHoje);
+    let fim = parseDataNum(m[2], anoHoje);
+    if (!ini || !fim) continue; // datas inválidas no trecho: tenta o próximo padrão
+    if (fim < ini) {
+      const [anoF, mesF, diaF] = fim.split("-").map(Number);
+      fim = iso(anoF + 1, mesF, diaF);
+    }
+    return { iso: ini, isoFim: fim, trecho: m[0], avisos: [] };
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // hora
 // ---------------------------------------------------------------------------
 
@@ -298,7 +358,11 @@ export function parseComRegras(frase: string, ctx: Contexto): ResultadoParse {
   const hora = acharHora(normal);
   if (hora) trechosUsados.push(hora.trecho);
 
-  const data = acharData(normal, ctx.hojeIso);
+  const periodo = acharPeriodo(normal, ctx.hojeIso);
+  const data = periodo
+    ? { iso: periodo.iso, trecho: periodo.trecho, avisos: periodo.avisos }
+    : acharData(normal, ctx.hojeIso);
+  const data_fim = periodo?.isoFim ?? null;
   if (data) {
     trechosUsados.push(data.trecho);
     avisos.push(...data.avisos);
@@ -336,6 +400,7 @@ export function parseComRegras(frase: string, ctx: Contexto): ResultadoParse {
     titulo,
     materia_id,
     data: data?.iso ?? null,
+    data_fim,
     hora: hora?.hhmm ?? null,
     observacao: null, // regras não inventam observação
   };

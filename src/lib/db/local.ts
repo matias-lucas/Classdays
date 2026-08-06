@@ -56,6 +56,8 @@ async function ler(): Promise<BancoLocal> {
     const banco = JSON.parse(bruto) as BancoLocal;
     // db.json de antes deste campo existir: nasce visível (comportamento antigo).
     banco.config ??= { gradeVisivel: true };
+    // eventos gravados antes da E2 não têm data_fim: são pontuais.
+    for (const e of banco.eventos) e.data_fim ??= null;
     return banco;
   } catch {
     // Arquivo ainda não existe (ou foi apagado): nasce do seed.
@@ -105,6 +107,16 @@ export const dbLocal: Database = {
       created_at: new Date().toISOString(),
     };
     banco.eventos.push(evento);
+    await gravar(banco);
+    return evento;
+  },
+
+  async updateEvento(id: number, campos: NovoEvento) {
+    const banco = await ler();
+    const idx = banco.eventos.findIndex((e) => e.id === id);
+    if (idx === -1) return null;
+    const evento: Evento = { ...campos, id, created_at: banco.eventos[idx].created_at };
+    banco.eventos[idx] = evento;
     await gravar(banco);
     return evento;
   },

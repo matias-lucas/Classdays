@@ -43,6 +43,13 @@
   background: color-mix(in srgb, var(--sc, var(--ink)) 12%, var(--surface));
   color: color-mix(in srgb, var(--sc, var(--ink)) 60%, var(--ink));
 }
+/* "em andamento" (período em curso): neutro de propósito — não é um TIPO de
+   evento, é um estado temporal; nunca disputa cor com o selo de tipo ao lado */
+.badge-andamento {
+  background: var(--line-soft);
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+}
 /* ============================================================================
    lista de próximos eventos
    ========================================================================== */
@@ -96,6 +103,19 @@
   font-weight: 600;
   line-height: 1;
   color: color-mix(in srgb, var(--sc, var(--ink)) 78%, var(--ink));
+}
+/* período: dois dias cabem no mesmo bloco de 44px — a fonte encolhe e a seta
+   separa início/fim (a cor da matéria segue a mesma, herdada de .ev-day) */
+.ev-day-periodo {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.ev-arrow {
+  font-size: 9px;
+  color: var(--ink-faint);
 }
 .ev-mon {
   font-size: 10px;
