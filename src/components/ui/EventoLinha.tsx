@@ -46,7 +46,7 @@ export function EventoLinha({ evento, materia, hojeIso, children, indice }: Prop
   const quando = [
     periodo ? null : DIAS_CURTOS[diaSemanaDe(evento.data)],
     !periodo && evento.hora ? fmtHora(evento.hora) : null,
-    emCurso ? `termina em ${rotuloRelativo(dias)}` : rotuloRelativo(dias),
+    emCurso ? `termina ${rotuloRelativo(dias)}` : rotuloRelativo(dias),
   ]
     .filter(Boolean)
     .join(" · ");

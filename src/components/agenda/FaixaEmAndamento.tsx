@@ -23,7 +23,7 @@ export function FaixaEmAndamento({ eventos, hojeIso }: Props) {
         <div className="faixa-item" key={e.id}>
           <span className="faixa-titulo">{e.titulo}</span>
           <span className="faixa-termina">
-            termina em {rotuloRelativo(diffDias(hojeIso, fimDe(e)))}
+            termina {rotuloRelativo(diffDias(hojeIso, fimDe(e)))}
           </span>
         </div>
       ))}

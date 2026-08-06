@@ -140,7 +140,7 @@ export function HeroProximo({
             <span>{meta}</span>
             <span className="countdown">
               {emCurso
-                ? `termina em ${rotuloRelativo(diffDias(hojeIso, fimDe(evento)))}`
+                ? `termina ${rotuloRelativo(diffDias(hojeIso, fimDe(evento)))}`
                 : rotuloRelativo(diffDias(hojeIso, evento.data))}
             </span>
           </div>
