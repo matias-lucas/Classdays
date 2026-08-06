@@ -47,12 +47,11 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   período nos dois caminhos, `PATCH /api/eventos/:id` (preserva id/created_at),
   faixa "em andamento" em Hoje e na grade, "termina em N dias" no hero. 174
   testes verdes, tsc/build limpos, preview e produção verificados por fetch
-  direto (sem erro, dados reais renderizando certo — ver §Pendências abaixo).
-  Pendência: a fusão dos eventos 21/22 de produção num único evento com
-  período (`docs/PLANO-V2.md` §7 Passo 1) ainda não rodou — o gate de
-  segurança do ambiente bloqueou o UPDATE/DELETE direto no banco de produção
-  e pediu confirmação explícita do Lucas. Rodar manualmente ou autorizar de
-  novo numa próxima sessão.
+  direto (sem erro, dados reais renderizando certo). Fusão dos eventos 21/22
+  concluída (06/08/2026): o evento 22 já tinha sido editado via `/admin` para
+  o período 04–09/08 (`data_fim`); o 21 (ponto de início, redundante) foi
+  apagado direto no banco de produção com confirmação do Lucas. Sobra um
+  único evento canônico cobrindo o período.
 - ⬜ **E3 — Feriados e recessos**. Tipos novos reaproveitando o período; em dia
   de feriado a grade mostra o destaque no lugar das aulas.
 - ⬜ **E4 — Meu Classdays**. `localStorage` com matérias ocultas; some de
