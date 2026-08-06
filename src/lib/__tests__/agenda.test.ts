@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  ativoEm,
   cancelamentoDa,
   cancelamentosDe,
+  continuosAtivos,
+  ehPeriodo,
+  emAndamento,
   eventosFuturos,
+  fimDe,
   itensDeHoje,
   montarSemana,
   proximoEvento,
@@ -24,6 +29,7 @@ function evento(parcial: Partial<Evento> & Pick<Evento, "id" | "tipo" | "data">)
   return {
     titulo: "—",
     materia_id: null,
+    data_fim: null,
     hora: null,
     observacao: null,
     created_at: "2026-07-01T00:00:00.000Z",
@@ -230,5 +236,127 @@ describe("eventosFuturos", () => {
       evento({ id: 2, tipo: "prova", data: "2026-07-21", materia_id: "bd" }),
     ];
     expect(eventosFuturos(lista, HOJE, "bd").map((e) => e.id)).toEqual([2]);
+  });
+
+  it("período em andamento aparece mesmo com início no passado", () => {
+    const periodo = evento({ id: 1, tipo: "evento", data: "2026-07-01", data_fim: "2026-07-09" });
+    expect(eventosFuturos([periodo], HOJE).map((e) => e.id)).toEqual([1]);
+  });
+
+  it("período terminado ontem não aparece", () => {
+    const periodo = evento({ id: 1, tipo: "evento", data: "2026-06-20", data_fim: "2026-07-06" }); // fimDe = ontem
+    expect(eventosFuturos([periodo], HOJE)).toHaveLength(0);
+  });
+
+  it("ordena um período em andamento como 'hoje' — antes do evento de amanhã, junto do pontual de hoje", () => {
+    const periodo = evento({ id: 1, tipo: "evento", data: "2026-07-01", data_fim: "2026-07-09" });
+    const pontualHoje = evento({ id: 2, tipo: "prova", data: HOJE, hora: "19:00" });
+    const amanha = evento({ id: 3, tipo: "trabalho", data: "2026-07-08" });
+    expect(eventosFuturos([amanha, periodo, pontualHoje], HOJE).map((e) => e.id)).toEqual([
+      2, 1, 3,
+    ]);
+  });
+});
+
+describe("períodos (E2): fimDe / ehPeriodo / ativoEm / emAndamento", () => {
+  const periodo = evento({ id: 1, tipo: "evento", data: "2026-07-10", data_fim: "2026-07-15" });
+  const pontual = evento({ id: 2, tipo: "evento", data: "2026-07-10" });
+
+  it("ativoEm nas bordas: primeiro dia, último dia, véspera e dia seguinte", () => {
+    expect(ativoEm(periodo, "2026-07-10")).toBe(true);
+    expect(ativoEm(periodo, "2026-07-15")).toBe(true);
+    expect(ativoEm(periodo, "2026-07-09")).toBe(false);
+    expect(ativoEm(periodo, "2026-07-16")).toBe(false);
+  });
+
+  it("fimDe: sem data_fim devolve a própria data", () => {
+    expect(fimDe(pontual)).toBe("2026-07-10");
+    expect(fimDe(periodo)).toBe("2026-07-15");
+  });
+
+  it("ehPeriodo distingue período de evento pontual", () => {
+    expect(ehPeriodo(periodo)).toBe(true);
+    expect(ehPeriodo(pontual)).toBe(false);
+  });
+
+  it("emAndamento só quando É período e hoje cai dentro do intervalo", () => {
+    expect(emAndamento(periodo, "2026-07-12")).toBe(true);
+    expect(emAndamento(periodo, "2026-07-09")).toBe(false); // ainda não começou
+    expect(emAndamento(periodo, "2026-07-16")).toBe(false); // já terminou
+    expect(emAndamento(pontual, "2026-07-10")).toBe(false); // pontual nunca "em andamento"
+  });
+
+  it("período atravessando a virada do mês", () => {
+    const p = evento({ id: 3, tipo: "evento", data: "2026-07-28", data_fim: "2026-08-03" });
+    expect(ativoEm(p, "2026-07-31")).toBe(true);
+    expect(ativoEm(p, "2026-08-01")).toBe(true);
+    expect(ativoEm(p, "2026-08-04")).toBe(false);
+  });
+
+  it("período atravessando a virada do ano", () => {
+    const recesso = evento({ id: 4, tipo: "evento", data: "2026-12-20", data_fim: "2027-01-05" });
+    expect(ativoEm(recesso, "2026-12-31")).toBe(true);
+    expect(ativoEm(recesso, "2027-01-01")).toBe(true);
+    expect(ativoEm(recesso, "2027-01-06")).toBe(false);
+  });
+});
+
+describe("continuosAtivos e montarSemana.continuos", () => {
+  it("continuosAtivos só devolve períodos em curso, nunca cancelamento", () => {
+    const recesso = evento({
+      id: 1, tipo: "evento", titulo: "Recesso", data: "2026-07-06", data_fim: "2026-07-17",
+    });
+    const cancelPeriodo = evento({
+      id: 2, tipo: "cancelamento", data: "2026-07-06", data_fim: "2026-07-17",
+    });
+    const pontual = evento({ id: 3, tipo: "prova", data: HOJE });
+    expect(continuosAtivos([recesso, cancelPeriodo, pontual], HOJE).map((e) => e.id)).toEqual([
+      1,
+    ]);
+  });
+
+  it("montarSemana marca `continuos` nos cinco dias de um recesso de 2 semanas", () => {
+    const recesso = evento({
+      id: 1, tipo: "evento", titulo: "Recesso", data: "2026-07-06", data_fim: "2026-07-17",
+    });
+    const semana = montarSemana(GRADE, [recesso], "2026-07-06");
+    expect(semana).toHaveLength(5);
+    expect(semana.every((d) => d.continuos.some((e) => e.id === 1))).toBe(true);
+  });
+
+  it("montarSemana casa evento com a aula usando ativoEm (período tocando a matéria)", () => {
+    const provaPeriodo = evento({
+      id: 1, tipo: "prova", data: "2026-07-06", data_fim: "2026-07-08", materia_id: "edados",
+    });
+    const semana = montarSemana(GRADE, [provaPeriodo], "2026-07-06");
+    // terça (07/07) cai dentro do período, e é o dia da aula de edados
+    expect(semana[1].aulas.find((a) => a.aula.materia_id === "edados")?.evento).toBe(
+      provaPeriodo,
+    );
+  });
+});
+
+describe("proximoEvento com períodos", () => {
+  const periodoAndamento = evento({
+    id: 1, tipo: "evento", titulo: "Renovação", data: "2026-07-01", data_fim: "2026-07-09",
+  });
+
+  it("ignora período em andamento quando há evento futuro", () => {
+    const futuro = evento({ id: 2, tipo: "evento", titulo: "Retorno", data: "2026-07-10" });
+    expect(proximoEvento([periodoAndamento, futuro], HOJE, "10:00")?.id).toBe(2);
+  });
+
+  it("assume o período em andamento quando não há mais nada à frente", () => {
+    expect(proximoEvento([periodoAndamento], HOJE, "10:00")?.id).toBe(1);
+  });
+});
+
+describe("itensDeHoje nunca lista períodos", () => {
+  it("período ativo hoje não vira item da timeline (vive na faixa 'em andamento')", () => {
+    const periodo = evento({
+      id: 1, tipo: "evento", titulo: "Recesso", data: HOJE, data_fim: "2026-07-10",
+    });
+    const itens = itensDeHoje(GRADE, [periodo], HOJE);
+    expect(itens.every((i) => i.kind === "aula")).toBe(true);
   });
 });

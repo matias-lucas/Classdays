@@ -40,6 +40,42 @@ export function cancelamentoDa(
 }
 
 // ---------------------------------------------------------------------------
+// eventos contínuos (período de dias) — funções puras, todas testadas
+// ---------------------------------------------------------------------------
+
+/** Último dia do evento: o fim do período, ou a própria data (pontual). */
+export function fimDe(e: Evento): string {
+  return e.data_fim ?? e.data;
+}
+
+/** É um período (tem data_fim)? */
+export function ehPeriodo(e: Evento): boolean {
+  return e.data_fim !== null;
+}
+
+/** O evento cobre esta data (entre o início e o fim, inclusive)? */
+export function ativoEm(e: Evento, dataIso: string): boolean {
+  return e.data <= dataIso && dataIso <= fimDe(e);
+}
+
+/** Período que já começou e ainda não terminou. */
+export function emAndamento(e: Evento, hojeIso: string): boolean {
+  return ehPeriodo(e) && ativoEm(e, hojeIso);
+}
+
+/** Períodos rolando hoje (a faixa "em andamento" da tela). Nunca cancelamento. */
+export function continuosAtivos(
+  eventos: Evento[],
+  hojeIso: string,
+  filtroMateria: string | null = null,
+): Evento[] {
+  return eventos
+    .filter((e) => e.tipo !== "cancelamento")
+    .filter((e) => emAndamento(e, hojeIso))
+    .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true));
+}
+
+// ---------------------------------------------------------------------------
 // grade da semana (segunda a sexta, já cruzada com cancelamentos)
 // ---------------------------------------------------------------------------
 
@@ -51,6 +87,8 @@ export interface DiaDaSemana {
     cancelamento: Evento | null; // cancelamento só desta aula, se houver
     evento: Evento | null; // prova/trabalho/atividade dessa matéria nessa data, se houver
   }>;
+  /** Períodos (renovação de matrícula, recesso…) ativos neste dia. */
+  continuos: Evento[];
 }
 
 /** Monta os 5 dias úteis da semana que começa em `segundaIso`. */
@@ -78,10 +116,11 @@ export function montarSemana(
           eventos.find(
             (e) =>
               e.tipo !== "cancelamento" &&
-              e.data === data &&
+              ativoEm(e, data) &&
               e.materia_id === aula.materia_id,
           ) ?? null,
       })),
+      continuos: continuosAtivos(eventos, data),
     });
   }
   return dias;
@@ -97,6 +136,12 @@ export function montarSemana(
  * e cancelamento é ausência de coisa (aparece na grade e na lista, não aqui).
  * Eventos de hoje só contam se a hora ainda não passou (sem hora = vale o dia
  * todo). Devolve o `Evento` cru (a UI resolve matéria/cor), ou null.
+ *
+ * Regra, nesta ordem: 1) se houver algo que ainda não começou (ou é de hoje
+ * com hora à frente), o mais cedo deles vence; 2) senão, o período em
+ * andamento que termina primeiro assume o hero; 3) senão, null. Um período
+ * longo (renovação de matrícula) não rouba o hero de uma prova que vem em
+ * 3 dias — só assume quando não há mais nada à frente.
  */
 export function proximoEvento(
   eventos: Evento[],
@@ -104,21 +149,27 @@ export function proximoEvento(
   agoraHHMM: string,
   filtroMateria: string | null = null,
 ): Evento | null {
-  return (
-    eventos
-      .filter((e) => e.tipo !== "cancelamento")
-      .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true))
-      .filter((e) => {
-        if (e.data > hojeIso) return true;
-        if (e.data < hojeIso) return false;
-        return e.hora === null || e.hora >= agoraHHMM; // hoje: só o que ainda vem
-      })
-      .sort(
-        (a, b) =>
-          a.data.localeCompare(b.data) ||
-          (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
-      )[0] ?? null
-  );
+  const candidatos = eventos
+    .filter((e) => e.tipo !== "cancelamento")
+    .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true));
+
+  const aindaNaoComecou = candidatos
+    .filter((e) => {
+      if (e.data > hojeIso) return true;
+      if (e.data < hojeIso) return false;
+      return e.hora === null || e.hora >= agoraHHMM; // hoje: só o que ainda vem
+    })
+    .sort(
+      (a, b) =>
+        a.data.localeCompare(b.data) ||
+        (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
+    );
+  if (aindaNaoComecou.length > 0) return aindaNaoComecou[0];
+
+  const emCurso = candidatos
+    .filter((e) => emAndamento(e, hojeIso))
+    .sort((a, b) => fimDe(a).localeCompare(fimDe(b)));
+  return emCurso[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -170,9 +221,12 @@ export function itensDeHoje(
     });
   }
 
-  // eventos pontuais de hoje — cancelamento não entra (é ausência, não item)
+  // eventos pontuais de hoje — cancelamento não entra (é ausência, não item);
+  // período também não (repetiria todo dia, sem hora — vive na faixa "em
+  // andamento", acima desta régua)
   for (const e of eventos) {
     if (e.tipo === "cancelamento") continue;
+    if (ehPeriodo(e)) continue;
     if (e.data !== hojeIso) continue;
     itens.push({
       kind: "evento",
@@ -197,19 +251,23 @@ export function itensDeHoje(
 
 /**
  * Eventos de hoje em diante, ordenados. Cancelamentos APARECEM aqui
- * (aviso importante), diferente do card Próximo.
+ * (aviso importante), diferente do card Próximo. Um período em andamento
+ * conta como "futuro" enquanto não terminar, mesmo com início no passado —
+ * e ordena pela data de REFERÊNCIA (`max(data, hoje)`), pra um período em
+ * curso entrar como "hoje" em vez de pelo início, que já passou.
  */
 export function eventosFuturos(
   eventos: Evento[],
   hojeIso: string,
   filtroMateria: string | null = null,
 ): Evento[] {
+  const referencia = (e: Evento) => (e.data > hojeIso ? e.data : hojeIso);
   return eventos
-    .filter((e) => e.data >= hojeIso)
+    .filter((e) => fimDe(e) >= hojeIso)
     .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true))
     .sort(
       (a, b) =>
-        a.data.localeCompare(b.data) ||
+        referencia(a).localeCompare(referencia(b)) ||
         (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
     );
 }

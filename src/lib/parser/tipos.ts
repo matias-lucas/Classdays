@@ -12,6 +12,7 @@ export interface EventoParseado {
   titulo: string;
   materia_id: string | null;
   data: string | null; // "AAAA-MM-DD" ou null se a frase não disse
+  data_fim: string | null; // "AAAA-MM-DD" > data, quando é um período; senão null
   hora: string | null; // "HH:MM" ou null
   observacao: string | null;
 }

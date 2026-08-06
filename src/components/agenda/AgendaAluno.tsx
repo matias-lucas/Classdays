@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { eventosFuturos, itensDeHoje, montarSemana, proximoEvento } from "@/lib/agenda";
+import {
+  continuosAtivos,
+  eventosFuturos,
+  itensDeHoje,
+  montarSemana,
+  proximoEvento,
+} from "@/lib/agenda";
 import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA, NOME_INST } from "@/lib/config";
 import {
   addDias,
@@ -14,6 +20,7 @@ import {
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { MenuLateral } from "@/components/layout/MenuLateral";
 import { Splash } from "@/components/layout/Splash";
+import { FaixaEmAndamento } from "./FaixaEmAndamento";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
@@ -86,6 +93,13 @@ export function AgendaAluno({
     [grade, eventos, agora.hoje, filtro],
   );
 
+  // Períodos em curso hoje (renovação de matrícula, recesso…) — faixa acima
+  // da timeline, cor neutra, nunca a cor de matéria.
+  const continuosHoje = useMemo(
+    () => continuosAtivos(eventos, agora.hoje, filtro),
+    [eventos, agora.hoje, filtro],
+  );
+
   const segunda = addDias(segundaDaSemana(agora.hoje), semanaOffset * 7);
   const semana = useMemo(
     () => montarSemana(grade, eventos, segunda),
@@ -144,6 +158,7 @@ export function AgendaAluno({
       <SecaoRecolhivel id="hoje" titulo="Hoje">
         {gradeVisivel ? (
           <TrocaSuave chave={filtro}>
+            <FaixaEmAndamento eventos={continuosHoje} hojeIso={agora.hoje} />
             <HojeTimeline
               itens={itensHoje}
               materiaDe={materiaDe}

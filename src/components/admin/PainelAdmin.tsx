@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { EventoLinha } from "@/components/ui/EventoLinha";
 import { EVENTO_VAZIO, useFluxoEvento } from "@/hooks/useFluxoEvento";
 import { useGradeVisivel } from "@/hooks/useGradeVisivel";
+import { fimDe } from "@/lib/agenda";
 import type { Evento, Materia } from "@/lib/types";
 import { PreviewEvento } from "./PreviewEvento";
 
@@ -43,6 +44,9 @@ export function PainelAdmin({
     interpretando,
     rascunho,
     setRascunho,
+    editandoId,
+    editar,
+    descartar,
     salvando,
     feedback,
     apagandoId,
@@ -56,8 +60,8 @@ export function PainelAdmin({
 
   const porId = useMemo(() => new Map(materias.map((m) => [m.id, m])), [materias]);
 
-  const futuros = eventos.filter((e) => e.data >= hojeIso);
-  const passados = eventos.filter((e) => e.data < hojeIso).reverse();
+  const futuros = eventos.filter((e) => fimDe(e) >= hojeIso);
+  const passados = eventos.filter((e) => fimDe(e) < hojeIso).reverse();
 
   return (
     <div className="wrap">
@@ -168,7 +172,7 @@ export function PainelAdmin({
           salvando={salvando}
           aoEditar={(evento) => setRascunho({ ...rascunho, evento })}
           aoConfirmar={salvar}
-          aoDescartar={() => setRascunho(null)}
+          aoDescartar={descartar}
         />
       )}
 
@@ -204,14 +208,25 @@ export function PainelAdmin({
                   </button>
                 </span>
               ) : (
-                <button
-                  type="button"
-                  className="btn-apagar"
-                  aria-label={`Apagar "${e.titulo}"`}
-                  onClick={() => setConfirmaId(e.id)}
-                >
-                  ✕
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="btn-editar"
+                    aria-label={`Editar "${e.titulo}"`}
+                    onClick={() => editar(e)}
+                    disabled={editandoId === e.id}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-apagar"
+                    aria-label={`Apagar "${e.titulo}"`}
+                    onClick={() => setConfirmaId(e.id)}
+                  >
+                    ✕
+                  </button>
+                </>
               )}
             </div>
           </EventoLinha>

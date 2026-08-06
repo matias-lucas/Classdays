@@ -72,6 +72,40 @@ describe("dbLocal — grade", () => {
   });
 });
 
+describe("dbLocal — eventos (E2: updateEvento)", () => {
+  it("updateEvento preserva id e created_at, troca o resto", async () => {
+    const [existente] = await dbLocal.getEventos();
+
+    const editado = await dbLocal.updateEvento(existente.id, {
+      tipo: "evento",
+      titulo: "Título editado",
+      materia_id: null,
+      data: "2027-01-01",
+      data_fim: null,
+      hora: null,
+      observacao: null,
+    });
+
+    expect(editado?.id).toBe(existente.id);
+    expect(editado?.created_at).toBe(existente.created_at);
+    expect(editado?.titulo).toBe("Título editado");
+    expect(editado?.data).toBe("2027-01-01");
+  });
+
+  it("updateEvento de id inexistente devolve null", async () => {
+    const resultado = await dbLocal.updateEvento(999999, {
+      tipo: "evento",
+      titulo: "X",
+      materia_id: null,
+      data: "2027-01-01",
+      data_fim: null,
+      hora: null,
+      observacao: null,
+    });
+    expect(resultado).toBeNull();
+  });
+});
+
 describe("dbLocal — matérias", () => {
   it("addMateria + getMaterias ordenadas por nome", async () => {
     await dbLocal.addMateria({ id: "zzz", nome: "Zeta", prof: null, cor: "#123456" });

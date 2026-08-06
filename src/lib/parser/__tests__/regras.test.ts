@@ -165,6 +165,38 @@ describe("matérias", () => {
   });
 });
 
+describe("períodos (E2)", () => {
+  it("'de X a Y' → data + data_fim", () => {
+    const r = parse("renovação de matrícula de 4/8 a 9/8");
+    expect(r.evento.data).toBe("2026-08-04");
+    expect(r.evento.data_fim).toBe("2026-08-09");
+  });
+
+  it("'entre os dias X e Y' também é reconhecido como período", () => {
+    const r = parse("prova entre os dias 10/08 e 12/08");
+    expect(r.evento.data).toBe("2026-08-10");
+    expect(r.evento.data_fim).toBe("2026-08-12");
+  });
+
+  it("'do dia X ao dia Y' também é reconhecido como período", () => {
+    const r = parse("aulas do dia 20/07 ao dia 24/07");
+    expect(r.evento.data).toBe("2026-07-20");
+    expect(r.evento.data_fim).toBe("2026-07-24");
+  });
+
+  it("recesso de 20/12 a 05/01 → fim jogado pro ano seguinte (virada de ano)", () => {
+    const r = parse("recesso de 20/12 a 05/01");
+    expect(r.evento.data).toBe("2026-12-20");
+    expect(r.evento.data_fim).toBe("2027-01-05");
+  });
+
+  it("'prova dia 13/07' continua sem data_fim (nenhuma regressão)", () => {
+    const r = parse("prova dia 13/07");
+    expect(r.evento.data).toBe("2026-07-13");
+    expect(r.evento.data_fim).toBeNull();
+  });
+});
+
 describe("títulos", () => {
   it("tipos com título padrão", () => {
     expect(parse("prova de cálculo amanhã").evento.titulo).toBe("Prova");

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { COR_TURMA } from "@/components/ui/EventoLinha";
+import { emAndamento, fimDe } from "@/lib/agenda";
 import {
   DIAS_CURTOS,
   diaSemanaDe,
@@ -94,6 +95,7 @@ export function HeroProximo({
 
   const materia = materiaDe(evento.materia_id);
   const cor = materia?.cor ?? COR_TURMA;
+  const emCurso = emAndamento(evento, hojeIso);
 
   // O rodapé-CTA anuncia o que o toque abre (o menu com todos os próximos) e
   // de quebra informa quantos eventos vêm aí. Cancelamentos ficam de fora da
@@ -137,7 +139,9 @@ export function HeroProximo({
           <div className="hero-meta">
             <span>{meta}</span>
             <span className="countdown">
-              {rotuloRelativo(diffDias(hojeIso, evento.data))}
+              {emCurso
+                ? `termina em ${rotuloRelativo(diffDias(hojeIso, fimDe(evento)))}`
+                : rotuloRelativo(diffDias(hojeIso, evento.data))}
             </span>
           </div>
           {evento.observacao && <p className="hero-obs">{evento.observacao}</p>}

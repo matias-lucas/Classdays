@@ -241,6 +241,25 @@
 .day.is-today .day-name {
   color: var(--ink);
 }
+/* período em curso (renovação de matrícula…) tocando este dia — cor NEUTRA,
+   nunca a de matéria (mesma regra do `.faixa-andamento` em Hoje). */
+.day-continuos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.day-continuo-chip {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: var(--line-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 7px;
+  overflow-wrap: break-word;
+}
 .today-tag {
   font-family: var(--font-mono), monospace;
   font-size: 9px;

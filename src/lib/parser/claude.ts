@@ -29,6 +29,7 @@ const SaidaClaude = z.object({
   titulo: z.string(),
   materia_id: z.string().nullable(),
   data: z.string().nullable(),
+  data_fim: z.string().nullable(),
   hora: z.string().nullable(),
   observacao: z.string().nullable(),
 });
@@ -49,6 +50,7 @@ Regras:
 - "tipo": prova, trabalho, atividade (algo valendo nota que não é prova nem entrega), evento (geral) ou cancelamento.
 - Frase dizendo que não haverá aula → tipo "cancelamento". Com matéria citada, cancela só aquela aula; sem matéria, o dia inteiro (materia_id null).
 - Resolva datas relativas ("amanhã", "próxima terça", "dia 13") a partir de hoje. "próxima X" e "X que vem" = a próxima ocorrência do dia X, nunca hoje. Saída em AAAA-MM-DD.
+- "data_fim": só quando a frase descreve um PERÍODO de vários dias ("de 4/8 a 9/8", "entre os dias X e Y", "recesso de 20/12 a 05/01"). Preencha com o último dia do período, em AAAA-MM-DD, sempre DEPOIS de "data" (se a virada cair num ano novo, use o ano seguinte). Evento de um dia só → data_fim = null.
 - NUNCA invente: se a frase não diz a data, data = null; sem hora, hora = null; se nenhuma matéria casar, materia_id = null.
 - "materia_id" deve ser exatamente um dos ids da lista, ou null.
 - "hora" em HH:MM (24h). "às 19h" → "19:00".
@@ -102,11 +104,23 @@ export async function parseComClaude(
     avisos.push("Não identifiquei a data — preencha antes de salvar.");
   }
 
+  // data_fim segue o mesmo saneamento campo a campo dos outros: formato
+  // errado ou fora de ordem não derruba a resposta inteira, só o campo.
+  let data_fim = bruto.data_fim;
+  if (data_fim && !REGEX_DATA.test(data_fim)) {
+    data_fim = null;
+    avisos.push("A data final do período veio num formato inesperado — confira.");
+  } else if (data_fim && data && data_fim <= data) {
+    data_fim = null;
+    avisos.push("A data final do período precisa ser depois da inicial — confira.");
+  }
+
   const evento: EventoParseado = {
     tipo: bruto.tipo,
     titulo: bruto.titulo.trim() || "Evento",
     materia_id,
     data,
+    data_fim,
     hora,
     observacao: bruto.observacao?.trim() || null,
   };

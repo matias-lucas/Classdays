@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/Badge";
 import { COR_TURMA, EventoLinha } from "@/components/ui/EventoLinha";
+import { emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
 import {
   type Contagem,
   contagemRegressiva,
@@ -114,15 +115,20 @@ export function ProximoDetalhe({
   }, [open, onFechar]);
 
   const cor = materia?.cor ?? COR_TURMA;
-  const contagem = contagemRegressiva(hojeIso, agoraHHMM, evento.data, evento.hora);
-  const { lead, big } = partesContagem(contagem);
+  const emCurso = emAndamento(evento, hojeIso);
+  const contagem = emCurso
+    ? contagemRegressiva(hojeIso, agoraHHMM, fimDe(evento), null)
+    : contagemRegressiva(hojeIso, agoraHHMM, evento.data, evento.hora);
+  const { lead, big } = partesContagem(contagem, emCurso);
 
-  const quando = [
-    `${DIAS_LONGOS[diaSemanaDe(evento.data)]}, ${fmtDiaMes(evento.data)}`,
-    evento.hora ? `às ${fmtHora(evento.hora)}` : "dia todo",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const quando = ehPeriodo(evento)
+    ? `${fmtDiaMes(evento.data)} → ${fmtDiaMes(fimDe(evento))}`
+    : [
+        `${DIAS_LONGOS[diaSemanaDe(evento.data)]}, ${fmtDiaMes(evento.data)}`,
+        evento.hora ? `às ${fmtHora(evento.hora)}` : "dia todo",
+      ]
+        .filter(Boolean)
+        .join(" · ");
 
   // a lista mostra o resto — o evento em destaque não se repete embaixo
   const resto = proximos.filter((e) => e.id !== evento.id);
@@ -205,11 +211,20 @@ export function ProximoDetalhe({
  * A contagem em palavras: um lead pequeno + o número grande. Sem hora, conta em
  * dias ("faltam 3 dias" / "amanhã" / "é hoje"); com hora, no dia do evento
  * quebra em horas e minutos ("começa em 2h 15min"). Já começou → "agora".
+ *
+ * `termino`: quando o hero é um período em andamento, a contagem mede até o
+ * FIM dele, não o início (que já passou) — daí "termina em N dias" em vez de
+ * "faltam N dias".
  */
-function partesContagem(c: Contagem): { lead: string; big: string } {
+function partesContagem(c: Contagem, termino = false): { lead: string; big: string } {
   if (c.temHora && c.totalMin <= 0) return { lead: "", big: "agora" };
 
   if (!c.temHora) {
+    if (termino) {
+      if (c.dias === 0) return { lead: "termina", big: "hoje" };
+      if (c.dias === 1) return { lead: "termina", big: "amanhã" };
+      return { lead: "termina em", big: `${c.dias} dias` };
+    }
     if (c.dias === 0) return { lead: "é", big: "hoje" };
     if (c.dias === 1) return { lead: "acontece", big: "amanhã" };
     return { lead: "faltam", big: `${c.dias} dias` };
