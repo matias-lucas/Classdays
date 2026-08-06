@@ -7,6 +7,7 @@ import {
   ehPeriodo,
   emAndamento,
   eventosFuturos,
+  feriadoEm,
   fimDe,
   itensDeHoje,
   montarSemana,
@@ -358,5 +359,85 @@ describe("itensDeHoje nunca lista períodos", () => {
     });
     const itens = itensDeHoje(GRADE, [periodo], HOJE);
     expect(itens.every((i) => i.kind === "aula")).toBe(true);
+  });
+});
+
+describe("feriadoEm (E3)", () => {
+  it("acha um feriado de um dia só, só na data exata", () => {
+    const feriado = evento({ id: 1, tipo: "feriado", data: HOJE, titulo: "Feriado" });
+    expect(feriadoEm([feriado], HOJE)).toBe(feriado);
+    expect(feriadoEm([feriado], "2026-07-08")).toBeNull();
+  });
+
+  it("acha um recesso (período) em qualquer dia dentro do intervalo", () => {
+    const recesso = evento({
+      id: 1, tipo: "recesso", titulo: "Recesso", data: "2026-07-06", data_fim: "2026-07-17",
+    });
+    expect(feriadoEm([recesso], "2026-07-10")).toBe(recesso);
+    expect(feriadoEm([recesso], "2026-07-18")).toBeNull();
+  });
+
+  it("nunca confunde cancelamento ou evento comum com feriado", () => {
+    const cancel = evento({ id: 1, tipo: "cancelamento", data: HOJE });
+    const comum = evento({ id: 2, tipo: "evento", data: HOJE });
+    expect(feriadoEm([cancel, comum], HOJE)).toBeNull();
+  });
+});
+
+describe("montarSemana com feriado/recesso (E3)", () => {
+  it("feriado de um dia derruba as aulas só daquele dia e marca `feriado`", () => {
+    const feriado = evento({ id: 1, tipo: "feriado", data: "2026-07-07", titulo: "Feriado" });
+    const semana = montarSemana(GRADE, [feriado], "2026-07-06");
+    expect(semana[1].feriado).toBe(feriado);
+    expect(semana[1].aulas).toHaveLength(0);
+    expect(semana[0].feriado).toBeNull();
+    expect(semana[0].aulas).toHaveLength(1); // segunda intacta
+  });
+
+  it("recesso derruba as aulas todos os dias que cobre e não duplica em `continuos`", () => {
+    const recesso = evento({
+      id: 1, tipo: "recesso", titulo: "Recesso", data: "2026-07-06", data_fim: "2026-07-17",
+    });
+    const semana = montarSemana(GRADE, [recesso], "2026-07-06");
+    expect(semana.every((d) => d.aulas.length === 0)).toBe(true);
+    expect(semana.every((d) => d.feriado?.id === 1)).toBe(true);
+    expect(semana.every((d) => d.continuos.length === 0)).toBe(true);
+  });
+
+  it("feriado num dia não esconde o cancelamento de dia inteiro de outro dia", () => {
+    const feriado = evento({ id: 1, tipo: "feriado", data: "2026-07-07" });
+    const cancel = evento({ id: 2, tipo: "cancelamento", data: "2026-07-08" });
+    const semana = montarSemana(GRADE, [feriado, cancel], "2026-07-06");
+    expect(semana[2].cancelamentoDiaInteiro).toBe(cancel);
+  });
+});
+
+describe("itensDeHoje com feriado/recesso (E3)", () => {
+  it("feriado de um dia suprime as aulas mas ainda vira item da timeline", () => {
+    const feriado = evento({ id: 1, tipo: "feriado", data: HOJE, titulo: "Feriado" });
+    const itens = itensDeHoje(GRADE, [feriado], HOJE);
+    expect(itens).toEqual([
+      expect.objectContaining({ kind: "evento", tipo: "feriado", titulo: "Feriado" }),
+    ]);
+  });
+
+  it("recesso (período) suprime as aulas e não vira item (vive na faixa 'em andamento')", () => {
+    const recesso = evento({
+      id: 1, tipo: "recesso", titulo: "Recesso", data: HOJE, data_fim: "2026-07-10",
+    });
+    expect(itensDeHoje(GRADE, [recesso], HOJE)).toEqual([]);
+  });
+});
+
+describe("proximoEvento nunca escolhe feriado/recesso (E3)", () => {
+  it("pula um feriado mais cedo e pega o próximo evento de verdade", () => {
+    const feriado = evento({ id: 1, tipo: "feriado", data: HOJE, titulo: "Feriado" });
+    const prova = evento({ id: 2, tipo: "prova", data: "2026-07-09", titulo: "Prova" });
+    expect(proximoEvento([feriado, prova], HOJE, "08:00")?.id).toBe(2);
+  });
+
+  it("recesso em andamento não assume o hero mesmo sem mais nada à frente", () => {
+    const recesso = evento({ id: 1, tipo: "recesso", data: "2026-07-01", data_fim: "2026-07-09" });
+    expect(proximoEvento([recesso], HOJE, "10:00")).toBeNull();
   });
 });

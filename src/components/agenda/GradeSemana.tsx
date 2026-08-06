@@ -68,7 +68,17 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
             )}
 
             <div className="day-classes">
-              {dia.cancelamentoDiaInteiro ? (
+              {dia.feriado ? (
+                <div
+                  className="noclass feriado slot-full"
+                  style={{ "--sc": `var(--badge-${dia.feriado.tipo}-fg)` } as React.CSSProperties}
+                >
+                  <Badge tipo={dia.feriado.tipo} />
+                  <span>
+                    <strong>{dia.feriado.titulo}</strong>
+                  </span>
+                </div>
+              ) : dia.cancelamentoDiaInteiro ? (
                 <div className="noclass slot-full">
                   <span aria-hidden="true">✕</span>
                   <span>

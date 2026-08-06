@@ -47,8 +47,9 @@ Contexto:
 ${lista}
 
 Regras:
-- "tipo": prova, trabalho, atividade (algo valendo nota que não é prova nem entrega), evento (geral) ou cancelamento.
+- "tipo": prova, trabalho, atividade (algo valendo nota que não é prova nem entrega), evento (geral), cancelamento, feriado ou recesso.
 - Frase dizendo que não haverá aula → tipo "cancelamento". Com matéria citada, cancela só aquela aula; sem matéria, o dia inteiro (materia_id null).
+- Frase citando "feriado" (um dia sem aula, ex.: "feriado dia 7/9") → tipo "feriado". Frase citando "recesso" (vários dias sem aula, ex.: "recesso de 20/12 a 05/01") → tipo "recesso", com data_fim preenchido como um período normal. Nenhum dos dois tem matéria (materia_id null).
 - Resolva datas relativas ("amanhã", "próxima terça", "dia 13") a partir de hoje. "próxima X" e "X que vem" = a próxima ocorrência do dia X, nunca hoje. Saída em AAAA-MM-DD.
 - "data_fim": só quando a frase descreve um PERÍODO de vários dias ("de 4/8 a 9/8", "entre os dias X e Y", "recesso de 20/12 a 05/01"). Preencha com o último dia do período, em AAAA-MM-DD, sempre DEPOIS de "data" (se a virada cair num ano novo, use o ano seguinte). Evento de um dia só → data_fim = null.
 - NUNCA invente: se a frase não diz a data, data = null; sem hora, hora = null; se nenhuma matéria casar, materia_id = null.

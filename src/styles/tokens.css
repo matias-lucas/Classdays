@@ -32,6 +32,10 @@
   --badge-evento-fg: #6a4d9c;
   --badge-cancelamento-bg: #eceef3;
   --badge-cancelamento-fg: #4e586e;
+  --badge-feriado-bg: #fdefd6;
+  --badge-feriado-fg: #8a5a08;
+  --badge-recesso-bg: #dff3f3;
+  --badge-recesso-fg: #146b6b;
 
   /* feedback */
   --erro-fg: #b4232a;
@@ -103,6 +107,10 @@
   --badge-evento-fg: #c6b4e8;
   --badge-cancelamento-bg: #2a3145;
   --badge-cancelamento-fg: #b6bfd1;
+  --badge-feriado-bg: #3a2e18;
+  --badge-feriado-fg: #e0b464;
+  --badge-recesso-bg: #163333;
+  --badge-recesso-fg: #7fd8d8;
 
   --erro-fg: #f2a3a6;
   --erro-bg: #3d2427;

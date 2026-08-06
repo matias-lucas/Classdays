@@ -372,6 +372,17 @@
 .noclass .motivo {
   color: var(--ink-faint);
 }
+/* feriado/recesso: mesmo aviso do dia sem aula, com o acento do selo do tipo
+   (aqui `--sc` carrega a cor do BADGE, não de matéria — feriado/recesso nunca
+   têm matéria, então não há conflito com a regra selo=tipo/matéria=filete) */
+.noclass.feriado {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--sc) 30%, var(--line));
+  background: color-mix(in srgb, var(--sc) 7%, var(--surface));
+}
+.noclass.feriado strong {
+  color: var(--sc);
+}
 .empty-day {
   padding: 8px 4px;
   color: var(--ink-faint);

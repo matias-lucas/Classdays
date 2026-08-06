@@ -40,6 +40,17 @@ export function cancelamentoDa(
 }
 
 // ---------------------------------------------------------------------------
+// feriados e recessos — dias sem aula, reaproveitando o mecanismo de período
+// ---------------------------------------------------------------------------
+
+const TIPOS_AUSENCIA = new Set<TipoEvento>(["feriado", "recesso"]);
+
+/** O feriado/recesso ativo nesta data, se houver (derruba a aula do dia inteiro). */
+export function feriadoEm(eventos: Evento[], dataIso: string): Evento | null {
+  return eventos.find((e) => TIPOS_AUSENCIA.has(e.tipo) && ativoEm(e, dataIso)) ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // eventos contínuos (período de dias) — funções puras, todas testadas
 // ---------------------------------------------------------------------------
 
@@ -81,13 +92,15 @@ export function continuosAtivos(
 
 export interface DiaDaSemana {
   data: string; // "AAAA-MM-DD"
+  /** Feriado ou recesso cobrindo este dia — quando presente, `aulas` vem vazio. */
+  feriado: Evento | null;
   cancelamentoDiaInteiro: Evento | null;
   aulas: Array<{
     aula: AulaFixa;
     cancelamento: Evento | null; // cancelamento só desta aula, se houver
     evento: Evento | null; // prova/trabalho/atividade dessa matéria nessa data, se houver
   }>;
-  /** Períodos (renovação de matrícula, recesso…) ativos neste dia. */
+  /** Períodos (renovação de matrícula…) ativos neste dia — nunca repete o `feriado` acima. */
   continuos: Evento[];
 }
 
@@ -101,14 +114,18 @@ export function montarSemana(
   const dias: DiaDaSemana[] = [];
   for (let i = 0; i < 5; i++) {
     const data = addDias(segundaIso, i);
+    const feriado = feriadoEm(eventos, data);
     // dia_semana usa 1=seg…5=sex — os mesmos números do getDay() do JS
-    // para dias úteis, então dá pra comparar direto.
-    const doDia = grade.filter((g) => g.dia_semana === diaSemanaDe(data));
+    // para dias úteis, então dá pra comparar direto. Feriado/recesso derruba
+    // todas as aulas do dia, como um cancelamento de dia inteiro.
+    const doDia = feriado ? [] : grade.filter((g) => g.dia_semana === diaSemanaDe(data));
     dias.push({
       data,
-      cancelamentoDiaInteiro:
-        cancelamentos.find((c) => c.data === data && c.materia_id === null) ??
-        null,
+      feriado,
+      cancelamentoDiaInteiro: feriado
+        ? null
+        : cancelamentos.find((c) => c.data === data && c.materia_id === null) ??
+          null,
       aulas: doDia.map((aula) => ({
         aula,
         cancelamento: cancelamentoDa(cancelamentos, data, aula.materia_id),
@@ -120,7 +137,7 @@ export function montarSemana(
               e.materia_id === aula.materia_id,
           ) ?? null,
       })),
-      continuos: continuosAtivos(eventos, data),
+      continuos: continuosAtivos(eventos, data).filter((e) => e.id !== feriado?.id),
     });
   }
   return dias;
@@ -141,7 +158,9 @@ export function montarSemana(
  * com hora à frente), o mais cedo deles vence; 2) senão, o período em
  * andamento que termina primeiro assume o hero; 3) senão, null. Um período
  * longo (renovação de matrícula) não rouba o hero de uma prova que vem em
- * 3 dias — só assume quando não há mais nada à frente.
+ * 3 dias — só assume quando não há mais nada à frente. Feriado e recesso
+ * nunca viram hero (são ausência, como cancelamento), mas seguem aparecendo
+ * na lista de próximos eventos.
  */
 export function proximoEvento(
   eventos: Evento[],
@@ -150,7 +169,7 @@ export function proximoEvento(
   filtroMateria: string | null = null,
 ): Evento | null {
   const candidatos = eventos
-    .filter((e) => e.tipo !== "cancelamento")
+    .filter((e) => e.tipo !== "cancelamento" && !TIPOS_AUSENCIA.has(e.tipo))
     .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true));
 
   const aindaNaoComecou = candidatos
@@ -204,21 +223,25 @@ export function itensDeHoje(
   const cancelamentos = cancelamentosDe(eventos);
   const itens: ItemHoje[] = [];
 
-  // aulas fixas de hoje que não estão canceladas
-  const dow = diaSemanaDe(hojeIso);
-  for (const g of grade) {
-    if (g.dia_semana !== dow) continue;
-    if (cancelamentoDa(cancelamentos, hojeIso, g.materia_id)) continue;
-    itens.push({
-      kind: "aula",
-      tipo: null,
-      titulo: "",
-      materia_id: g.materia_id,
-      hora: g.hora_ini,
-      hora_fim: g.hora_fim,
-      sala: g.sala,
-      observacao: null,
-    });
+  // aulas fixas de hoje que não estão canceladas (feriado/recesso derruba
+  // todas de uma vez, como um cancelamento de dia inteiro — mas o próprio
+  // feriado, se for de um dia só, ainda entra como item mais abaixo)
+  if (!feriadoEm(eventos, hojeIso)) {
+    const dow = diaSemanaDe(hojeIso);
+    for (const g of grade) {
+      if (g.dia_semana !== dow) continue;
+      if (cancelamentoDa(cancelamentos, hojeIso, g.materia_id)) continue;
+      itens.push({
+        kind: "aula",
+        tipo: null,
+        titulo: "",
+        materia_id: g.materia_id,
+        hora: g.hora_ini,
+        hora_fim: g.hora_fim,
+        sala: g.sala,
+        observacao: null,
+      });
+    }
   }
 
   // eventos pontuais de hoje — cancelamento não entra (é ausência, não item);

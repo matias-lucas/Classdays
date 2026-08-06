@@ -132,6 +132,8 @@ describe("tipos", () => {
     ["amanhã não haverá aula", "cancelamento"],
     ["aula de cálculo cancelada amanhã", "cancelamento"],
     ["não teremos aula amanhã", "cancelamento"],
+    ["feriado dia 7/9", "feriado"],
+    ["recesso de 20/12 a 05/01", "recesso"],
   ])("%s → %s", (frase, esperado) => {
     expect(parse(frase).evento.tipo).toBe(esperado);
   });
@@ -194,6 +196,30 @@ describe("períodos (E2)", () => {
     const r = parse("prova dia 13/07");
     expect(r.evento.data).toBe("2026-07-13");
     expect(r.evento.data_fim).toBeNull();
+  });
+});
+
+describe("feriados e recessos (E3)", () => {
+  it("feriado de um dia só: tipo, data, sem período, sem matéria", () => {
+    const r = parse("feriado dia 7/9");
+    expect(r.evento).toMatchObject({
+      tipo: "feriado",
+      data: "2026-09-07",
+      data_fim: null,
+      materia_id: null,
+      titulo: "Feriado",
+    });
+  });
+
+  it("recesso: tipo, período (data_fim) e sem matéria", () => {
+    const r = parse("recesso de 20/12 a 05/01");
+    expect(r.evento).toMatchObject({
+      tipo: "recesso",
+      data: "2026-12-20",
+      data_fim: "2027-01-05",
+      materia_id: null,
+      titulo: "Recesso",
+    });
   });
 });
 

@@ -12,6 +12,8 @@ export const TIPOS_EVENTO = [
   "atividade",
   "evento",
   "cancelamento",
+  "feriado",
+  "recesso",
 ] as const;
 
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];

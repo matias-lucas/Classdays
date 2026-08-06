@@ -241,6 +241,8 @@ function acharHora(normal: string): { hhmm: string; trecho: string } | null {
 // ---------------------------------------------------------------------------
 
 function acharTipo(normal: string): EventoParseado["tipo"] {
+  if (/\bferiado\b/.test(normal)) return "feriado";
+  if (/\brecesso\b/.test(normal)) return "recesso";
   if (
     /\b(nao\s+(havera|tera|vai\s+ter|tem|teremos)\s+aula|sem\s+aula|aula\s+cancelada|cancelad[ao]?s?|nao\s+haver[aá]\s+aula)\b/.test(
       normal,

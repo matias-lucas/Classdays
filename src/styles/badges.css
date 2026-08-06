@@ -11,8 +11,8 @@
   padding: 3px 8px;
   border-radius: 6px;
   white-space: nowrap;
-  /* tipo ainda sem estilo próprio (ex.: feriado/recesso antes da E3) cai
-     aqui, neutro, em vez de sair sem cor nenhuma */
+  /* tipo sem estilo próprio (nenhum hoje) cai aqui, neutro, em vez de sair
+     sem cor nenhuma */
   background: var(--badge-cancelamento-bg);
   color: var(--badge-cancelamento-fg);
 }
@@ -35,6 +35,14 @@
 .badge.cancelamento {
   background: var(--badge-cancelamento-bg);
   color: var(--badge-cancelamento-fg);
+}
+.badge.feriado {
+  background: var(--badge-feriado-bg);
+  color: var(--badge-feriado-fg);
+}
+.badge.recesso {
+  background: var(--badge-recesso-bg);
+  color: var(--badge-recesso-fg);
 }
 /* "aula" (só no hero): tint da cor da matéria */
 .badge.aula {
