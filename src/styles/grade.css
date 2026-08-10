@@ -374,14 +374,25 @@
 }
 /* feriado/recesso: mesmo aviso do dia sem aula, com o acento do selo do tipo
    (aqui `--sc` carrega a cor do BADGE, não de matéria — feriado/recesso nunca
-   têm matéria, então não há conflito com a regra selo=tipo/matéria=filete) */
+   têm matéria, então não há conflito com a regra selo=tipo/matéria=filete).
+   Empilhado (não em linha, como o `.noclass` padrão) e centralizado: o box
+   ocupa a coluna inteira no desktop (`.slot-full`), e badge+título+observação
+   sozinhos no topo deixavam um vão vazio embaixo. */
 .noclass.feriado {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
   border-style: solid;
   border-color: color-mix(in srgb, var(--sc) 30%, var(--line));
   background: color-mix(in srgb, var(--sc) 7%, var(--surface));
 }
 .noclass.feriado strong {
   color: var(--sc);
+  font-weight: 600;
+}
+.noclass.feriado .motivo {
+  font-size: 12px;
 }
 .empty-day {
   padding: 8px 4px;
