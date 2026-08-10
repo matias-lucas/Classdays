@@ -4,6 +4,7 @@ import {
   cancelamentoDa,
   cancelamentosDe,
   continuosAtivos,
+  ehAusencia,
   ehPeriodo,
   emAndamento,
   eventosFuturos,
@@ -359,6 +360,16 @@ describe("itensDeHoje nunca lista períodos", () => {
     });
     const itens = itensDeHoje(GRADE, [periodo], HOJE);
     expect(itens.every((i) => i.kind === "aula")).toBe(true);
+  });
+});
+
+describe("ehAusencia (E3)", () => {
+  it("só feriado e recesso são ausência — nunca matéria/'GERAL'", () => {
+    expect(ehAusencia("feriado")).toBe(true);
+    expect(ehAusencia("recesso")).toBe(true);
+    expect(ehAusencia("evento")).toBe(false);
+    expect(ehAusencia("cancelamento")).toBe(false);
+    expect(ehAusencia("prova")).toBe(false);
   });
 });
 

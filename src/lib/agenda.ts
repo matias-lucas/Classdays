@@ -45,6 +45,11 @@ export function cancelamentoDa(
 
 const TIPOS_AUSENCIA = new Set<TipoEvento>(["feriado", "recesso"]);
 
+/** Feriado ou recesso: nunca tem matéria/"GERAL" — é ausência da turma toda. */
+export function ehAusencia(tipo: TipoEvento): boolean {
+  return TIPOS_AUSENCIA.has(tipo);
+}
+
 /** O feriado/recesso ativo nesta data, se houver (derruba a aula do dia inteiro). */
 export function feriadoEm(eventos: Evento[], dataIso: string): Evento | null {
   return eventos.find((e) => TIPOS_AUSENCIA.has(e.tipo) && ativoEm(e, dataIso)) ?? null;

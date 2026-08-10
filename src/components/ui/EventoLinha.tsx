@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
-import { emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
+import { ehAusencia, emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
 import {
   DIAS_CURTOS,
   diaSemanaDe,
@@ -35,7 +35,8 @@ interface Props {
  * do aluno e o admin — mesma cara nos dois lugares, de propósito.
  */
 export function EventoLinha({ evento, materia, hojeIso, children, indice }: Props) {
-  const cor = materia?.cor ?? COR_TURMA;
+  const ausencia = ehAusencia(evento.tipo);
+  const cor = materia?.cor ?? (ausencia ? `var(--badge-${evento.tipo}-fg)` : COR_TURMA);
   const nome = materia?.nome ?? "GERAL";
   const periodo = ehPeriodo(evento);
   const emCurso = periodo && emAndamento(evento, hojeIso);
@@ -80,10 +81,12 @@ export function EventoLinha({ evento, materia, hojeIso, children, indice }: Prop
       </div>
       <div className="ev-body">
         <div className="ev-top">
-          <span className="ev-subj">
-            <span className="dot" style={{ background: cor }} />
-            {nome}
-          </span>
+          {!ausencia && (
+            <span className="ev-subj">
+              <span className="dot" style={{ background: cor }} />
+              {nome}
+            </span>
+          )}
           {emCurso && <span className="badge badge-andamento">em andamento</span>}
           <Badge tipo={evento.tipo} />
         </div>

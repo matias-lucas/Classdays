@@ -188,7 +188,7 @@ export function ProximoDetalhe({
 
           {resto.length > 0 && (
             <div className="pd-lista">
-              <span className="pd-lista-label">Depois desse</span>
+              <span className="pd-lista-label">Demais eventos</span>
               {resto.map((e, i) => (
                 <EventoLinha
                   key={e.id}
