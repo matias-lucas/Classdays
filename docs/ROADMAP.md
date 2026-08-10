@@ -52,8 +52,12 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   o período 04–09/08 (`data_fim`); o 21 (ponto de início, redundante) foi
   apagado direto no banco de produção com confirmação do Lucas. Sobra um
   único evento canônico cobrindo o período.
-- ⬜ **E3 — Feriados e recessos**. Tipos novos reaproveitando o período; em dia
-  de feriado a grade mostra o destaque no lugar das aulas.
+- ✅ **E3 — Feriados e recessos** *(10/08/2026)*. Código em `main` e em
+  produção: tipos `feriado`/`recesso` reaproveitando `data_fim`, `feriadoEm`
+  em `agenda.ts`, grade mostra o destaque no lugar das aulas, lista com cor
+  própria (sem "GERAL"), parser nos dois caminhos. `supabase/0006_feriados.sql`
+  (afrouxa `eventos_tipo_check`) confirmado rodado em produção pelo Lucas.
+  189 testes verdes, tsc/build limpos.
 - ⬜ **E4 — Meu Classdays**. `localStorage` com matérias ocultas; some de
   Hoje/Grade/Próximo/Eventos; a agenda pública fica intacta para quem nunca
   configurar.
