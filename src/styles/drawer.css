@@ -280,11 +280,11 @@
   transform: scale(1.12);
 }
 
-/* toggle de tema: uma linha do menu (ícone sol/lua + rótulo) com o switch à
-   direita. A linha inteira é o <label> — alvo ≥44px sem gambiarra de hit-test.
-   Ligado (claro): trilho em --ink, a linguagem de controle de alta ênfase do
-   sistema; desligado (escuro): trilho apagado. */
-.tema-linha {
+/* linha de menu com switch à direita (tema, matérias ocultas…): ícone/marca +
+   rótulo + trilho. A linha inteira é o <label> — alvo ≥44px sem gambiarra de
+   hit-test. Ligado: trilho em --ink, a linguagem de controle de alta ênfase
+   do sistema; desligado: trilho apagado. */
+.linha-switch {
   position: relative;
   display: flex;
   align-items: center;
@@ -299,15 +299,15 @@
   color: var(--ink);
   transition: background-color var(--t-fast) var(--ease);
 }
-.tema-linha:hover {
+.linha-switch:hover {
   background-color: var(--line-soft);
 }
-.tema-linha:hover .drawer-nav-ico {
+.linha-switch:hover .drawer-nav-ico {
   color: var(--ink);
 }
 /* invisível mas focável, cobrindo a linha toda (display:none tiraria o toggle
    da navegação por Tab) */
-.toggle-tema-check {
+.switch-check {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -316,11 +316,11 @@
   opacity: 0;
   cursor: pointer;
 }
-.toggle-tema-check:focus-visible ~ .toggle-tema-slider {
+.switch-check:focus-visible ~ .switch-slider {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
-.toggle-tema-slider {
+.switch-slider {
   position: relative;
   margin-left: auto;
   width: 44px;
@@ -334,14 +334,14 @@
     background-color var(--t-med) var(--ease),
     border-color var(--t-med) var(--ease);
 }
-.tema-linha:hover .toggle-tema-slider {
+.linha-switch:hover .switch-slider {
   border-color: var(--ink-faint);
 }
-.toggle-tema-check:checked ~ .toggle-tema-slider {
+.switch-check:checked ~ .switch-slider {
   background-color: var(--ink);
   border-color: var(--ink);
 }
-.toggle-tema-slider::before {
+.switch-slider::before {
   content: "";
   position: absolute;
   top: 2px;
@@ -357,7 +357,7 @@
     width var(--t-fast) var(--ease),
     background-color var(--t-med) var(--ease);
 }
-.toggle-tema-check:checked ~ .toggle-tema-slider::before {
+.switch-check:checked ~ .switch-slider::before {
   transform: translateX(18px);
   background-color: var(--on-ink);
 }
@@ -365,16 +365,16 @@
    iOS): 4px a mais de largura. Ligado, compensa o translateX pra borda
    direita não vazar da pílula. Área minúscula e isolada — animar width aqui
    não mexe em layout nenhum fora do próprio pino. */
-.tema-linha:active .toggle-tema-slider::before {
+.linha-switch:active .switch-slider::before {
   width: 24px;
 }
-.tema-linha:active .toggle-tema-check:checked ~ .toggle-tema-slider::before {
+.linha-switch:active .switch-check:checked ~ .switch-slider::before {
   transform: translateX(14px);
 }
 
 /* o sol/lua troca com um giro curto de "amanhecer" — o span remonta com
    key={tema}, então a animação replay a cada troca (e na abertura do menu) */
-.tema-linha .drawer-nav-ico svg {
+.linha-switch .drawer-nav-ico svg {
   animation: tema-amanhece 340ms var(--ease-exp) both;
 }
 @keyframes tema-amanhece {

@@ -159,10 +159,10 @@ export function MenuLateral() {
               switch à direita. A linha inteira é o <label>: todo o alvo (≥44px)
               alterna o tema. O checkbox fica invisível mas focável, para operar
               por teclado (Tab + Espaço); marcado = tema claro. */}
-          <label className="tema-linha">
+          <label className="linha-switch">
             <input
               type="checkbox"
-              className="toggle-tema-check"
+              className="switch-check"
               role="switch"
               checked={tema === "light"}
               onChange={(e) => definir(e.target.checked ? "light" : "dark")}
@@ -173,7 +173,7 @@ export function MenuLateral() {
               {tema === "light" ? <IcoSol /> : <IcoLua />}
             </span>
             {tema === "light" ? "Tema claro" : "Tema escuro"}
-            <span className="toggle-tema-slider" aria-hidden="true" />
+            <span className="switch-slider" aria-hidden="true" />
           </label>
         </div>
       </Drawer>
