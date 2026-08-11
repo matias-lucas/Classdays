@@ -220,6 +220,15 @@
   flex-direction: column;
   gap: 26px;
 }
+/* legenda curta abaixo do .drawer-label, antes da lista (ex.: painel "Meu
+   Classdays") — mesmo corpo do texto, mais apagada, sem ocupar linha extra */
+.drawer-desc {
+  margin: -3px 0 2px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
 
 /* navegação do drawer: itens de linha inteira, alvo ≥44px, mesmo desenho para
    <a> (rotas) e <button> (scroll até seção) */

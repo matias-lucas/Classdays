@@ -20,11 +20,13 @@ import {
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { MenuLateral } from "@/components/layout/MenuLateral";
 import { Splash } from "@/components/layout/Splash";
+import { usePreferencias } from "@/hooks/usePreferencias";
 import { FaixaEmAndamento } from "./FaixaEmAndamento";
 import { FiltroMaterias } from "./FiltroMaterias";
 import { GradeSemanaSlider } from "./GradeSemanaSlider";
 import { HeroProximo } from "./HeroProximo";
 import { HojeTimeline } from "./HojeTimeline";
+import { MeuClassdays } from "./MeuClassdays";
 import { SecaoRecolhivel } from "./SecaoRecolhivel";
 import { TrocaSuave } from "./TrocaSuave";
 
@@ -65,6 +67,32 @@ export function AgendaAluno({
   const [filtro, setFiltro] = useState<string | null>(null);
   const [agora, setAgora] = useState({ hoje: hojeInicial, hhmm: agoraInicial });
 
+  // "Meu Classdays": matérias que o próprio aluno escondeu (localStorage, só
+  // neste aparelho). O filtro é aplicado aqui, ANTES das funções puras de
+  // agenda.ts — elas continuam recebendo grade/eventos já sem as ocultas.
+  // Eventos gerais (materia_id null) nunca somem.
+  const { materiasOcultas, alternar: alternarOculta } = usePreferencias(materias);
+  const gradeFiltrada = useMemo(
+    () => grade.filter((a) => !materiasOcultas.includes(a.materia_id)),
+    [grade, materiasOcultas],
+  );
+  const eventosFiltrados = useMemo(
+    () =>
+      eventos.filter(
+        (e) => e.materia_id === null || !materiasOcultas.includes(e.materia_id),
+      ),
+    [eventos, materiasOcultas],
+  );
+  const materiasVisiveis = useMemo(
+    () => materias.filter((m) => !materiasOcultas.includes(m.id)),
+    [materias, materiasOcultas],
+  );
+  // Se a matéria do filtro ativo acabou de ser ocultada, o filtro volta para
+  // "Todas" — senão o chip escolhido sumiria da barra sem explicação.
+  useEffect(() => {
+    if (filtro && materiasOcultas.includes(filtro)) setFiltro(null);
+  }, [filtro, materiasOcultas]);
+
   useEffect(() => {
     const id = setInterval(
       () => setAgora({ hoje: hojeISO(), hhmm: horaAgora() }),
@@ -82,39 +110,39 @@ export function AgendaAluno({
   // O "Próximo" mostra só EVENTOS (nunca aula/cancelamento) — vira o gatilho do
   // menu de próximos eventos (1b).
   const proximo = useMemo(
-    () => proximoEvento(eventos, agora.hoje, agora.hhmm, filtro),
-    [eventos, agora, filtro],
+    () => proximoEvento(eventosFiltrados, agora.hoje, agora.hhmm, filtro),
+    [eventosFiltrados, agora, filtro],
   );
 
   // A timeline de hoje não depende de "agora" (mostra o dia inteiro, sem
   // marcador do momento), só da data — por isso só recalcula ao virar o dia.
   const itensHoje = useMemo(
-    () => itensDeHoje(grade, eventos, agora.hoje, filtro),
-    [grade, eventos, agora.hoje, filtro],
+    () => itensDeHoje(gradeFiltrada, eventosFiltrados, agora.hoje, filtro),
+    [gradeFiltrada, eventosFiltrados, agora.hoje, filtro],
   );
 
   // Períodos em curso hoje (renovação de matrícula, recesso…) — faixa acima
   // da timeline, cor neutra, nunca a cor de matéria.
   const continuosHoje = useMemo(
-    () => continuosAtivos(eventos, agora.hoje, filtro),
-    [eventos, agora.hoje, filtro],
+    () => continuosAtivos(eventosFiltrados, agora.hoje, filtro),
+    [eventosFiltrados, agora.hoje, filtro],
   );
 
   const segunda = addDias(segundaDaSemana(agora.hoje), semanaOffset * 7);
   const semana = useMemo(
-    () => montarSemana(grade, eventos, segunda),
-    [grade, eventos, segunda],
+    () => montarSemana(gradeFiltrada, eventosFiltrados, segunda),
+    [gradeFiltrada, eventosFiltrados, segunda],
   );
   // Semanas vizinhas: alimentam o arraste (o trilho de 3 painéis do slider) sem
   // esperar troca de estado. São puras/baratas (montarSemana), então recalcular
   // a cada navegação não pesa.
   const semanaAnterior = useMemo(
-    () => montarSemana(grade, eventos, addDias(segunda, -7)),
-    [grade, eventos, segunda],
+    () => montarSemana(gradeFiltrada, eventosFiltrados, addDias(segunda, -7)),
+    [gradeFiltrada, eventosFiltrados, segunda],
   );
   const semanaProxima = useMemo(
-    () => montarSemana(grade, eventos, addDias(segunda, 7)),
-    [grade, eventos, segunda],
+    () => montarSemana(gradeFiltrada, eventosFiltrados, addDias(segunda, 7)),
+    [gradeFiltrada, eventosFiltrados, segunda],
   );
   // Dias já passados da semana ATUAL viram "passados": no celular somem da
   // grade (a gente cruza no corredor querendo o que falta); no desktop ficam
@@ -128,8 +156,8 @@ export function AgendaAluno({
   );
 
   const futuros = useMemo(
-    () => eventosFuturos(eventos, agora.hoje, filtro),
-    [eventos, agora.hoje, filtro],
+    () => eventosFuturos(eventosFiltrados, agora.hoje, filtro),
+    [eventosFiltrados, agora.hoje, filtro],
   );
 
   const ini = fmtDiaMesPartes(segunda);
@@ -172,7 +200,12 @@ export function AgendaAluno({
       </SecaoRecolhivel>
 
       <SecaoRecolhivel id="filtro" titulo="Filtrar por matéria">
-        <FiltroMaterias materias={materias} filtro={filtro} aoTrocar={setFiltro} />
+        <FiltroMaterias materias={materiasVisiveis} filtro={filtro} aoTrocar={setFiltro} />
+        <MeuClassdays
+          materias={materias}
+          materiasOcultas={materiasOcultas}
+          alternar={alternarOculta}
+        />
       </SecaoRecolhivel>
 
       <SecaoRecolhivel id="proximo" titulo="Próximos eventos">

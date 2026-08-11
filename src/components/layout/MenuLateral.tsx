@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { EVENTO_ABRIR_PROXIMOS } from "@/components/agenda/HeroProximo";
+import { EVENTO_ABRIR_MEU_CLASSDAYS } from "@/components/agenda/MeuClassdays";
 import { EVENTO_EXPANDIR_SECAO } from "@/components/agenda/SecaoRecolhivel";
 import { Drawer } from "./Drawer";
 import { useTema } from "@/hooks/useTema";
@@ -28,6 +29,20 @@ function IcoCalendario() {
       <rect x="2.75" y="4" width="14.5" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M6.5 2.5v3M13.5 2.5v3M2.75 8.25h14.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       <circle cx="7" cy="12.5" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IcoOlho() {
+  return (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
+      <path
+        d="M2 10s3-5.5 8-5.5 8 5.5 8 5.5-3 5.5-8 5.5-8-5.5-8-5.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.6" />
     </svg>
   );
 }
@@ -75,6 +90,12 @@ const ITENS_NAV: ItemNav[] = [
     icone: <IcoCalendario />,
     tipo: "evento",
     nome: EVENTO_ABRIR_PROXIMOS,
+  },
+  {
+    rotulo: "Meu Classdays",
+    icone: <IcoOlho />,
+    tipo: "evento",
+    nome: EVENTO_ABRIR_MEU_CLASSDAYS,
   },
   { rotulo: "Painel admin", icone: <IcoCadeado />, tipo: "link", href: "/admin" },
 ];
