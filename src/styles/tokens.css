@@ -45,6 +45,11 @@
   --aviso-fg: #7a4f06;
   --erro-bg-hover: #f8d7d7;
 
+  /* "ao vivo": único vermelho fora de selos/erros — o dot da faixa "em
+     andamento" (timeline.css), pra ler como "rolando agora" e não como
+     alerta genérico */
+  --vivo: #c8322b;
+
   /* controles de alta ênfase (fundo = --ink): no tema escuro o --ink vira claro,
      então a cor do texto/anel/estados precisa virar junto — por isso são tokens.
      --scrim/--hatch idem, pra lerem certo sobre fundo escuro. */
@@ -118,6 +123,8 @@
   --ok-fg: #8fd6a8;
   --aviso-bg: #3a301c;
   --aviso-fg: #e6c583;
+
+  --vivo: #ff7a75;
 
   --shadow:
     0 1px 2px rgba(0, 0, 0, 0.3),

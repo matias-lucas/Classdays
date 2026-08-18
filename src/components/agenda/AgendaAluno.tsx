@@ -210,7 +210,6 @@ export function AgendaAluno({
 
       <SecaoRecolhivel id="proximo" titulo="Próximos eventos">
         <TrocaSuave chave={filtro}>
-          <FaixaEmAndamento eventos={continuosHoje} hojeIso={agora.hoje} />
           <HeroProximo
             evento={proximo}
             proximos={futuros}

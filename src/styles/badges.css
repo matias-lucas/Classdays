@@ -97,6 +97,14 @@
 .ev.cancelado .ev-title {
   color: var(--ink-soft);
 }
+/* fantasma: repete um evento já em destaque em outro ponto da tela (o "Próximo"
+   do menu). Some visualmente e perde a interação — o hover-desliza ali seria
+   affordance falsa, e não conta pro leitor de tela (aria-hidden). */
+.ev.ev-fantasma {
+  opacity: 0.45;
+  box-shadow: none;
+  pointer-events: none;
+}
 .ev-date {
   font-family: var(--font-mono), monospace;
   text-align: center;

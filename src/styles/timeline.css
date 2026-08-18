@@ -33,24 +33,24 @@
   gap: 7px;
   min-width: 0;
 }
-/* dot que pulsa: sinaliza "ao vivo" sem depender de cor de matéria — mesma
-   linguagem de pulso do badge de evento em Hoje (badge-pulse), mas em tom
-   neutro (regra do período: nunca a cor de matéria). */
+/* dot que pulsa: sinaliza "ao vivo" sem depender de cor de matéria — vermelho
+   de estado (--vivo), não de assunto, então não briga com a regra do período
+   (nunca a cor de matéria). */
 .faixa-dot {
   flex-shrink: 0;
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--ink-faint);
+  background: var(--vivo);
   animation: faixa-dot-pulse 2000ms ease-in-out infinite;
 }
 @keyframes faixa-dot-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink-faint) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--vivo) 45%, transparent);
   }
   70%,
   100% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--ink-faint) 0%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--vivo) 0%, transparent);
   }
 }
 .faixa-titulo {

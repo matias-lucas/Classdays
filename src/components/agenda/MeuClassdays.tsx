@@ -46,8 +46,7 @@ export function MeuClassdays({ materias, materiasOcultas, alternar }: Props) {
         <div className="drawer-sec">
           <span className="drawer-label">Minhas matérias</span>
           <p className="drawer-desc">
-            Esconda o que não quiser ver — vale só neste aparelho, a agenda de
-            quem não mexer aqui continua intacta.
+            Alterne a visualização de matérias no seu dispositivo.
           </p>
           <ul className="drawer-nav">
             {materias.map((m) => (

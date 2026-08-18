@@ -37,18 +37,21 @@
 .filters::-webkit-scrollbar {
   display: none;
 }
-/* seta de cutucão: pisca pro lado do overflow até o primeiro scroll.
-   Decorativa (aria-hidden) e sem capturar toque/scroll. */
+/* botão-seta: rola a faixa ~80% da largura visível pro lado do overflow.
+   Some (visibility) quando não há mais nada pra esse lado — some de vez,
+   não só o cutucão — e sai da tabulação junto (tabIndex={-1} no componente). */
 .filtros-seta {
   position: absolute;
   top: calc(50% - 3px); /* desconta o padding-bottom da faixa pra centrar nos chips */
-  right: -2px;
   transform: translateY(-50%);
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 22px;
   height: 22px;
-  pointer-events: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
   font-family: var(--font-mono), monospace;
   font-size: 20px;
   line-height: 1;
@@ -57,11 +60,37 @@
   visibility: hidden;
   transition:
     opacity var(--t-med) var(--ease),
-    visibility var(--t-med) var(--ease);
+    visibility var(--t-med) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.filtros-seta-esq {
+  left: -2px;
+}
+.filtros-seta-dir {
+  right: -2px;
 }
 .filtros-seta.on {
   opacity: 1;
   visibility: visible;
+}
+@media (hover: hover) and (pointer: fine) {
+  .filtros-seta.on:hover {
+    color: var(--ink);
+  }
+}
+.filtros-seta.on:active {
+  color: var(--ink);
+}
+/* dedo é menos preciso que cursor: alvo maior no toque (mesmo padrão do weeknav) */
+@media (pointer: coarse) {
+  .filtros-seta {
+    width: 44px;
+    height: 44px;
+  }
+}
+/* cutucão: pisca pro lado do overflow só até o primeiro scroll — depois disso
+   a seta segue clicável, só para de chamar atenção sozinha */
+.filtros-seta-dir.cutuca {
   animation: nudge-x 1400ms var(--ease) infinite;
 }
 @keyframes nudge-x {

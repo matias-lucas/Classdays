@@ -27,6 +27,15 @@ interface Props {
    * uma "revelação" que precise de entrada.
    */
   indice?: number;
+  /**
+   * A linha repete um evento já mostrado em destaque em outro lugar da
+   * mesma tela (ex.: o "Próximo" no topo do menu de próximos eventos) —
+   * fica apagada e sem interação, só marcando o lugar cronológico dela.
+   * Nunca entra em cascata (mesmo com `indice`): a keyframe de entrada
+   * também anima `opacity` até 1 e, com `animation-fill-mode: both`,
+   * sobreporia o `opacity: .45` do fantasma no mesmo elemento.
+   */
+  esmaecido?: boolean;
 }
 
 /**
@@ -34,7 +43,14 @@ interface Props {
  * da matéria), corpo com matéria + selo + título. Compartilhada entre a tela
  * do aluno e o admin — mesma cara nos dois lugares, de propósito.
  */
-export function EventoLinha({ evento, materia, hojeIso, children, indice }: Props) {
+export function EventoLinha({
+  evento,
+  materia,
+  hojeIso,
+  children,
+  indice,
+  esmaecido,
+}: Props) {
   const ausencia = ehAusencia(evento.tipo);
   const cor = materia?.cor ?? (ausencia ? `var(--badge-${evento.tipo}-fg)` : COR_TURMA);
   const nome = materia?.nome ?? "GERAL";
@@ -59,8 +75,9 @@ export function EventoLinha({ evento, materia, hojeIso, children, indice }: Prop
 
   return (
     <div
-      className={`ev${evento.tipo === "cancelamento" ? " cancelado" : ""}${indice !== undefined ? " ev-entra" : ""}`}
+      className={`ev${evento.tipo === "cancelamento" ? " cancelado" : ""}${indice !== undefined && !esmaecido ? " ev-entra" : ""}${esmaecido ? " ev-fantasma" : ""}`}
       style={style}
+      aria-hidden={esmaecido || undefined}
     >
       <div className="ev-date" aria-hidden="true">
         {fimPartes ? (

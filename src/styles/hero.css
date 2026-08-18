@@ -433,6 +433,16 @@
   color: var(--ink-faint);
   margin-bottom: 14px;
 }
+/* filtro por matéria dentro do menu: local a este menu (ProximoDetalhe),
+   respiro extra antes da lista de linhas */
+.pd-lista .filtros-wrap {
+  margin-bottom: 12px;
+}
+.pd-lista-vazio {
+  color: var(--ink-soft);
+  font-size: 14px;
+  padding: 4px 0;
+}
 @media (min-width: 1000px) {
   .pd-sheet {
     left: 50%;

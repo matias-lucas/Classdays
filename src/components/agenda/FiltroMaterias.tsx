@@ -13,18 +13,21 @@ interface Props {
  * Chips roláveis de filtro por matéria. O chip ativo inverte (fundo navy),
  * e `aria-pressed` conta o estado para leitores de tela.
  *
- * Quando os chips não cabem, a barra some (sem scrollbar) e no lugar entram
- * duas pistas: um **fade** nas bordas que têm conteúdo escondido (via máscara,
- * controlada pelas vars `--fade-l/--fade-r`) e uma **seta** cutucando pro lado
- * do overflow — que se apaga assim que o usuário rola (a pista já cumpriu o
- * papel). Tudo medido no cliente; no primeiro render (servidor) nada aparece,
- * então não há divergência de hidratação.
+ * Quando os chips não cabem, a barra ganha duas pistas: um **fade** nas
+ * bordas que têm conteúdo escondido (via máscara, controlada pelas vars
+ * `--fade-l/--fade-r`) e **botões-seta** clicáveis nos lados com overflow —
+ * cada um rola ~80% da largura visível. A seta da direita ainda "cutuca"
+ * (pulsa) até o primeiro scroll, só pra chamar o olho uma vez; depois disso
+ * fica parada, mas sempre clicável enquanto houver mais chip pro lado. Tudo
+ * medido no cliente; no primeiro render (servidor) nada aparece, então não
+ * há divergência de hidratação.
  */
 export function FiltroMaterias({ materias, filtro, aoTrocar }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [fadeL, setFadeL] = useState(false);
   const [fadeR, setFadeR] = useState(false);
-  // a seta some depois do primeiro scroll — não volta
+  // o cutucão (pulso) some depois do primeiro scroll — não volta; a seta em
+  // si continua clicável, só para de chamar atenção sozinha
   const [jaRolou, setJaRolou] = useState(false);
 
   const medir = useCallback(() => {
@@ -59,10 +62,30 @@ export function FiltroMaterias({ materias, filtro, aoTrocar }: Props) {
     medir();
   };
 
-  const mostrarSeta = fadeR && !jaRolou;
+  const rolar = (sentido: 1 | -1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const reduz = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({
+      left: sentido * el.clientWidth * 0.8,
+      behavior: reduz ? "auto" : "smooth",
+    });
+  };
+
+  const cutucaDir = fadeR && !jaRolou;
 
   return (
     <div className="filtros-wrap">
+      <button
+        type="button"
+        className={`filtros-seta filtros-seta-esq${fadeL ? " on" : ""}`}
+        aria-label="Ver matérias anteriores"
+        aria-hidden={!fadeL}
+        tabIndex={fadeL ? 0 : -1}
+        onClick={() => rolar(-1)}
+      >
+        ‹
+      </button>
       <div
         className="filters"
         role="group"
@@ -97,9 +120,16 @@ export function FiltroMaterias({ materias, filtro, aoTrocar }: Props) {
           </button>
         ))}
       </div>
-      <span className={`filtros-seta${mostrarSeta ? " on" : ""}`} aria-hidden="true">
+      <button
+        type="button"
+        className={`filtros-seta filtros-seta-dir${fadeR ? " on" : ""}${cutucaDir ? " cutuca" : ""}`}
+        aria-label="Ver mais matérias"
+        aria-hidden={!fadeR}
+        tabIndex={fadeR ? 0 : -1}
+        onClick={() => rolar(1)}
+      >
         ›
-      </span>
+      </button>
     </div>
   );
 }

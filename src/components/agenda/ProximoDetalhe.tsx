@@ -14,6 +14,7 @@ import {
   fmtHora,
 } from "@/lib/dates";
 import type { Evento, Materia } from "@/lib/types";
+import { FiltroMaterias } from "./FiltroMaterias";
 
 interface Props {
   open: boolean;
@@ -66,6 +67,14 @@ export function ProximoDetalhe({
   // só montamos no cliente — fechado ele é visibility:hidden, ninguém nota.
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
+
+  // Filtro da LISTA, local ao menu — nunca mexe no filtro da página (o
+  // destaque grande nunca muda por ele) e é esquecido ao fechar, pra sempre
+  // reabrir mostrando tudo.
+  const [filtroLista, setFiltroLista] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open) setFiltroLista(null);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -133,8 +142,24 @@ export function ProximoDetalhe({
         .filter(Boolean)
         .join(" · ");
 
-  // a lista mostra o resto — o evento em destaque não se repete embaixo
-  const resto = proximos.filter((e) => e.id !== evento.id);
+  // matérias presentes na lista — só essas viram chip (nenhum leva a um
+  // filtro vazio). GERAL (materia_id null) não filtra, então fica de fora.
+  const materiasPresentes: Materia[] = [];
+  const vistas = new Set<string>();
+  for (const e of proximos) {
+    if (!e.materia_id || vistas.has(e.materia_id)) continue;
+    const m = materiaDe(e.materia_id);
+    if (m) {
+      materiasPresentes.push(m);
+      vistas.add(e.materia_id);
+    }
+  }
+
+  // a lista mostra TODOS os próximos — o evento em destaque continua nela,
+  // só esmaecido (marca o lugar cronológico dele em vez de repetir o card).
+  const listaFiltrada = proximos.filter(
+    (e) => !filtroLista || e.materia_id === filtroLista,
+  );
 
   if (!montado) return null;
 
@@ -189,18 +214,32 @@ export function ProximoDetalhe({
 
           {evento.observacao && <p className="pd-obs">{evento.observacao}</p>}
 
-          {resto.length > 0 && (
+          {proximos.length > 0 && (
             <div className="pd-lista">
-              <span className="pd-lista-label">Demais eventos</span>
-              {resto.map((e, i) => (
-                <EventoLinha
-                  key={e.id}
-                  evento={e}
-                  materia={materiaDe(e.materia_id)}
-                  hojeIso={hojeIso}
-                  indice={i}
+              <span className="pd-lista-label">Todos os eventos</span>
+              {materiasPresentes.length > 1 && (
+                <FiltroMaterias
+                  materias={materiasPresentes}
+                  filtro={filtroLista}
+                  aoTrocar={setFiltroLista}
                 />
-              ))}
+              )}
+              {listaFiltrada.length > 0 ? (
+                <div key={filtroLista ?? "todas"}>
+                  {listaFiltrada.map((e, i) => (
+                    <EventoLinha
+                      key={e.id}
+                      evento={e}
+                      materia={materiaDe(e.materia_id)}
+                      hojeIso={hojeIso}
+                      indice={i}
+                      esmaecido={e.id === evento.id}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="pd-lista-vazio">Nenhum evento com esse filtro.</p>
+              )}
             </div>
           )}
         </div>
