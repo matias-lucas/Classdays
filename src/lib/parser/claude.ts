@@ -123,6 +123,7 @@ export async function parseComClaude(
     data,
     data_fim,
     hora,
+    enfase: "ambos",
     observacao: bruto.observacao?.trim() || null,
   };
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TIPOS_EVENTO } from "@/lib/types";
+import { ENFASES_PERIODO, TIPOS_EVENTO } from "@/lib/types";
 
 /**
  * Schemas de validação (zod) do fluxo de eventos.
@@ -19,6 +19,7 @@ const CamposEvento = z.object({
   materia_id: z.string().nullable(),
   data_fim: z.string().regex(REGEX_DATA).nullable(),
   hora: z.string().regex(REGEX_HORA).nullable(),
+  enfase: z.enum(ENFASES_PERIODO).default("ambos"),
   observacao: z.string().max(500).nullable(),
 });
 

@@ -1,4 +1,4 @@
-import type { TipoEvento } from "@/lib/types";
+import type { EnfasePeriodo, TipoEvento } from "@/lib/types";
 
 /**
  * O que um parser (Claude ou regras) devolve a partir de uma frase.
@@ -14,6 +14,7 @@ export interface EventoParseado {
   data: string | null; // "AAAA-MM-DD" ou null se a frase não disse
   data_fim: string | null; // "AAAA-MM-DD" > data, quando é um período; senão null
   hora: string | null; // "HH:MM" ou null
+  enfase: EnfasePeriodo; // o parser nunca infere — nasce "ambos", o admin ajusta no preview
   observacao: string | null;
 }
 

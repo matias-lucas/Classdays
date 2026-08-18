@@ -27,6 +27,32 @@
   border-radius: var(--radius-ctrl);
   padding: 8px 12px;
 }
+.faixa-nome {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+/* dot que pulsa: sinaliza "ao vivo" sem depender de cor de matéria — mesma
+   linguagem de pulso do badge de evento em Hoje (badge-pulse), mas em tom
+   neutro (regra do período: nunca a cor de matéria). */
+.faixa-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  animation: faixa-dot-pulse 2000ms ease-in-out infinite;
+}
+@keyframes faixa-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink-faint) 45%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--ink-faint) 0%, transparent);
+  }
+}
 .faixa-titulo {
   font-size: 13px;
   font-weight: 600;

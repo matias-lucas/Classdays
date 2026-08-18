@@ -153,19 +153,34 @@ export function montarSemana(
 // ---------------------------------------------------------------------------
 
 /**
+ * A data que decide a vez de um evento no hero. Pontual: a própria `data`,
+ * sempre. Período: depende da `enfase` — "fim" usa o término (a notícia é o
+ * prazo, então ele disputa o hero por isso desde o primeiro dia, mesmo antes
+ * de começar); "inicio" e "ambos" usam o início (a diferença dos dois só
+ * aparece depois que o período já começou — ver `proximoEvento`).
+ */
+function chaveHero(e: Evento): string {
+  return e.enfase === "fim" && ehPeriodo(e) ? fimDe(e) : e.data;
+}
+
+/**
  * O próximo EVENTO (prova/trabalho/atividade/evento) — nunca aula, nunca
  * cancelamento. É o que o card "Próximo" mostra: aula da grade não é destino,
  * e cancelamento é ausência de coisa (aparece na grade e na lista, não aqui).
  * Eventos de hoje só contam se a hora ainda não passou (sem hora = vale o dia
  * todo). Devolve o `Evento` cru (a UI resolve matéria/cor), ou null.
  *
- * Regra, nesta ordem: 1) se houver algo que ainda não começou (ou é de hoje
- * com hora à frente), o mais cedo deles vence; 2) senão, o período em
- * andamento que termina primeiro assume o hero; 3) senão, null. Um período
- * longo (renovação de matrícula) não rouba o hero de uma prova que vem em
- * 3 dias — só assume quando não há mais nada à frente. Feriado e recesso
- * nunca viram hero (são ausência, como cancelamento), mas seguem aparecendo
- * na lista de próximos eventos.
+ * Regra, nesta ordem: 1) se houver algo que ainda não aconteceu — pontual sem
+ * ter chegado, ou período cuja data de `enfase` (início ou término, conforme
+ * o campo) ainda está à frente —, o mais cedo deles vence; 2) senão, entre os
+ * períodos em andamento que não são de ênfase "inicio" (o marco que importava
+ * já passou pra esses — abertura de vagas limitadas, por exemplo, some do
+ * hero assim que abre), o que termina primeiro assume; 3) senão, null. Um
+ * período de ênfase "ambos"/"inicio" não rouba o hero de uma prova que vem em
+ * 3 dias — só assume quando não há mais nada à frente; um de ênfase "fim" já
+ * disputa por conta própria (o prazo é a notícia, não o começo). Feriado e
+ * recesso nunca viram hero (são ausência, como cancelamento), mas seguem
+ * aparecendo na lista de próximos eventos.
  */
 export function proximoEvento(
   eventos: Evento[],
@@ -177,21 +192,22 @@ export function proximoEvento(
     .filter((e) => e.tipo !== "cancelamento" && !TIPOS_AUSENCIA.has(e.tipo))
     .filter((e) => (filtroMateria ? e.materia_id === filtroMateria : true));
 
-  const aindaNaoComecou = candidatos
+  const aindaNaoAconteceu = candidatos
     .filter((e) => {
-      if (e.data > hojeIso) return true;
-      if (e.data < hojeIso) return false;
+      const chave = chaveHero(e);
+      if (chave > hojeIso) return true;
+      if (chave < hojeIso) return false;
       return e.hora === null || e.hora >= agoraHHMM; // hoje: só o que ainda vem
     })
     .sort(
       (a, b) =>
-        a.data.localeCompare(b.data) ||
+        chaveHero(a).localeCompare(chaveHero(b)) ||
         (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
     );
-  if (aindaNaoComecou.length > 0) return aindaNaoComecou[0];
+  if (aindaNaoAconteceu.length > 0) return aindaNaoAconteceu[0];
 
   const emCurso = candidatos
-    .filter((e) => emAndamento(e, hojeIso))
+    .filter((e) => emAndamento(e, hojeIso) && e.enfase !== "inicio")
     .sort((a, b) => fimDe(a).localeCompare(fimDe(b)));
   return emCurso[0] ?? null;
 }

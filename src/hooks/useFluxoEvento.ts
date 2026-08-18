@@ -19,6 +19,7 @@ export const EVENTO_VAZIO: EventoParseado = {
   data: null,
   data_fim: null,
   hora: null,
+  enfase: "ambos",
   observacao: null,
 };
 
@@ -82,6 +83,7 @@ export function useFluxoEvento() {
         data: evento.data,
         data_fim: evento.data_fim,
         hora: evento.hora,
+        enfase: evento.enfase,
         observacao: evento.observacao,
       },
       origem: "edicao",

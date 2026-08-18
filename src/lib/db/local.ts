@@ -58,6 +58,8 @@ async function ler(): Promise<BancoLocal> {
     banco.config ??= { gradeVisivel: true };
     // eventos gravados antes da E2 não têm data_fim: são pontuais.
     for (const e of banco.eventos) e.data_fim ??= null;
+    // eventos gravados antes deste campo existir: mesma regra de sempre.
+    for (const e of banco.eventos) e.enfase ??= "ambos";
     return banco;
   } catch {
     // Arquivo ainda não existe (ou foi apagado): nasce do seed.

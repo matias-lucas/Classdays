@@ -404,6 +404,7 @@ export function parseComRegras(frase: string, ctx: Contexto): ResultadoParse {
     data: data?.iso ?? null,
     data_fim,
     hora: hora?.hhmm ?? null,
+    enfase: "ambos",
     observacao: null, // regras não inventam observação
   };
 

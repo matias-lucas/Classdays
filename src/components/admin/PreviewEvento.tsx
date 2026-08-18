@@ -2,8 +2,14 @@
 
 import { COR_TURMA } from "@/components/ui/EventoLinha";
 import type { EventoParseado } from "@/lib/parser/tipos";
-import type { Materia, TipoEvento } from "@/lib/types";
+import type { EnfasePeriodo, Materia, TipoEvento } from "@/lib/types";
 import { TIPOS_EVENTO } from "@/lib/types";
+
+const ROTULO_ENFASE: Record<EnfasePeriodo, string> = {
+  ambos: "Início e término",
+  inicio: "Só o início",
+  fim: "Só o término",
+};
 
 interface Props {
   evento: EventoParseado;
@@ -154,6 +160,22 @@ export function PreviewEvento({
             {periodoInvalido && (
               <span className="campo-erro">A data final precisa ser depois da inicial.</span>
             )}
+          </label>
+        )}
+
+        {ehPeriodo && (
+          <label className="campo">
+            <span>Destaque no hero</span>
+            <select
+              value={evento.enfase}
+              onChange={(e) => muda("enfase", e.target.value as EnfasePeriodo)}
+            >
+              {Object.entries(ROTULO_ENFASE).map(([valor, rotulo]) => (
+                <option key={valor} value={valor}>
+                  {rotulo}
+                </option>
+              ))}
+            </select>
           </label>
         )}
 

@@ -33,6 +33,7 @@ function evento(parcial: Partial<Evento> & Pick<Evento, "id" | "tipo" | "data">)
     materia_id: null,
     data_fim: null,
     hora: null,
+    enfase: "ambos",
     observacao: null,
     created_at: "2026-07-01T00:00:00.000Z",
     ...parcial,
@@ -350,6 +351,45 @@ describe("proximoEvento com períodos", () => {
 
   it("assume o período em andamento quando não há mais nada à frente", () => {
     expect(proximoEvento([periodoAndamento], HOJE, "10:00")?.id).toBe(1);
+  });
+});
+
+describe("proximoEvento com ênfase de período (E5)", () => {
+  it("ênfase 'fim': disputa o hero pelo término mesmo já em andamento, vencendo um evento futuro mais distante", () => {
+    const prazoEmCurso = evento({
+      id: 1, tipo: "trabalho", titulo: "Prazo de envio", data: "2026-07-01",
+      data_fim: "2026-07-09", enfase: "fim",
+    });
+    const provaDepois = evento({ id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-10" });
+    // término do prazo (09/07) é mais cedo que a prova (10/07) — vence mesmo
+    // já rodando desde 01/07. Com ênfase "ambos" (comportamento antigo), a
+    // prova venceria — ver "ignora período em andamento quando há evento futuro".
+    expect(proximoEvento([prazoEmCurso, provaDepois], HOJE, "10:00")?.id).toBe(1);
+  });
+
+  it("ênfase 'fim': antes mesmo de começar, já disputa pelo término", () => {
+    const prazoFuturo = evento({
+      id: 1, tipo: "trabalho", titulo: "Prazo de envio", data: "2026-07-20",
+      data_fim: "2026-07-22", enfase: "fim",
+    });
+    const provaMaisLonge = evento({ id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-25" });
+    expect(proximoEvento([prazoFuturo, provaMaisLonge], HOJE, "10:00")?.id).toBe(1);
+  });
+
+  it("ênfase 'inicio': some do hero assim que começa, mesmo sem nada mais à frente", () => {
+    const vagasAbertas = evento({
+      id: 1, tipo: "evento", titulo: "Inscrições abertas", data: "2026-07-01",
+      data_fim: "2026-07-09", enfase: "inicio",
+    });
+    expect(proximoEvento([vagasAbertas], HOJE, "10:00")).toBeNull();
+  });
+
+  it("ênfase 'inicio': continua disputando o hero normalmente antes de começar", () => {
+    const vagasFuturas = evento({
+      id: 1, tipo: "evento", titulo: "Inscrições abertas", data: "2026-07-09",
+      data_fim: "2026-07-15", enfase: "inicio",
+    });
+    expect(proximoEvento([vagasFuturas], HOJE, "10:00")?.id).toBe(1);
   });
 });
 

@@ -21,7 +21,10 @@ export function FaixaEmAndamento({ eventos, hojeIso }: Props) {
     <div className="faixa-andamento">
       {eventos.map((e) => (
         <div className="faixa-item" key={e.id}>
-          <span className="faixa-titulo">{e.titulo}</span>
+          <span className="faixa-nome">
+            <span className="faixa-dot" aria-hidden="true" />
+            <span className="faixa-titulo">{e.titulo}</span>
+          </span>
           <span className="faixa-termina">
             termina {rotuloRelativo(diffDias(hojeIso, fimDe(e)))}
           </span>

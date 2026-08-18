@@ -115,11 +115,14 @@ export function ProximoDetalhe({
   }, [open, onFechar]);
 
   const cor = materia?.cor ?? COR_TURMA;
-  const emCurso = emAndamento(evento, hojeIso);
-  const contagem = emCurso
+  // ênfase "fim": a contagem mira o término mesmo antes do período começar (o
+  // prazo é a notícia); os demais casos só contam pro término enquanto rolam.
+  const contaTermino =
+    (ehPeriodo(evento) && evento.enfase === "fim") || emAndamento(evento, hojeIso);
+  const contagem = contaTermino
     ? contagemRegressiva(hojeIso, agoraHHMM, fimDe(evento), null)
     : contagemRegressiva(hojeIso, agoraHHMM, evento.data, evento.hora);
-  const { lead, big } = partesContagem(contagem, emCurso);
+  const { lead, big } = partesContagem(contagem, contaTermino);
 
   const quando = ehPeriodo(evento)
     ? `${fmtDiaMes(evento.data)} → ${fmtDiaMes(fimDe(evento))}`

@@ -18,6 +18,17 @@ export const TIPOS_EVENTO = [
 
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 
+/**
+ * Só importa em período (`data_fim` preenchido): qual data é a notícia no
+ * hero. "inicio" = só a abertura importa (vagas limitadas — some do hero
+ * depois de começar); "fim" = só o prazo importa (entrega — disputa o hero
+ * pelo término desde o primeiro dia, mesmo antes de começar); "ambos" = a
+ * regra clássica (início enquanto não começa, término enquanto rola).
+ */
+export const ENFASES_PERIODO = ["inicio", "fim", "ambos"] as const;
+
+export type EnfasePeriodo = (typeof ENFASES_PERIODO)[number];
+
 export interface Materia {
   id: string; // curto e legível: 'alglin', 'calc'...
   nome: string;
@@ -42,6 +53,7 @@ export interface Evento {
   data: string; // "AAAA-MM-DD"
   data_fim: string | null; // "AAAA-MM-DD" > data; null = evento pontual (não período)
   hora: string | null; // "HH:MM" ou null (dia inteiro / sem hora definida)
+  enfase: EnfasePeriodo; // só lido quando data_fim existe; "ambos" nos pontuais (ignorado)
   observacao: string | null;
   created_at: string; // ISO timestamp
 }
