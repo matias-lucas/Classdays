@@ -217,7 +217,7 @@ export function ProximoDetalhe({
           {proximos.length > 0 && (
             <div className="pd-lista">
               <span className="pd-lista-label">Todos os eventos</span>
-              {materiasPresentes.length > 1 && (
+              {materiasPresentes.length > 0 && (
                 <FiltroMaterias
                   materias={materiasPresentes}
                   filtro={filtroLista}
