@@ -26,11 +26,16 @@ interface Props {
  */
 export function Sino({ naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
   const [aberto, setAberto] = useState(false);
+  // Snapshot do que estava não-lido no instante do clique: onAbrir marca
+  // tudo como visto na hora, o que zeraria `naoLidos` antes do painel
+  // chegar a renderizar a lista.
+  const [exibidos, setExibidos] = useState<Evento[]>([]);
 
   const abrir = useCallback(() => {
+    setExibidos(naoLidos);
     setAberto(true);
     onAbrir();
-  }, [onAbrir]);
+  }, [naoLidos, onAbrir]);
 
   useEffect(() => {
     window.addEventListener(EVENTO_ABRIR_SINO, abrir);
@@ -73,11 +78,11 @@ export function Sino({ naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
       <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Novidades">
         <div className="drawer-sec">
           <span className="drawer-label">Nos próximos dias</span>
-          {naoLidos.length === 0 ? (
+          {exibidos.length === 0 ? (
             <p className="drawer-desc">Nada de novo por enquanto.</p>
           ) : (
             <ul className="drawer-nav sino-lista">
-              {naoLidos.map((e) => (
+              {exibidos.map((e) => (
                 <li key={e.id}>
                   <button type="button" className="sino-item" onClick={verNoDetalhe}>
                     <EventoLinha evento={e} materia={materiaDe(e.materia_id)} hojeIso={hojeIso} />
