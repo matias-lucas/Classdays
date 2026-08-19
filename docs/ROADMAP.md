@@ -58,9 +58,18 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   própria (sem "GERAL"), parser nos dois caminhos. `supabase/0006_feriados.sql`
   (afrouxa `eventos_tipo_check`) confirmado rodado em produção pelo Lucas.
   189 testes verdes, tsc/build limpos.
-- ⬜ **E4 — Meu Classdays**. `localStorage` com matérias ocultas; some de
-  Hoje/Grade/Próximo/Eventos; a agenda pública fica intacta para quem nunca
-  configurar.
+- ✅ **E4 — Meu Classdays** *(11/08/2026)*. Código em `main` e em produção
+  (merge `bdee111`): `usePreferencias()` sobre `localStorage`
+  (`classdays:prefs:v1`), plugado em `AgendaAluno` antes das funções puras de
+  `agenda.ts` (eventos gerais, `materia_id null`, nunca somem); filtro ativo
+  volta pra "Todas" se a matéria filtrada for ocultada; `MeuClassdays.tsx`
+  (aviso "N matérias ocultas" + painel com switch por matéria, reaproveitando
+  o `Drawer`); item no `ITENS_NAV` do `MenuLateral`. 189 testes, tsc/build
+  limpos; testado no dev server (Playwright), dois temas, sem hydration
+  mismatch. Polimento posterior fora do escopo formal da entrega: período "em
+  andamento" nos Próximos eventos, professor no timeline, filtro "Ocultar
+  gerais" nos chips de matéria (eventos sem `materia_id`), dot vermelho e
+  navegação por setas nos chips, Vercel Analytics.
 - ⬜ **E5 — Sino in-app**. Badge de não lidos sobre os eventos dos próximos
   7 dias, sem servidor.
 - ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
