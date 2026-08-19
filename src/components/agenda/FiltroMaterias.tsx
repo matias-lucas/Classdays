@@ -126,7 +126,7 @@ export function FiltroMaterias({
               aoTrocar(filtro === FILTRO_SOMENTE_MATERIAS ? null : FILTRO_SOMENTE_MATERIAS)
             }
           >
-            Só matérias
+            Ocultar gerais
           </button>
         )}
         {materias.map((m) => (
