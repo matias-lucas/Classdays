@@ -154,13 +154,19 @@ export function montarSemana(
 
 /**
  * A data que decide a vez de um evento no hero. Pontual: a própria `data`,
- * sempre. Período: depende da `enfase` — "fim" usa o término (a notícia é o
- * prazo, então ele disputa o hero por isso desde o primeiro dia, mesmo antes
- * de começar); "inicio" e "ambos" usam o início (a diferença dos dois só
- * aparece depois que o período já começou — ver `proximoEvento`).
+ * sempre. Período: depende da `enfase` — "fim" usa o término desde o primeiro
+ * dia (a notícia é o prazo, então ele disputa o hero por isso mesmo antes de
+ * começar); "ambos" usa o início enquanto o período não começou e passa a
+ * usar o término assim que entra em andamento (a partir daí disputa igual a
+ * "fim" — "está acabando" também é notícia); "inicio" usa sempre o início (o
+ * marco que importa é só a abertura — ver `proximoEvento` pro que acontece
+ * depois que ele passa).
  */
-function chaveHero(e: Evento): string {
-  return e.enfase === "fim" && ehPeriodo(e) ? fimDe(e) : e.data;
+function chaveHero(e: Evento, hojeIso: string): string {
+  if (!ehPeriodo(e)) return e.data;
+  if (e.enfase === "fim") return fimDe(e);
+  if (e.enfase === "ambos" && emAndamento(e, hojeIso)) return fimDe(e);
+  return e.data;
 }
 
 /**
@@ -172,15 +178,16 @@ function chaveHero(e: Evento): string {
  *
  * Regra, nesta ordem: 1) se houver algo que ainda não aconteceu — pontual sem
  * ter chegado, ou período cuja data de `enfase` (início ou término, conforme
- * o campo) ainda está à frente —, o mais cedo deles vence; 2) senão, entre os
- * períodos em andamento que não são de ênfase "inicio" (o marco que importava
- * já passou pra esses — abertura de vagas limitadas, por exemplo, some do
- * hero assim que abre), o que termina primeiro assume; 3) senão, null. Um
- * período de ênfase "ambos"/"inicio" não rouba o hero de uma prova que vem em
- * 3 dias — só assume quando não há mais nada à frente; um de ênfase "fim" já
- * disputa por conta própria (o prazo é a notícia, não o começo). Feriado e
- * recesso nunca viram hero (são ausência, como cancelamento), mas seguem
- * aparecendo na lista de próximos eventos.
+ * o campo e se já começou — ver `chaveHero`) ainda está à frente —, o mais
+ * cedo deles vence; 2) senão, entre os períodos em andamento que não são de
+ * ênfase "inicio", o que termina primeiro assume (rede de segurança pro caso
+ * raro de a `hora` do fim já ter passado hoje); 3) senão, null. "Fim" disputa
+ * o hero pelo término desde o primeiro dia; "ambos" mira o início enquanto
+ * não começa e passa a disputar pelo término assim que entra em andamento —
+ * igual a "fim" a partir daí; só "inicio" some do hero assim que começa (o
+ * marco que importava — abertura de vagas limitadas, por exemplo — já
+ * passou). Feriado e recesso nunca viram hero (são ausência, como
+ * cancelamento), mas seguem aparecendo na lista de próximos eventos.
  */
 export function proximoEvento(
   eventos: Evento[],
@@ -194,14 +201,14 @@ export function proximoEvento(
 
   const aindaNaoAconteceu = candidatos
     .filter((e) => {
-      const chave = chaveHero(e);
+      const chave = chaveHero(e, hojeIso);
       if (chave > hojeIso) return true;
       if (chave < hojeIso) return false;
       return e.hora === null || e.hora >= agoraHHMM; // hoje: só o que ainda vem
     })
     .sort(
       (a, b) =>
-        chaveHero(a).localeCompare(chaveHero(b)) ||
+        chaveHero(a, hojeIso).localeCompare(chaveHero(b, hojeIso)) ||
         (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
     );
   if (aindaNaoAconteceu.length > 0) return aindaNaoAconteceu[0];

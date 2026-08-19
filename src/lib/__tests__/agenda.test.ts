@@ -340,13 +340,19 @@ describe("continuosAtivos e montarSemana.continuos", () => {
 });
 
 describe("proximoEvento com períodos", () => {
+  // enfase default "ambos" (ver helper `evento`).
   const periodoAndamento = evento({
     id: 1, tipo: "evento", titulo: "Renovação", data: "2026-07-01", data_fim: "2026-07-09",
   });
 
-  it("ignora período em andamento quando há evento futuro", () => {
+  it("período em andamento (ênfase 'ambos') disputa o hero pelo término, vencendo evento futuro mais distante", () => {
     const futuro = evento({ id: 2, tipo: "evento", titulo: "Retorno", data: "2026-07-10" });
-    expect(proximoEvento([periodoAndamento, futuro], HOJE, "10:00")?.id).toBe(2);
+    expect(proximoEvento([periodoAndamento, futuro], HOJE, "10:00")?.id).toBe(1);
+  });
+
+  it("período em andamento (ênfase 'ambos') perde pra evento futuro mais próximo que seu término", () => {
+    const futuroProximo = evento({ id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-08" });
+    expect(proximoEvento([periodoAndamento, futuroProximo], HOJE, "10:00")?.id).toBe(2);
   });
 
   it("assume o período em andamento quando não há mais nada à frente", () => {
@@ -362,8 +368,9 @@ describe("proximoEvento com ênfase de período (E5)", () => {
     });
     const provaDepois = evento({ id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-10" });
     // término do prazo (09/07) é mais cedo que a prova (10/07) — vence mesmo
-    // já rodando desde 01/07. Com ênfase "ambos" (comportamento antigo), a
-    // prova venceria — ver "ignora período em andamento quando há evento futuro".
+    // já rodando desde 01/07. Ênfase "ambos" em andamento se comporta igual
+    // hoje — ver "período em andamento (ênfase 'ambos') disputa o hero pelo
+    // término" em "proximoEvento com períodos".
     expect(proximoEvento([prazoEmCurso, provaDepois], HOJE, "10:00")?.id).toBe(1);
   });
 
@@ -374,6 +381,21 @@ describe("proximoEvento com ênfase de período (E5)", () => {
     });
     const provaMaisLonge = evento({ id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-25" });
     expect(proximoEvento([prazoFuturo, provaMaisLonge], HOJE, "10:00")?.id).toBe(1);
+  });
+
+  it("ênfase 'ambos': antes de começar, disputa pelo início — não pelo término", () => {
+    const matriculasFuturas = evento({
+      id: 1, tipo: "evento", titulo: "Matrículas", data: "2026-07-20",
+      data_fim: "2026-07-25", enfase: "ambos",
+    });
+    const provaEntreOInicioEOTermino = evento({
+      id: 2, tipo: "prova", titulo: "Prova", data: "2026-07-22",
+    });
+    // se usasse o término (25/07) a prova (22/07) venceria; usando o início
+    // (20/07, já que ainda não começou), a matrícula vence.
+    expect(
+      proximoEvento([matriculasFuturas, provaEntreOInicioEOTermino], HOJE, "10:00")?.id,
+    ).toBe(1);
   });
 
   it("ênfase 'inicio': some do hero assim que começa, mesmo sem nada mais à frente", () => {

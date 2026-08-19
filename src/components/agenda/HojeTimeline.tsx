@@ -69,10 +69,11 @@ export function HojeTimeline({ itens, materiaDe, filtroAtivo, agoraHHMM }: Props
           item.hora > agoraHHMM &&
           minutosDe(item.hora) - minutosDe(agoraHHMM) <= 60;
 
-        // linha de baixo: aula = sala; evento = matéria (o contexto). "encerrada"
-        // se junta no fim. (o professor saiu da timeline — vive no card Próximo.)
+        // linha de baixo: aula = sala + professor; evento = matéria (o
+        // contexto). "encerrada" se junta no fim.
         const meta = [
-          ehAula ? item.sala : (materia?.nome ?? "Turma"),
+          ehAula ? item.sala : null,
+          ehAula ? materia?.prof : (materia?.nome ?? "Turma"),
           encerrada ? "encerrada" : null,
         ]
           .filter(Boolean)
