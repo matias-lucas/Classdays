@@ -36,6 +36,46 @@
     height: 44px;
   }
 }
+
+/* sino (E5): badge numérico de eventos novos, sobreposto no canto do botão.
+   --vivo/--on-ink já existem em tokens.css e passam AA nos dois temas — sem
+   token novo. */
+.sino-btn {
+  position: relative;
+}
+.sino-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--vivo);
+  color: var(--on-ink);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* linha da lista de novidades dentro do Drawer do sino — reseta o <button>
+   pra herdar a aparência do .ev que o EventoLinha desenha dentro dele. */
+.sino-item {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.sino-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 /* três barras = ícone de menu (mais nítido que um glifo). Com o drawer
    aberto (aria-expanded) as barras se dobram num X: a de cima e a de baixo
    giram até o centro (5px = altura da barra + gap) e a do meio se recolhe.

@@ -15,6 +15,16 @@
   flex: 1;
   text-align: center;
 }
+/* sino + botão de menu, lado a lado, ambos alinhados à direita da 3ª coluna
+   (1fr) — as duas colunas 1fr continuam iguais entre si, então a simetria do
+   h1 central não muda, só sobra mais respiro em volta da logo. */
+.topbar-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  justify-self: end;
+}
 .eyebrow {
   font-family: var(--font-mono), monospace;
   font-size: 11px;

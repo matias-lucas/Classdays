@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   continuosAtivos,
   eventosFuturos,
+  eventosNoIntervalo,
   itensDeHoje,
   montarSemana,
   proximoEvento,
@@ -20,6 +21,7 @@ import {
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { MenuLateral } from "@/components/layout/MenuLateral";
 import { Splash } from "@/components/layout/Splash";
+import { useNaoLidos } from "@/hooks/useNaoLidos";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { FaixaEmAndamento } from "./FaixaEmAndamento";
 import { FiltroMaterias } from "./FiltroMaterias";
@@ -28,6 +30,7 @@ import { HeroProximo } from "./HeroProximo";
 import { HojeTimeline } from "./HojeTimeline";
 import { MeuClassdays } from "./MeuClassdays";
 import { SecaoRecolhivel } from "./SecaoRecolhivel";
+import { Sino } from "./Sino";
 import { TrocaSuave } from "./TrocaSuave";
 
 interface Props {
@@ -160,6 +163,15 @@ export function AgendaAluno({
     [eventosFiltrados, agora.hoje, filtro],
   );
 
+  // Sino (E5): janela de "novidades" — SEM o filtro manual de matéria (o
+  // sino mostra tudo que não foi escondido de vez, não só o que está sendo
+  // olhado agora), mas já sem as matérias ocultas da E4.
+  const candidatosSino = useMemo(
+    () => eventosNoIntervalo(eventosFiltrados, agora.hoje, 7),
+    [eventosFiltrados, agora.hoje],
+  );
+  const { naoLidos, marcarVistos } = useNaoLidos(candidatosSino);
+
   const ini = fmtDiaMesPartes(segunda);
   const fim = fmtDiaMesPartes(addDias(segunda, 6));
 
@@ -173,7 +185,10 @@ export function AgendaAluno({
           {/* <p className={`head-sub dir-${direcaoSemana}`} key={segunda}>
             {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
           </p> */}
-        <MenuLateral />
+        <div className="topbar-acoes">
+          <Sino naoLidos={naoLidos} materiaDe={materiaDe} hojeIso={agora.hoje} onAbrir={marcarVistos} />
+          <MenuLateral />
+        </div>
       </div>
       <header className="head-row">
         <div>
