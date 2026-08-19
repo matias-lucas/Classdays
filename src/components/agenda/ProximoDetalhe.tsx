@@ -14,7 +14,7 @@ import {
   fmtHora,
 } from "@/lib/dates";
 import type { Evento, Materia } from "@/lib/types";
-import { FiltroMaterias } from "./FiltroMaterias";
+import { FILTRO_SOMENTE_MATERIAS, FiltroMaterias } from "./FiltroMaterias";
 
 interface Props {
   open: boolean;
@@ -143,7 +143,8 @@ export function ProximoDetalhe({
         .join(" · ");
 
   // matérias presentes na lista — só essas viram chip (nenhum leva a um
-  // filtro vazio). GERAL (materia_id null) não filtra, então fica de fora.
+  // filtro vazio). GERAL (materia_id null) não vira chip de matéria — quem
+  // quiser escondê-los usa o chip "Só matérias" (FILTRO_SOMENTE_MATERIAS).
   const materiasPresentes: Materia[] = [];
   const vistas = new Set<string>();
   for (const e of proximos) {
@@ -154,12 +155,14 @@ export function ProximoDetalhe({
       vistas.add(e.materia_id);
     }
   }
+  const temGerais = proximos.some((e) => e.materia_id === null);
 
   // a lista mostra TODOS os próximos — o evento em destaque continua nela,
   // só esmaecido (marca o lugar cronológico dele em vez de repetir o card).
-  const listaFiltrada = proximos.filter(
-    (e) => !filtroLista || e.materia_id === filtroLista,
-  );
+  const listaFiltrada = proximos.filter((e) => {
+    if (filtroLista === FILTRO_SOMENTE_MATERIAS) return e.materia_id !== null;
+    return !filtroLista || e.materia_id === filtroLista;
+  });
 
   if (!montado) return null;
 
@@ -222,6 +225,7 @@ export function ProximoDetalhe({
                   materias={materiasPresentes}
                   filtro={filtroLista}
                   aoTrocar={setFiltroLista}
+                  comOpcaoSoMaterias={temGerais}
                 />
               )}
               {listaFiltrada.length > 0 ? (

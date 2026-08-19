@@ -3,10 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Materia } from "@/lib/types";
 
+/** Valor sentinela de `filtro`: mantém só eventos com matéria vinculada, ocultando os gerais (materia_id null) — um terceiro estado além de "Todas" e uma matéria específica. */
+export const FILTRO_SOMENTE_MATERIAS = "__somente-materias__";
+
 interface Props {
   materias: Materia[];
   filtro: string | null;
   aoTrocar: (id: string | null) => void;
+  /** Mostra o chip "Só matérias" (usa `FILTRO_SOMENTE_MATERIAS`) entre "Todas" e os chips de matéria. */
+  comOpcaoSoMaterias?: boolean;
 }
 
 /**
@@ -22,7 +27,12 @@ interface Props {
  * medido no cliente; no primeiro render (servidor) nada aparece, então não
  * há divergência de hidratação.
  */
-export function FiltroMaterias({ materias, filtro, aoTrocar }: Props) {
+export function FiltroMaterias({
+  materias,
+  filtro,
+  aoTrocar,
+  comOpcaoSoMaterias = false,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [fadeL, setFadeL] = useState(false);
   const [fadeR, setFadeR] = useState(false);
@@ -107,6 +117,18 @@ export function FiltroMaterias({ materias, filtro, aoTrocar }: Props) {
         >
           Todas
         </button>
+        {comOpcaoSoMaterias && (
+          <button
+            type="button"
+            className={`chip${filtro === FILTRO_SOMENTE_MATERIAS ? " on" : ""}`}
+            aria-pressed={filtro === FILTRO_SOMENTE_MATERIAS}
+            onClick={() =>
+              aoTrocar(filtro === FILTRO_SOMENTE_MATERIAS ? null : FILTRO_SOMENTE_MATERIAS)
+            }
+          >
+            Só matérias
+          </button>
+        )}
         {materias.map((m) => (
           <button
             key={m.id}
