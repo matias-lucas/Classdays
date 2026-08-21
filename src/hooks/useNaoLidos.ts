@@ -1,70 +1,71 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { comVistos, idsNaoLidos, parseVistos, vistosIniciais } from "@/lib/sino";
 import type { Evento } from "@/lib/types";
 
-const CHAVE_SINO = "classdays:sino:v1";
+/** Ids já vistos, em JSON. A v1 guardava só o timestamp da última visita. */
+const CHAVE = "classdays:sino:v2";
+const CHAVE_V1 = "classdays:sino:v1";
 
-function lerUltimoVisto(): string | null {
+const NENHUM: ReadonlySet<number> = new Set();
+
+function ler(chave: string): string | null {
   try {
-    const bruto = localStorage.getItem(CHAVE_SINO);
-    return bruto && bruto.length > 0 ? bruto : null;
+    return localStorage.getItem(chave);
   } catch {
     return null;
   }
 }
 
-function salvarUltimoVisto(iso: string) {
+function salvar(vistos: number[]) {
   try {
-    localStorage.setItem(CHAVE_SINO, iso);
+    localStorage.setItem(CHAVE, JSON.stringify(vistos));
   } catch {
-    // localStorage indisponível (modo privado etc.): a marcação não
-    // sobrevive ao reload, mas não trava a interação — mesma postura do
-    // usePreferencias.
+    // localStorage indisponível (modo privado etc.): a marcação não sobrevive
+    // ao reload, mas não trava a interação — mesma postura do usePreferencias.
   }
 }
 
 /**
- * "Sino": quais eventos de `candidatos` (a janela de dias já filtrada por
- * quem chama, ver `eventosNoIntervalo`) têm `created_at` depois da última
- * vez que o aluno abriu o painel de novidades. `localStorage` guarda só esse
- * timestamp.
+ * Estado de leitura do sino sobre `candidatos` (a janela de dias já filtrada
+ * por quem chama, ver `eventosNoIntervalo`): quais daqueles eventos o aluno
+ * ainda não viu no painel de novidades. A janela inteira continua sendo
+ * exibida — o hook só diz quem está por ler; a regra pura mora em `lib/sino`.
  *
- * Hydration-safe: nasce com `naoLidos: []` (igual ao servidor) e só lê o
+ * Hydration-safe: nasce sem nada não-lido (igual ao servidor) e só lê o
  * localStorage depois de montar, num `useEffect` — mesmo padrão do
- * `usePreferencias`. Primeira visita (chave ainda não existe): a baseline
- * vira "agora", pra não abrir o app já com um badge cheio de tudo que já
- * existia antes do aluno chegar.
+ * `usePreferencias`.
  */
 export function useNaoLidos(candidatos: Evento[]) {
-  const [ultimoVisto, setUltimoVisto] = useState<string | null>(null);
+  const [vistos, setVistos] = useState<number[]>([]);
   const [pronto, setPronto] = useState(false);
 
+  // Boot: roda uma vez só, de propósito. A baseline da primeira visita usa a
+  // janela do primeiro render (a do closure) — é exatamente "o que já existia
+  // quando o aluno chegou"; janelas posteriores não devem refazer baseline
+  // nenhuma, então `candidatos` fora das deps é a intenção, não um esquecimento.
   useEffect(() => {
-    const salvo = lerUltimoVisto();
-    const baseline = salvo ?? new Date().toISOString();
-    if (!salvo) salvarUltimoVisto(baseline);
-    setUltimoVisto(baseline);
+    const salvos = parseVistos(ler(CHAVE));
+    const inicial = salvos ?? vistosIniciais(candidatos, ler(CHAVE_V1));
+    if (!salvos) salvar(inicial);
+    setVistos(inicial);
     setPronto(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const naoLidos = useMemo(
-    () => (pronto && ultimoVisto ? candidatos.filter((e) => e.created_at > ultimoVisto) : []),
-    [pronto, ultimoVisto, candidatos],
+    () => (pronto ? idsNaoLidos(candidatos, vistos) : NENHUM),
+    [pronto, candidatos, vistos],
   );
 
+  /** Abrir o painel = ler tudo que está nele (não existe "marcar como lido" manual). */
   const marcarVistos = useCallback(() => {
-    if (candidatos.length === 0) return;
-    const maisRecente = candidatos.reduce(
-      (max, e) => (e.created_at > max ? e.created_at : max),
-      ultimoVisto ?? "",
-    );
-    if (maisRecente && maisRecente !== ultimoVisto) {
-      setUltimoVisto(maisRecente);
-      salvarUltimoVisto(maisRecente);
-    }
-  }, [candidatos, ultimoVisto]);
+    if (naoLidos.size === 0) return;
+    const proximos = comVistos(vistos, candidatos);
+    setVistos(proximos);
+    salvar(proximos);
+  }, [naoLidos, vistos, candidatos]);
 
   return { naoLidos, marcarVistos, pronto };
 }
