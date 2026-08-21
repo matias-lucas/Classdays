@@ -514,3 +514,4 @@ describe("proximoEvento nunca escolhe feriado/recesso (E3)", () => {
     expect(proximoEvento([recesso], HOJE, "10:00")).toBeNull();
   });
 });
+
