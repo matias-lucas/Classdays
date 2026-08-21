@@ -36,6 +36,91 @@
     height: 44px;
   }
 }
+
+/* sino (E5): badge numérico de eventos novos, sobreposto no canto do botão.
+   --vivo/--on-ink já existem em tokens.css e passam AA nos dois temas — sem
+   token novo. */
+.sino-btn {
+  position: relative;
+}
+.sino-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--vivo);
+  color: var(--on-ink);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* linha da lista de novidades dentro do Drawer do sino — reseta o <button>
+   pra herdar a aparência do .ev que o EventoLinha desenha dentro dele. */
+.sino-item {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.sino-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* lido x não lido: a notificação não some depois de vista, muda de peso.
+   Não lido = cartão cheio (sombra + tint de --vivo) e selo "novo"; lido =
+   cartão plano, só contorno, título no cinza AA. A diferença é de FORMA
+   (sombra/contorno/selo), não só de cor — lê no escuro, no claro e no
+   daltonismo. Sem opacity no cartão: apagar o bloco todo derrubaria o
+   contraste do texto abaixo do AA. */
+.sino-item .ev {
+  /* contorno reservado nos dois estados: trocar de lido pra não lido não
+     pode mexer 1px na altura da linha */
+  border: 1px solid transparent;
+  transition:
+    background-color var(--t-med) var(--ease),
+    border-color var(--t-med) var(--ease),
+    box-shadow var(--t-med) var(--ease);
+}
+.sino-item.sino-novo .ev {
+  background: color-mix(in srgb, var(--vivo) 8%, var(--surface));
+}
+.sino-item.sino-lido .ev {
+  box-shadow: none;
+  border-color: var(--line);
+}
+.sino-item.sino-lido .ev-title {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+/* selo "novo": mesma pílula do badge do sino, encaixada no slot de ações do
+   EventoLinha (à direita, onde o admin põe o botão de apagar) */
+.sino-selo {
+  flex-shrink: 0;
+  align-self: center;
+  /* enxuto de propósito: cada pixel aqui é largura tirada do título ao lado */
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--vivo);
+  color: var(--on-ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  white-space: nowrap;
+}
 /* três barras = ícone de menu (mais nítido que um glifo). Com o drawer
    aberto (aria-expanded) as barras se dobram num X: a de cima e a de baixo
    giram até o centro (5px = altura da barra + gap) e a do meio se recolhe.

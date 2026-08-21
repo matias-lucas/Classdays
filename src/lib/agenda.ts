@@ -322,3 +322,4 @@ export function eventosFuturos(
         (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
     );
 }
+
