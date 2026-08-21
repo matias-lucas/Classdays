@@ -10,29 +10,33 @@ import { EVENTO_ABRIR_PROXIMOS } from "./HeroProximo";
 export const EVENTO_ABRIR_SINO = "classdays:abrir-sino";
 
 interface Props {
-  naoLidos: Evento[];
+  /** A janela de novidades inteira (lidos e não lidos), já ordenada. */
+  eventos: Evento[];
+  /** Ids de `eventos` que o aluno ainda não viu. */
+  naoLidos: ReadonlySet<number>;
   materiaDe: (id: string | null) => Materia | undefined;
   hojeIso: string;
-  /** Chamado toda vez que o painel abre — marca os candidatos atuais como vistos. */
+  /** Chamado toda vez que o painel abre — marca a janela atual como vista. */
   onAbrir: () => void;
 }
 
 /**
- * Badge com a contagem de eventos novos (criados depois da última visita) na
- * janela de dias que o AgendaAluno decide (E5). Abrir o painel já marca tudo
- * como visto — não tem "marcar como lido" manual, mesma honestidade do resto
- * do app (ver = lido). Cada item fecha o sino e abre o menu de "Próximos
- * eventos" (ProximoDetalhe) já existente, em vez de duplicar aquela lista.
+ * Badge com a contagem de eventos novos (nunca abertos no painel) na janela de
+ * dias que o AgendaAluno decide (E5). O painel lista a janela INTEIRA: o que já
+ * foi visto continua ali, apagado e sem o selo "novo" — notificação não some
+ * por ter sido lida, só muda de peso. Abrir já marca tudo como lido (ver =
+ * ler, mesma honestidade do resto do app). Cada item fecha o sino e abre o
+ * menu de "Próximos eventos" (ProximoDetalhe) já existente, em vez de duplicar
+ * aquela lista.
  */
-export function Sino({ naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
+export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
   const [aberto, setAberto] = useState(false);
-  // Snapshot do que estava não-lido no instante do clique: onAbrir marca
-  // tudo como visto na hora, o que zeraria `naoLidos` antes do painel
-  // chegar a renderizar a lista.
-  const [exibidos, setExibidos] = useState<Evento[]>([]);
+  // Quem estava por ler no instante do clique: onAbrir marca tudo como visto
+  // na hora, o que apagaria os selos "novo" antes de o painel renderizar.
+  const [novosNoClique, setNovosNoClique] = useState<ReadonlySet<number>>(new Set());
 
   const abrir = useCallback(() => {
-    setExibidos(naoLidos);
+    setNovosNoClique(new Set(naoLidos));
     setAberto(true);
     onAbrir();
   }, [naoLidos, onAbrir]);
@@ -51,7 +55,7 @@ export function Sino({ naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
     });
   };
 
-  const qtd = naoLidos.length;
+  const qtd = naoLidos.size;
 
   return (
     <>
@@ -78,17 +82,30 @@ export function Sino({ naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
       <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Novidades">
         <div className="drawer-sec">
           <span className="drawer-label">Nos próximos dias</span>
-          {exibidos.length === 0 ? (
-            <p className="drawer-desc">Nada de novo por enquanto.</p>
+          {eventos.length === 0 ? (
+            <p className="drawer-desc">Nada marcado para os próximos dias.</p>
           ) : (
             <ul className="drawer-nav sino-lista">
-              {exibidos.map((e) => (
-                <li key={e.id}>
-                  <button type="button" className="sino-item" onClick={verNoDetalhe}>
-                    <EventoLinha evento={e} materia={materiaDe(e.materia_id)} hojeIso={hojeIso} />
-                  </button>
-                </li>
-              ))}
+              {eventos.map((e) => {
+                const novo = novosNoClique.has(e.id);
+                return (
+                  <li key={e.id}>
+                    <button
+                      type="button"
+                      className={`sino-item${novo ? " sino-novo" : " sino-lido"}`}
+                      onClick={verNoDetalhe}
+                    >
+                      <EventoLinha
+                        evento={e}
+                        materia={materiaDe(e.materia_id)}
+                        hojeIso={hojeIso}
+                      >
+                        {novo && <span className="sino-selo">novo</span>}
+                      </EventoLinha>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

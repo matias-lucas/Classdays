@@ -165,7 +165,8 @@ export function AgendaAluno({
 
   // Sino (E5): janela de "novidades" — SEM o filtro manual de matéria (o
   // sino mostra tudo que não foi escondido de vez, não só o que está sendo
-  // olhado agora), mas já sem as matérias ocultas da E4.
+  // olhado agora), mas já sem as matérias ocultas da E4. A janela inteira vai
+  // pro painel; o hook só diz quais ids ainda estão por ler.
   const candidatosSino = useMemo(
     () => eventosNoIntervalo(eventosFiltrados, agora.hoje, 7),
     [eventosFiltrados, agora.hoje],
@@ -186,7 +187,13 @@ export function AgendaAluno({
             {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
           </p> */}
         <div className="topbar-acoes">
-          <Sino naoLidos={naoLidos} materiaDe={materiaDe} hojeIso={agora.hoje} onAbrir={marcarVistos} />
+          <Sino
+            eventos={candidatosSino}
+            naoLidos={naoLidos}
+            materiaDe={materiaDe}
+            hojeIso={agora.hoje}
+            onAbrir={marcarVistos}
+          />
           <MenuLateral />
         </div>
       </div>
