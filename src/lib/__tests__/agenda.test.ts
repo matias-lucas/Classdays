@@ -8,7 +8,6 @@ import {
   ehPeriodo,
   emAndamento,
   eventosFuturos,
-  eventosNoIntervalo,
   feriadoEm,
   fimDe,
   itensDeHoje,
@@ -516,50 +515,3 @@ describe("proximoEvento nunca escolhe feriado/recesso (E3)", () => {
   });
 });
 
-describe("eventosNoIntervalo (E5 — janela de novidades do sino)", () => {
-  it("evento de hoje entra (borda inferior)", () => {
-    const e = evento({ id: 1, tipo: "prova", data: HOJE });
-    expect(eventosNoIntervalo([e], HOJE, 7)).toEqual([e]);
-  });
-
-  it("evento no limite exato da janela entra (borda superior, <=)", () => {
-    const e = evento({ id: 1, tipo: "prova", data: "2026-07-14" }); // HOJE + 7
-    expect(eventosNoIntervalo([e], HOJE, 7)).toEqual([e]);
-  });
-
-  it("evento um dia além da janela não entra", () => {
-    const e = evento({ id: 1, tipo: "prova", data: "2026-07-15" }); // HOJE + 8
-    expect(eventosNoIntervalo([e], HOJE, 7)).toEqual([]);
-  });
-
-  it("evento no passado não entra", () => {
-    const e = evento({ id: 1, tipo: "prova", data: "2026-07-06" });
-    expect(eventosNoIntervalo([e], HOJE, 7)).toEqual([]);
-  });
-
-  it("dias = 0 só pega os de hoje", () => {
-    const hoje = evento({ id: 1, tipo: "prova", data: HOJE });
-    const amanha = evento({ id: 2, tipo: "prova", data: "2026-07-08" });
-    expect(eventosNoIntervalo([hoje, amanha], HOJE, 0)).toEqual([hoje]);
-  });
-
-  it("ordena por data e depois por hora", () => {
-    const tarde = evento({ id: 1, tipo: "prova", data: "2026-07-08", hora: "20:00" });
-    const cedo = evento({ id: 2, tipo: "prova", data: "2026-07-08", hora: "08:00" });
-    const antes = evento({ id: 3, tipo: "prova", data: HOJE });
-    expect(eventosNoIntervalo([tarde, cedo, antes], HOJE, 7).map((e) => e.id)).toEqual([3, 2, 1]);
-  });
-
-  it("cancelamento e feriado dentro da janela entram (nenhum tipo é filtrado)", () => {
-    const cancel = evento({ id: 1, tipo: "cancelamento", data: HOJE });
-    const feriado = evento({ id: 2, tipo: "feriado", data: "2026-07-08" });
-    expect(eventosNoIntervalo([cancel, feriado], HOJE, 7).map((e) => e.id)).toEqual([1, 2]);
-  });
-
-  it("período já em andamento (início antes da janela) não entra de novo", () => {
-    const recesso = evento({
-      id: 1, tipo: "recesso", data: "2026-07-01", data_fim: "2026-07-10",
-    });
-    expect(eventosNoIntervalo([recesso], HOJE, 7)).toEqual([]);
-  });
-});

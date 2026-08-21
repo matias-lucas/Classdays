@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Drawer } from "@/components/layout/Drawer";
 import { EventoLinha } from "@/components/ui/EventoLinha";
+import { listaDoPainel } from "@/lib/sino";
 import type { Evento, Materia } from "@/lib/types";
 import { EVENTO_ABRIR_PROXIMOS } from "./HeroProximo";
 
@@ -10,30 +11,33 @@ import { EVENTO_ABRIR_PROXIMOS } from "./HeroProximo";
 export const EVENTO_ABRIR_SINO = "classdays:abrir-sino";
 
 interface Props {
-  /** A janela de novidades inteira (lidos e não lidos), já ordenada. */
+  /** Todos os eventos futuros (lidos e não lidos), já ordenados. */
   eventos: Evento[];
   /** Ids de `eventos` que o aluno ainda não viu. */
   naoLidos: ReadonlySet<number>;
   materiaDe: (id: string | null) => Materia | undefined;
   hojeIso: string;
-  /** Chamado toda vez que o painel abre — marca a janela atual como vista. */
+  /** Chamado toda vez que o painel abre — marca os candidatos atuais como vistos. */
   onAbrir: () => void;
 }
 
 /**
- * Badge com a contagem de eventos novos (nunca abertos no painel) na janela de
- * dias que o AgendaAluno decide (E5). O painel lista a janela INTEIRA: o que já
- * foi visto continua ali, apagado e sem o selo "novo" — notificação não some
- * por ter sido lida, só muda de peso. Abrir já marca tudo como lido (ver =
- * ler, mesma honestidade do resto do app). Cada item fecha o sino e abre o
- * menu de "Próximos eventos" (ProximoDetalhe) já existente, em vez de duplicar
- * aquela lista.
+ * Badge com a contagem de eventos que o aluno nunca viu no painel (E5). A
+ * lista mostra todos eles mais os já vistos mais próximos (`listaDoPainel`):
+ * notificação não some por ter sido lida, só fica apagada e sem o selo "novo".
+ * Abrir já marca tudo como lido (ver = ler, mesma honestidade do resto do
+ * app). Cada item fecha o sino e abre o menu de "Próximos eventos"
+ * (ProximoDetalhe) já existente, em vez de duplicar aquela lista.
  */
 export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
   const [aberto, setAberto] = useState(false);
   // Quem estava por ler no instante do clique: onAbrir marca tudo como visto
   // na hora, o que apagaria os selos "novo" antes de o painel renderizar.
+  // Também decide a lista, e por isso NÃO é zerado ao fechar: o painel some
+  // deslizando, e recortá-lo no meio da saída seria um pulo à toa.
   const [novosNoClique, setNovosNoClique] = useState<ReadonlySet<number>>(new Set());
+
+  const exibidos = useMemo(() => listaDoPainel(eventos, novosNoClique), [eventos, novosNoClique]);
 
   const abrir = useCallback(() => {
     setNovosNoClique(new Set(naoLidos));
@@ -81,12 +85,12 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
 
       <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Novidades">
         <div className="drawer-sec">
-          <span className="drawer-label">Nos próximos dias</span>
-          {eventos.length === 0 ? (
-            <p className="drawer-desc">Nada marcado para os próximos dias.</p>
+          <span className="drawer-label">Próximos eventos</span>
+          {exibidos.length === 0 ? (
+            <p className="drawer-desc">Nada marcado por enquanto.</p>
           ) : (
             <ul className="drawer-nav sino-lista">
-              {eventos.map((e) => {
+              {exibidos.map((e) => {
                 const novo = novosNoClique.has(e.id);
                 return (
                   <li key={e.id}>

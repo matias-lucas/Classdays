@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { LIMITE_VISTOS, comVistos, idsNaoLidos, parseVistos, vistosIniciais } from "@/lib/sino";
+import {
+  LIMITE_VISTOS,
+  TETO_LIDOS,
+  comVistos,
+  idsNaoLidos,
+  listaDoPainel,
+  parseVistos,
+  vistosIniciais,
+} from "@/lib/sino";
 import type { Evento } from "@/lib/types";
 
 function evento(parcial: Partial<Evento> & Pick<Evento, "id">): Evento {
@@ -32,11 +40,11 @@ describe("idsNaoLidos", () => {
     expect(idsNaoLidos([evento({ id: 9 })], [1, 2, 9])).toEqual(new Set());
   });
 
-  it("evento antigo que só agora entrou na janela conta como novo (regressão da v1)", () => {
-    // created_at bem anterior à última visita: no modelo por timestamp isto
-    // nasceria "lido" e o aluno nunca veria o aviso.
-    const atrasado = evento({ id: 7, created_at: "2026-06-01T00:00:00.000Z" });
-    expect(idsNaoLidos([atrasado], [1, 2])).toEqual(new Set([7]));
+  it("evento distante cadastrado agora conta como novo (o caso do XI OLINFEG)", () => {
+    // Data lá na frente e created_at de hoje: com a janela de 7 dias ele nunca
+    // virava novidade, e com a baseline por timestamp nasceria lido.
+    const distante = evento({ id: 38, data: "2026-09-16", created_at: "2026-08-21T15:22:00.000Z" });
+    expect(idsNaoLidos([distante], [1, 2])).toEqual(new Set([38]));
   });
 });
 
@@ -99,5 +107,32 @@ describe("parseVistos", () => {
 
   it("descarta entradas que não são id", () => {
     expect(parseVistos('[1,"2",null,3]')).toEqual([1, 3]);
+  });
+});
+
+describe("listaDoPainel", () => {
+  const janela = [1, 2, 3, 4, 5].map((id) => evento({ id }));
+
+  it("mostra todos os não lidos, mesmo passando do teto de lidos", () => {
+    const naoLidos = new Set([1, 2, 3, 4, 5]);
+    expect(listaDoPainel(janela, naoLidos, 2).map((e) => e.id)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("corta os já lidos no teto, preservando a ordem de entrada", () => {
+    expect(listaDoPainel(janela, new Set(), 2).map((e) => e.id)).toEqual([1, 2]);
+  });
+
+  it("o teto conta só os lidos — o não lido do fim não é empurrado pra fora", () => {
+    const naoLidos = new Set([5]);
+    expect(listaDoPainel(janela, naoLidos, 2).map((e) => e.id)).toEqual([1, 2, 5]);
+  });
+
+  it("nada a mostrar continua vazio", () => {
+    expect(listaDoPainel([], new Set())).toEqual([]);
+  });
+
+  it("o teto padrão deixa passar oito lidos", () => {
+    const muitos = Array.from({ length: 20 }, (_, i) => evento({ id: i + 1 }));
+    expect(listaDoPainel(muitos, new Set())).toHaveLength(TETO_LIDOS);
   });
 });

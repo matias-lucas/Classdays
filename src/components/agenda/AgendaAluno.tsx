@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   continuosAtivos,
   eventosFuturos,
-  eventosNoIntervalo,
   itensDeHoje,
   montarSemana,
   proximoEvento,
@@ -163,12 +162,13 @@ export function AgendaAluno({
     [eventosFiltrados, agora.hoje, filtro],
   );
 
-  // Sino (E5): janela de "novidades" — SEM o filtro manual de matéria (o
-  // sino mostra tudo que não foi escondido de vez, não só o que está sendo
-  // olhado agora), mas já sem as matérias ocultas da E4. A janela inteira vai
-  // pro painel; o hook só diz quais ids ainda estão por ler.
+  // Sino (E5): candidato a novidade é todo evento FUTURO, não só o que
+  // acontece nos próximos dias — o que foi cadastrado hoje pra daqui a um mês
+  // é notícia hoje. SEM o filtro manual de matéria (o sino mostra tudo que não
+  // foi escondido de vez, não só o que está sendo olhado agora), mas já sem as
+  // matérias ocultas da E4. O hook só diz quais ids ainda estão por ler.
   const candidatosSino = useMemo(
-    () => eventosNoIntervalo(eventosFiltrados, agora.hoje, 7),
+    () => eventosFuturos(eventosFiltrados, agora.hoje),
     [eventosFiltrados, agora.hoje],
   );
   const { naoLidos, marcarVistos } = useNaoLidos(candidatosSino);

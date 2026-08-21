@@ -70,8 +70,9 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   andamento" nos Próximos eventos, professor no timeline, filtro "Ocultar
   gerais" nos chips de matéria (eventos sem `materia_id`), dot vermelho e
   navegação por setas nos chips, Vercel Analytics.
-- ⬜ **E5 — Sino in-app**. Badge de não lidos sobre os eventos dos próximos
-  7 dias, sem servidor.
+- ⬜ **E5 — Sino in-app**. Badge de não lidos sobre os eventos futuros que o
+  aluno ainda não viu (estado de leitura por id em `localStorage`, sem
+  servidor); o painel mantém as notificações depois de lidas, apagadas.
 - ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
   no dia; iOS exige o app na tela de início.
 
