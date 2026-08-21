@@ -323,25 +323,3 @@ export function eventosFuturos(
     );
 }
 
-/**
- * Eventos cujo início cai nos próximos `dias` dias (hoje incluso) — a janela
- * de "novidades" que o sino usa (E5). Mesmo critério de `eventosFuturos`
- * (nenhum tipo fica de fora: cancelamento/feriado/recesso também são
- * notícia), só que com teto de dias em vez de ir até o infinito. Critério é
- * sempre o INÍCIO (`e.data`), não `ativoEm`/`fimDe` — um período que já
- * começou antes da janela mas ainda está em curso não entra aqui de novo
- * (ele já teria aparecido como "novo" quando começou).
- */
-export function eventosNoIntervalo(
-  eventos: Evento[],
-  hojeIso: string,
-  dias: number,
-): Evento[] {
-  const limite = addDias(hojeIso, dias);
-  return eventos
-    .filter((e) => e.data >= hojeIso && e.data <= limite)
-    .sort(
-      (a, b) =>
-        a.data.localeCompare(b.data) || (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"),
-    );
-}

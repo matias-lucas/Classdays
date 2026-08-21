@@ -28,10 +28,10 @@ function salvar(vistos: number[]) {
 }
 
 /**
- * Estado de leitura do sino sobre `candidatos` (a janela de dias já filtrada
- * por quem chama, ver `eventosNoIntervalo`): quais daqueles eventos o aluno
- * ainda não viu no painel de novidades. A janela inteira continua sendo
- * exibida — o hook só diz quem está por ler; a regra pura mora em `lib/sino`.
+ * Estado de leitura do sino sobre `candidatos` (os eventos futuros já
+ * filtrados por quem chama, ver `eventosFuturos`): quais deles o aluno ainda
+ * não viu no painel de novidades. O que já foi lido continua sendo exibido —
+ * o hook só diz quem está por ler; a regra pura mora em `lib/sino`.
  *
  * Hydration-safe: nasce sem nada não-lido (igual ao servidor) e só lê o
  * localStorage depois de montar, num `useEffect` — mesmo padrão do
