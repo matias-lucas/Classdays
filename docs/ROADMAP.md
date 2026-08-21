@@ -70,9 +70,16 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   andamento" nos Próximos eventos, professor no timeline, filtro "Ocultar
   gerais" nos chips de matéria (eventos sem `materia_id`), dot vermelho e
   navegação por setas nos chips, Vercel Analytics.
-- ⬜ **E5 — Sino in-app**. Badge de não lidos sobre os eventos futuros que o
-  aluno ainda não viu (estado de leitura por id em `localStorage`, sem
-  servidor); o painel mantém as notificações depois de lidas, apagadas.
+- ✅ **E5 — Sino in-app** *(21/08/2026)*. Código em `main` e em produção
+  (merge `eb8d3a1`): badge de não lidos sobre `eventosFuturos()` (todo
+  evento que ainda não terminou, sem teto de dias — candidato a novidade é
+  o cadastro, não a proximidade da data); estado de leitura por id em
+  `localStorage` (`classdays:sino:v2`, com migração da v1 por timestamp);
+  `listaDoPainel()` mostra todos os não lidos mais os já lidos mais
+  próximos (teto de 8), reaproveitando o `Drawer` — cada item leva à
+  âncora do evento em Próximos eventos. 215 testes, tsc/build limpos;
+  verificado em produção (21/08/2026) por fetch direto (markup do sino
+  renderizando).
 - ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
   no dia; iOS exige o app na tela de início.
 
