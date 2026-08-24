@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Drawer } from "@/components/layout/Drawer";
 import { EventoLinha } from "@/components/ui/EventoLinha";
-import { listaDoPainel } from "@/lib/sino";
+import { painelPorGrupo } from "@/lib/sino";
 import type { Evento, Materia } from "@/lib/types";
 import { EVENTO_ABRIR_PROXIMOS } from "./HeroProximo";
 
@@ -22,9 +22,10 @@ interface Props {
 }
 
 /**
- * Badge com a contagem de eventos que o aluno nunca viu no painel (E5). A
- * lista mostra todos eles mais os já vistos mais próximos (`listaDoPainel`):
- * notificação não some por ter sido lida, só fica apagada e sem o selo "novo".
+ * Badge com a contagem de eventos que o aluno nunca viu no painel (E5). O
+ * painel vem em dois grupos (`painelPorGrupo`): "Novidades" em cima, com todas
+ * elas, e "Já vistas" logo abaixo, com as mais próximas — notificação não some
+ * por ter sido lida, só desce, fica apagada e perde o selo "novo".
  * Abrir já marca tudo como lido (ver = ler, mesma honestidade do resto do
  * app). Cada item fecha o sino e abre o menu de "Próximos eventos"
  * (ProximoDetalhe) já existente, em vez de duplicar aquela lista.
@@ -37,7 +38,10 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
   // deslizando, e recortá-lo no meio da saída seria um pulo à toa.
   const [novosNoClique, setNovosNoClique] = useState<ReadonlySet<number>>(new Set());
 
-  const exibidos = useMemo(() => listaDoPainel(eventos, novosNoClique), [eventos, novosNoClique]);
+  const { novos, lidos } = useMemo(
+    () => painelPorGrupo(eventos, novosNoClique),
+    [eventos, novosNoClique],
+  );
 
   const abrir = useCallback(() => {
     setNovosNoClique(new Set(naoLidos));
@@ -83,42 +87,69 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
         )}
       </button>
 
-      <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Novidades">
-        <div className="drawer-sec">
-          <span className="drawer-label">Próximos eventos</span>
-          {exibidos.length === 0 ? (
+      <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Notificações">
+        {novos.length === 0 && lidos.length === 0 && (
+          <div className="drawer-sec">
+            <span className="drawer-label">Novidades</span>
             <p className="drawer-desc">Nada marcado por enquanto.</p>
-          ) : (
-            <ul className="drawer-nav sino-lista">
-              {exibidos.map((e) => {
-                const novo = novosNoClique.has(e.id);
-                return (
-                  <li key={e.id}>
-                    <button
-                      type="button"
-                      className={`sino-item${novo ? " sino-novo" : " sino-lido"}`}
-                      onClick={verNoDetalhe}
-                    >
-                      <EventoLinha
-                        evento={e}
-                        materia={materiaDe(e.materia_id)}
-                        hojeIso={hojeIso}
-                      >
-                        {novo && <span className="sino-selo">novo</span>}
-                      </EventoLinha>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+          </div>
+        )}
+        {novos.length > 0 && (
+          <div className="drawer-sec">
+            <span className="drawer-label">Novidades</span>
+            <Lista eventos={novos} novo materiaDe={materiaDe} hojeIso={hojeIso} aoClicar={verNoDetalhe} />
+          </div>
+        )}
+        {lidos.length > 0 && (
+          <div className="drawer-sec">
+            <span className="drawer-label">Já vistas</span>
+            <Lista eventos={lidos} materiaDe={materiaDe} hojeIso={hojeIso} aoClicar={verNoDetalhe} />
+          </div>
+        )}
       </Drawer>
     </>
   );
 }
 
-function IcoSino() {
+/**
+ * Um grupo da lista. `novo` decide as duas coisas ao mesmo tempo: o desenho do
+ * cartão (tint + sombra x contorno plano) e o selo — estado de leitura nunca
+ * fica só na cor.
+ */
+function Lista({
+  eventos,
+  novo,
+  materiaDe,
+  hojeIso,
+  aoClicar,
+}: {
+  eventos: Evento[];
+  novo?: boolean;
+  materiaDe: (id: string | null) => Materia | undefined;
+  hojeIso: string;
+  aoClicar: () => void;
+}) {
+  return (
+    <ul className="drawer-nav sino-lista">
+      {eventos.map((e) => (
+        <li key={e.id}>
+          <button
+            type="button"
+            className={`sino-item${novo ? " sino-novo" : " sino-lido"}`}
+            onClick={aoClicar}
+          >
+            <EventoLinha evento={e} materia={materiaDe(e.materia_id)} hojeIso={hojeIso}>
+              {novo && <span className="sino-selo">novo</span>}
+            </EventoLinha>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Exportado: o item "Notificações" do menu lateral usa o mesmo desenho. */
+export function IcoSino() {
   return (
     <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
       <path

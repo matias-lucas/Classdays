@@ -3,6 +3,7 @@
    ========================================================================== */
 
 .menu-btn {
+  position: relative;
   width: 36px;
   height: 36px;
   justify-self: flex-end;
@@ -39,9 +40,36 @@
 
 /* sino (E5): badge numérico de eventos novos, sobreposto no canto do botão.
    --vivo/--on-ink já existem em tokens.css e passam AA nos dois temas — sem
-   token novo. */
+   token novo.
+
+   No celular o sino NÃO fica na topbar: logo + título + dois botões não cabem
+   (ver o clamp do h1 em header.css), e o título encostava nele. Lá as
+   notificações moram no menu lateral, que ganha o dot. A partir de 640px sobra
+   espaço e o sino volta pro seu lugar, com badge numérico. */
 .sino-btn {
-  position: relative;
+  display: none;
+}
+@media (min-width: 640px) {
+  .sino-btn {
+    display: grid;
+  }
+}
+/* dot de novidade no botão do menu — o aviso enquanto o sino está fora da
+   barra. Anel na cor do fundo pra não colar na borda do botão. */
+.menu-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--vivo);
+  border: 2px solid var(--bg);
+}
+@media (min-width: 640px) {
+  .menu-dot {
+    display: none;
+  }
 }
 .sino-badge {
   position: absolute;
@@ -56,6 +84,23 @@
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* contador de novidades no item "Notificações" do menu lateral: mesma pílula
+   do badge do sino, encostada na direita da linha. */
+.drawer-nav-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--vivo);
+  color: var(--on-ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -183,6 +228,14 @@
   flex-direction: column;
   padding: 16px 18px 24px;
   overflow-y: auto;
+  /* nada sai pelos lados: o conteúdo (URL num evento, título comprido) quebra
+     dentro do cartão em vez de empurrar o painel */
+  overflow-x: hidden;
+  /* barra de rolagem escondida de propósito: no desktop rola na roda, no
+     celular no dedo, e o painel é estreito demais pra gastar 8px com trilho.
+     O scroll em si continua (inclusive por teclado) — só o desenho some. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   transform: translateX(100%);
   /* fechado: a visibility só some DEPOIS do slide (delay). Aberto, ela vira
      na hora — numa transition ela ainda vale "hidden" no primeiro frame e o
@@ -191,6 +244,10 @@
   transition:
     transform var(--t-med) var(--ease),
     visibility 0s linear var(--t-med);
+}
+.drawer::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .drawer.on {
   transform: none;

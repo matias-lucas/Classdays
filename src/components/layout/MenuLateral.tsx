@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { EVENTO_ABRIR_PROXIMOS } from "@/components/agenda/HeroProximo";
+import { EVENTO_ABRIR_SINO, IcoSino } from "@/components/agenda/Sino";
 import { EVENTO_ABRIR_MEU_CLASSDAYS } from "@/components/agenda/MeuClassdays";
 import { EVENTO_EXPANDIR_SECAO } from "@/components/agenda/SecaoRecolhivel";
 import { Drawer } from "./Drawer";
@@ -86,6 +87,14 @@ function IcoLua() {
 
 const ITENS_NAV: ItemNav[] = [
   {
+    // Primeiro da lista porque é o único que muda sozinho: no celular o sino
+    // sai da topbar (não cabe) e esta é a porta das notificações.
+    rotulo: "Notificações",
+    icone: <IcoSino />,
+    tipo: "evento",
+    nome: EVENTO_ABRIR_SINO,
+  },
+  {
     rotulo: "Próximos eventos",
     icone: <IcoCalendario />,
     tipo: "evento",
@@ -100,7 +109,12 @@ const ITENS_NAV: ItemNav[] = [
   { rotulo: "Painel admin", icone: <IcoCadeado />, tipo: "link", href: "/admin" },
 ];
 
-export function MenuLateral() {
+/**
+ * @param naoLidas Quantas novidades o sino tem. No celular o botão do sino não
+ *   existe (não cabe na topbar), então é aqui que o aviso aparece: dot no botão
+ *   do menu e contador na linha "Notificações".
+ */
+export function MenuLateral({ naoLidas = 0 }: { naoLidas?: number }) {
   const [aberto, setAberto] = useState(false);
   const { tema, definir } = useTema();
 
@@ -132,7 +146,11 @@ export function MenuLateral() {
       <button
         type="button"
         className="menu-btn"
-        aria-label="Abrir menu"
+        aria-label={
+          naoLidas > 0
+            ? `Abrir menu — ${naoLidas} ${naoLidas === 1 ? "novidade" : "novidades"}`
+            : "Abrir menu"
+        }
         aria-haspopup="dialog"
         aria-expanded={aberto}
         onClick={() => setAberto(true)}
@@ -142,35 +160,45 @@ export function MenuLateral() {
           <i />
           <i />
         </span>
+        {naoLidas > 0 && <span className="menu-dot" aria-hidden="true" />}
       </button>
 
       <Drawer open={aberto} onFechar={() => setAberto(false)} titulo="Classdays">
         <nav className="drawer-sec" aria-label="Navegação">
           <span className="drawer-label">Navegação</span>
           <ul className="drawer-nav">
-            {ITENS_NAV.map((item) => (
-              <li key={item.rotulo}>
-                {item.tipo === "link" ? (
-                  <Link className="drawer-nav-item" href={item.href}>
-                    <span className="drawer-nav-ico">{item.icone}</span>
-                    {item.rotulo}
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    className="drawer-nav-item"
-                    onClick={() =>
-                      item.tipo === "evento"
-                        ? dispararEvento(item.nome)
-                        : irParaSecao(item.secao)
-                    }
-                  >
-                    <span className="drawer-nav-ico">{item.icone}</span>
-                    {item.rotulo}
-                  </button>
-                )}
-              </li>
-            ))}
+            {ITENS_NAV.map((item) => {
+              const novidades =
+                item.tipo === "evento" && item.nome === EVENTO_ABRIR_SINO ? naoLidas : 0;
+              return (
+                <li key={item.rotulo}>
+                  {item.tipo === "link" ? (
+                    <Link className="drawer-nav-item" href={item.href}>
+                      <span className="drawer-nav-ico">{item.icone}</span>
+                      {item.rotulo}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className="drawer-nav-item"
+                      onClick={() =>
+                        item.tipo === "evento"
+                          ? dispararEvento(item.nome)
+                          : irParaSecao(item.secao)
+                      }
+                    >
+                      <span className="drawer-nav-ico">{item.icone}</span>
+                      {item.rotulo}
+                      {novidades > 0 && (
+                        <span className="drawer-nav-badge" aria-label={`${novidades} novas`}>
+                          {novidades > 9 ? "9+" : novidades}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 

@@ -14,6 +14,12 @@
 .topbar h1 {
   flex: 1;
   text-align: center;
+  /* 48px é o tamanho de assinatura, mas "Classdays" nesse corpo ocupa 225px
+     fixos: com a logo (42) e os botões, a topbar pedia 395px e estourava a
+     tela de um iPhone SE — a PÁGINA inteira ganhava scroll horizontal. O clamp
+     trava em 48px assim que há espaço (≥480px) e encolhe proporcionalmente
+     abaixo disso. O FLIP do splash mede o alvo real, então acompanha sozinho. */
+  font-size: clamp(30px, 10vw, 48px);
 }
 /* sino + botão de menu, lado a lado, ambos alinhados à direita da 3ª coluna
    (1fr) — as duas colunas 1fr continuam iguais entre si, então a simetria do

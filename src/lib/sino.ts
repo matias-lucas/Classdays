@@ -31,7 +31,7 @@ export function idsNaoLidos(candidatos: Evento[], vistos: readonly number[]): Se
 /**
  * A lista de vistos depois de abrir o painel: o que já estava + todos os
  * candidatos (ver = ler, sem "marcar como lido" manual), sem repetir e com
- * teto. Como `listaDoPainel` nunca esconde um não lido, isto só marca o que
+ * teto. Como `painelPorGrupo` nunca esconde um não lido, isto só marca o que
  * o painel de fato mostrou.
  */
 export function comVistos(vistos: readonly number[], candidatos: Evento[]): number[] {
@@ -79,19 +79,19 @@ export function parseVistos(bruto: string | null): number[] | null {
 export const TETO_LIDOS = 8;
 
 /**
- * O que o painel exibe: TODOS os não lidos, sempre (o badge não pode prometer
- * uma novidade que a lista esconde) mais os já lidos mais próximos, até o
- * teto. Preserva a ordem cronológica que entrou.
+ * O painel em dois grupos: primeiro TODAS as novidades (o badge não pode
+ * prometer uma que a lista esconde), depois as já vistas mais próximas, até o
+ * teto. Dentro de cada grupo vale a ordem cronológica que entrou — novidade em
+ * cima é o que se espera de uma caixa de notificações, mas entre duas
+ * novidades ainda manda a data.
  */
-export function listaDoPainel(
+export function painelPorGrupo(
   candidatos: Evento[],
   naoLidos: ReadonlySet<number>,
   teto: number = TETO_LIDOS,
-): Evento[] {
-  let lidos = 0;
-  return candidatos.filter((e) => {
-    if (naoLidos.has(e.id)) return true;
-    lidos += 1;
-    return lidos <= teto;
-  });
+): { novos: Evento[]; lidos: Evento[] } {
+  return {
+    novos: candidatos.filter((e) => naoLidos.has(e.id)),
+    lidos: candidatos.filter((e) => !naoLidos.has(e.id)).slice(0, teto),
+  };
 }
