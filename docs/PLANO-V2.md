@@ -789,7 +789,7 @@ Cada uma segue o mesmo ritual (§5) e a mesma ordem canônica (§1).
   agenda quebrou.
 - Item no `ITENS_NAV` do `MenuLateral` (a lista já está preparada).
 
-### E5 — Sino in-app (F6a) — ✅ entregue, com polimento em aberto
+### E5 — Sino in-app (F6a) — ✅ entregue
 
 Como foi planejado:
 
@@ -807,6 +807,8 @@ Como ficou (as duas primeiras linhas mudaram na prática):
 - Estado de leitura é **lista de ids** (`classdays:sino:v2`, teto de 200, com
   migração da v1 por timestamp), não um timestamp — o modelo antigo fazia um
   evento nascer lido se tivesse sido criado antes da última visita.
+- **Estreia** (quem chega sem nada no `localStorage`): nasce lido só o que tem
+  mais de 24h de cadastro — ver E5.5.
 - `painelPorGrupo()` divide o painel em "Novidades" e "Já vistas"; abaixo de
   640px o sino sai da topbar e as notificações moram no menu lateral.
 
@@ -823,10 +825,36 @@ Como ficou (as duas primeiras linhas mudaram na prática):
 - ✅ **E5.3 — Telas recapturadas** em `scratchpad/shots` (claro, escuro,
   desktop, topbar em 320px, cartão com a URL longa). Contraste do título já
   lido: 6.6:1 no claro, 7.8:1 no escuro.
-- ⬜ **E5.4 — Fechar a entrega.** Gate completo já verde (tsc, 216 testes,
-  build, lint nos mesmos 10 erros pré-existentes) e QA de tela com 47 checagens
-  verdes. Falta a fumaça no preview por um celular de verdade — o emulador não
-  prova `hover: none` na mão do usuário — e o merge de `feat/e5-sino` em `main`.
+- ✅ **E5.4 — Fechar a entrega.** Gate completo verde (tsc, build, lint nos
+  mesmos 10 erros pré-existentes) e QA de tela com 47 checagens verdes.
+  `feat/e5-sino` mergeado em `main` (`174ff84`).
+- ✅ **E5.5 — A fumaça no celular achou o bug que o emulador não acha.** Evento
+  cadastrado no admin, site aberto pela primeira vez no telefone: **nenhum
+  ponto**. Não era o `localStorage` falhando — era ele funcionando conforme o
+  escrito. `vistosIniciais(candidatos, null)` devolvia a janela INTEIRA como
+  lida, então a estreia começava calada por definição, e o evento de minutos
+  atrás junto. Sintoma idêntico em qualquer storage perdido: aba anônima, ou o
+  Safari podando o site de quem passou uma semana sem abrir.
+
+  Como ficou (`JANELA_ESTREIA_MS`, 24h):
+
+  - **Estreia** — nasce lido o que foi cadastrado há mais de 24h; o que entrou
+    nas últimas 24h é novidade. É o único aviso que o sino tem como dar a quem
+    acabou de chegar, e não custa o badge-de-agenda-inteira que a baseline
+    antiga evitava. O resto o aluno acha navegando.
+  - **Quem já entrou** — segue por ids, sem prazo: toda novidade que ele não
+    viu conta, tenha ela um dia ou um mês. A janela de 24h é da estreia, não do
+    app.
+  - A baseline é gravada **na chegada**, não só ao abrir o painel: prende o
+    corte ao instante da estreia, senão a janela deslizaria a cada reload e o
+    aviso não lido se apagaria sozinho ao completar 24h.
+  - Corte por instante (`Date.parse`), não por string: `created_at` chega
+    `+00:00` do Postgres e `Z` do navegador, e como texto os dois comparam
+    errado.
+  - `vistosIniciais` agora recebe o `agoraIso` (o relógio do aparelho, já
+    depois do mount — nada de hydration mismatch). 30 testes em `sino.test.ts`,
+    incluindo o roteiro fim a fim: as três funções estavam certas em separado e
+    erravam encadeadas.
 
 ### E6 — Web Push / PWA (F6b)
 
