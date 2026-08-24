@@ -42,12 +42,21 @@ export function useNaoLidos(candidatos: Evento[]) {
   const [pronto, setPronto] = useState(false);
 
   // Boot: roda uma vez só, de propósito. A baseline da primeira visita usa a
-  // janela do primeiro render (a do closure) — é exatamente "o que já existia
-  // quando o aluno chegou"; janelas posteriores não devem refazer baseline
-  // nenhuma, então `candidatos` fora das deps é a intenção, não um esquecimento.
+  // janela do primeiro render (a do closure) — é "o que já existia quando o
+  // aluno chegou", medido contra a janela de estreia; janelas posteriores não
+  // devem refazer baseline nenhuma, então `candidatos` fora das deps é a
+  // intenção, não um esquecimento.
+  //
+  // O "agora" é o relógio do aparelho, e não o do servidor: aqui já estamos
+  // depois do mount (nada de hydration mismatch), e o corte de 24h tolera bem
+  // um celular alguns minutos fora de hora.
   useEffect(() => {
     const salvos = parseVistos(ler(CHAVE));
-    const inicial = salvos ?? vistosIniciais(candidatos, ler(CHAVE_V1));
+    const inicial = salvos ?? vistosIniciais(candidatos, ler(CHAVE_V1), new Date().toISOString());
+    // A baseline é gravada JÁ na estreia, e não só quando o painel abre: ela
+    // prende o corte ao instante da chegada. Sem isso a janela deslizaria a
+    // cada reload, e a novidade que o aluno viu mas não abriu se apagaria
+    // sozinha ao completar 24h, sem ninguém ter lido nada.
     if (!salvos) salvar(inicial);
     setVistos(inicial);
     setPronto(true);

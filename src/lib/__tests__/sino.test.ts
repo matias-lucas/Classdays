@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  JANELA_ESTREIA_MS,
   LIMITE_VISTOS,
   TETO_LIDOS,
   comVistos,
@@ -68,20 +69,64 @@ describe("comVistos", () => {
 });
 
 describe("vistosIniciais", () => {
-  it("primeira visita: a janela inteira nasce lida (nada de badge no primeiro acesso)", () => {
-    const janela = [evento({ id: 1 }), evento({ id: 2 })];
-    expect(vistosIniciais(janela, null)).toEqual([1, 2]);
+  const AGORA = "2026-08-24T18:00:00.000Z";
+  /** ISO de N horas atrás em relação a AGORA. */
+  const haHoras = (h: number) => new Date(Date.parse(AGORA) - h * 3_600_000).toISOString();
+
+  it("primeira visita: o que é mais velho que a janela de estreia nasce lido", () => {
+    const antigo = evento({ id: 1, created_at: haHoras(72) });
+    const ontem = evento({ id: 2, created_at: haHoras(30) });
+    expect(vistosIniciais([antigo, ontem], null, AGORA)).toEqual([1, 2]);
+  });
+
+  it("primeira visita: cadastrado nas últimas 24h é novidade (o caso do celular)", () => {
+    // O bug: aluno abrindo o site pela primeira vez recebia TUDO como lido, e
+    // o evento cadastrado minutos antes não acendia ponto nenhum.
+    const velho = evento({ id: 1, created_at: haHoras(48) });
+    const recente = evento({ id: 2, created_at: haHoras(2) });
+    expect(vistosIniciais([velho, recente], null, AGORA)).toEqual([1]);
+  });
+
+  it("primeira visita: a borda dos 24h conta como já lida", () => {
+    const naBorda = evento({ id: 1, created_at: haHoras(JANELA_ESTREIA_MS / 3_600_000) });
+    const umMinutoDepois = evento({ id: 2, created_at: haHoras(23.98) });
+    expect(vistosIniciais([naBorda, umMinutoDepois], null, AGORA)).toEqual([1]);
+  });
+
+  it("primeira visita: created_at com offset do Postgres é lido por instante, não por string", () => {
+    // "+00:00" e "Z" comparam diferente como texto; como instante, não.
+    const pg = evento({ id: 1, created_at: "2026-08-21T18:00:00.123456+00:00" });
+    const pgRecente = evento({ id: 2, created_at: "2026-08-24T17:00:00.123456+00:00" });
+    expect(vistosIniciais([pg, pgRecente], null, AGORA)).toEqual([1]);
+  });
+
+  it("primeira visita sem novidade nenhuma na janela: sino calado, tudo lido", () => {
+    const janela = [evento({ id: 1, created_at: haHoras(100) }), evento({ id: 2, created_at: haHoras(99) })];
+    expect(vistosIniciais(janela, null, AGORA)).toEqual([1, 2]);
   });
 
   it("migrando da v1: o que chegou depois da última visita continua novo", () => {
     const antes = evento({ id: 1, created_at: "2026-07-01T10:00:00.000Z" });
     const depois = evento({ id: 2, created_at: "2026-07-03T10:00:00.000Z" });
-    expect(vistosIniciais([antes, depois], "2026-07-02T00:00:00.000Z")).toEqual([1]);
+    expect(vistosIniciais([antes, depois], "2026-07-02T00:00:00.000Z", AGORA)).toEqual([1]);
   });
 
   it("migrando da v1: evento criado no instante exato da visita conta como visto", () => {
     const e = evento({ id: 1, created_at: "2026-07-02T00:00:00.000Z" });
-    expect(vistosIniciais([e], "2026-07-02T00:00:00.000Z")).toEqual([1]);
+    expect(vistosIniciais([e], "2026-07-02T00:00:00.000Z", AGORA)).toEqual([1]);
+  });
+
+  it("migrando da v1: a última visita manda, mesmo sendo muito mais velha que 24h", () => {
+    // Quem já esteve aqui é medido pelo que viu — a janela de estreia não
+    // encurta o histórico dele.
+    const e = evento({ id: 1, created_at: haHoras(48) });
+    expect(vistosIniciais([e], "2026-01-01T00:00:00.000Z", AGORA)).toEqual([]);
+  });
+
+  it("corte ilegível cai na baseline conservadora: tudo lido, sem badge de agenda inteira", () => {
+    const janela = [evento({ id: 1, created_at: haHoras(1) }), evento({ id: 2 })];
+    expect(vistosIniciais(janela, "vixe", AGORA)).toEqual([1, 2]);
+    expect(vistosIniciais(janela, null, "nao é data")).toEqual([1, 2]);
   });
 });
 
@@ -142,5 +187,41 @@ describe("painelPorGrupo", () => {
   it("o teto padrão deixa passar oito já vistas", () => {
     const muitos = Array.from({ length: 20 }, (_, i) => evento({ id: i + 1 }));
     expect(painelPorGrupo(muitos, new Set()).lidos).toHaveLength(TETO_LIDOS);
+  });
+});
+
+/**
+ * As três peças são certas em separado e erravam juntas — a baseline marcava
+ * como lida a novidade que `idsNaoLidos` acabaria de receber. Este bloco
+ * refaz o caminho do aluno na ordem em que o hook chama cada uma.
+ */
+describe("o roteiro do aluno (as peças encadeadas)", () => {
+  const AGORA = "2026-08-24T18:00:00.000Z";
+  const haHoras = (h: number) => new Date(Date.parse(AGORA) - h * 3_600_000).toISOString();
+
+  const velho = evento({ id: 1, created_at: haHoras(200) });
+  const recem = evento({ id: 2, created_at: haHoras(0.2) });
+  const janela = [velho, recem];
+
+  it("estreia no celular, evento cadastrado minutos antes: badge de 1 e ele em Novidades", () => {
+    const naoLidos = idsNaoLidos(janela, vistosIniciais(janela, null, AGORA));
+    expect(naoLidos).toEqual(new Set([2]));
+    const { novos, lidos } = painelPorGrupo(janela, naoLidos);
+    expect(novos.map((e) => e.id)).toEqual([2]);
+    expect(lidos.map((e) => e.id)).toEqual([1]);
+  });
+
+  it("abrir o painel apaga o badge e nada do que já era velho volta", () => {
+    const depoisDeAbrir = comVistos(vistosIniciais(janela, null, AGORA), janela);
+    expect(idsNaoLidos(janela, depoisDeAbrir).size).toBe(0);
+  });
+
+  it("quem já entrou uma vez recebe TODA novidade, sem prazo de 24h", () => {
+    // Estreia + painel aberto: daqui pra frente quem manda é a lista de ids, e
+    // ela não tem janela. O evento que aparecer amanhã é novo mesmo que o
+    // aluno só volte ao site na semana seguinte.
+    const guardados = comVistos(vistosIniciais(janela, null, AGORA), janela);
+    const cadastradoDepois = evento({ id: 3, created_at: "2026-08-31T09:00:00.000Z" });
+    expect(idsNaoLidos([...janela, cadastradoDepois], guardados)).toEqual(new Set([3]));
   });
 });

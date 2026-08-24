@@ -40,19 +40,47 @@ export function comVistos(vistos: readonly number[], candidatos: Evento[]): numb
 }
 
 /**
- * Baseline de quem ainda não tem estado guardado.
- *
- * Sem nada (primeira visita): tudo nasce lido, pra não abrir o app com um
- * badge de tudo que já existia antes do aluno chegar. Com o timestamp da v1
- * (quem já usava o sino antigo): só o que foi criado até aquela visita nasce
- * lido — o que chegou depois continua sendo novidade, a migração não engole
- * avisos pendentes.
+ * Janela de estreia: numa primeira visita, é novidade o que foi cadastrado nas
+ * últimas 24h. O aluno que chega hoje não precisa de badge do que já estava
+ * aqui — isso ele descobre navegando —, mas o aviso que a turma recebeu ontem
+ * à noite ainda é aviso, e ele é o único que o sino tem como dar.
  */
-export function vistosIniciais(candidatos: Evento[], ultimaVisitaV1: string | null): number[] {
-  const lidos = ultimaVisitaV1
-    ? candidatos.filter((e) => e.created_at <= ultimaVisitaV1)
-    : candidatos;
-  return lidos.map((e) => e.id);
+export const JANELA_ESTREIA_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Instante em ms. O `created_at` chega em dois sotaques — `+00:00` do Postgres
+ * e `Z` do navegador —, e entre eles a comparação de string mente; a de
+ * instante, não.
+ */
+function emMs(iso: string): number {
+  return Date.parse(iso);
+}
+
+/**
+ * Baseline de quem ainda não tem estado guardado: os ids que já nascem lidos.
+ *
+ * Sem nada — primeira visita, aba anônima, ou o Safari que apaga o storage de
+ * quem passou uma semana sem abrir o site — nasce lido só o que foi cadastrado
+ * ANTES da janela de estreia. Antes disto a baseline engolia a lista inteira, e
+ * o primeiro acesso nunca via ponto nenhum: nem de um evento cadastrado minutos
+ * antes. Justamente o acesso em que o aluno mais precisa saber que o sino
+ * existe.
+ *
+ * Com o timestamp da v1 (quem já usava o sino antigo), o corte é a última
+ * visita: quem já esteve aqui é medido pelo que viu, não por 24h — o que
+ * chegou depois continua novidade, a migração não engole avisos pendentes.
+ */
+export function vistosIniciais(
+  candidatos: Evento[],
+  ultimaVisitaV1: string | null,
+  agoraIso: string,
+): number[] {
+  const corte = ultimaVisitaV1 ? emMs(ultimaVisitaV1) : emMs(agoraIso) - JANELA_ESTREIA_MS;
+  // Corte ilegível (v1 corrompida, relógio exótico): volta pra baseline
+  // conservadora. Tudo lido cala o sino uma vez; badge com a agenda inteira
+  // ensina o aluno a ignorá-lo pra sempre.
+  if (Number.isNaN(corte)) return candidatos.map((e) => e.id);
+  return candidatos.filter((e) => emMs(e.created_at) <= corte).map((e) => e.id);
 }
 
 /**
