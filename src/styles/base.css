@@ -94,7 +94,14 @@ button {
   opacity: 0;
   transform: scale(0.4);
 }
+/* O balão só existe onde há hover de verdade. Ele fica absoluto à DIREITA da
+   âncora, com white-space: nowrap — mesmo invisível (opacity 0) continua
+   contando na largura rolável, e num iPhone SE isso empurrava a PÁGINA 14px
+   além da tela: scroll horizontal no site inteiro por causa de um enfeite que
+   o dedo nunca vê. No toque ele nem é desenhado; o link já leva o aria-label
+   com "GitHub", então nada de informação se perde. */
 .credito-balao {
+  display: none;
   position: absolute;
   left: calc(100% + 10px);
   top: 50%;
@@ -103,7 +110,6 @@ button {
   transform: translateY(-50%) scale(0.6);
   opacity: 0;
   transform-origin: left center;
-  display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
@@ -117,6 +123,11 @@ button {
   transition:
     transform var(--t-med) var(--ease),
     opacity var(--t-med) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .credito-balao {
+    display: inline-flex;
+  }
 }
 /* a boquinha: triângulo da mesma cor do balão, apontando pro gatinho */
 .credito-balao::after {

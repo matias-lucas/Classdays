@@ -152,7 +152,9 @@
    EventoLinha (à direita, onde o admin põe o botão de apagar) */
 .sino-selo {
   flex-shrink: 0;
-  align-self: center;
+  /* no topo, não no centro: num cartão com observação longa o centro joga o
+     selo pra altura do meio do texto, longe do título que ele está marcando */
+  align-self: start;
   /* enxuto de propósito: cada pixel aqui é largura tirada do título ao lado */
   padding: 2px 6px;
   border-radius: 999px;
