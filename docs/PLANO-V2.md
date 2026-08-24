@@ -789,13 +789,50 @@ Cada uma segue o mesmo ritual (§5) e a mesma ordem canônica (§1).
   agenda quebrou.
 - Item no `ITENS_NAV` do `MenuLateral` (a lista já está preparada).
 
-### E5 — Sino in-app (F6a)
+### E5 — Sino in-app (F6a) — ✅ entregue, com polimento em aberto
+
+Como foi planejado:
 
 - `eventosNoIntervalo(eventos, hoje, dias)` puro em `agenda.ts`, respeitando as
   ocultas da E4.
 - Não lido: `localStorage` guarda o maior `created_at` já visto; badge conta o que
   veio depois.
 - Painel reaproveita o `Drawer`; cada item leva à âncora `sec-{id}` existente.
+
+Como ficou (as duas primeiras linhas mudaram na prática):
+
+- Candidato é `eventosFuturos()`, não a janela de 7 dias — quem cadastra hoje um
+  evento de setembro quer avisar a turma **hoje**. Novidade é o cadastro, não a
+  proximidade da data; `eventosNoIntervalo` saiu junto com os testes dela.
+- Estado de leitura é **lista de ids** (`classdays:sino:v2`, teto de 200, com
+  migração da v1 por timestamp), não um timestamp — o modelo antigo fazia um
+  evento nascer lido se tivesse sido criado antes da última visita.
+- `painelPorGrupo()` divide o painel em "Novidades" e "Já vistas"; abaixo de
+  640px o sino sai da topbar e as notificações moram no menu lateral.
+
+**Pendências do polimento** (commit `598cbab` na branch `feat/e5-sino`; código
+pronto e verificado por tsc/testes/build/lint, falta a volta do QA de tela):
+
+- **E5.1 — Reescrever o QA headless para a UI nova.**
+  `scratchpad/qa-sino.js` ainda assume a tela antiga: abre por `.sino-btn` (hoje
+  `display:none` abaixo de 640px), espera o título "Novidades" e uma `.sino-lista`
+  única. Precisa de dois caminhos — no celular abrir pelo hambúrguer → item
+  "Notificações", no desktop (≥640px) pelo sino — e asserts de `.menu-dot`,
+  `.drawer-nav-badge` e dos dois grupos ("Novidades" em cima, "Já vistas" abaixo).
+- **E5.2 — Regressões de layout, medidas e não olhadas.**
+  Sem scroll horizontal da página em 320/360/390/430px
+  (`documentElement.scrollWidth <= clientWidth`); a URL longa do fixture contida
+  no cartão (`.ev-title`/`.ev-obs` sem estourar o `right` do `.ev`); barra de
+  rolagem do drawer ocupando 0px (`offsetWidth - clientWidth === 0`) **com o
+  scroll ainda funcionando** — esconder o desenho não pode matar a rolagem.
+- **E5.3 — Recapturar as telas.**
+  Claro, escuro e desktop, com o painel agrupado e a topbar nova; a topbar em
+  320px é a que interessa (era ela que estourava).
+- **E5.4 — Fechar a entrega.**
+  Gate completo (tsc, `npm test`, build, paridade de lint nos 10 erros
+  pré-existentes), fumaça no preview pelo celular de verdade — o dot só aparece
+  para quem tem novidade — e então merge de `feat/e5-sino` em `main`. O ROADMAP
+  já descreve o polimento; conferir se o texto bate com o que foi ao ar.
 
 ### E6 — Web Push / PWA (F6b)
 
