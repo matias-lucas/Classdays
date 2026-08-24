@@ -810,29 +810,23 @@ Como ficou (as duas primeiras linhas mudaram na prática):
 - `painelPorGrupo()` divide o painel em "Novidades" e "Já vistas"; abaixo de
   640px o sino sai da topbar e as notificações moram no menu lateral.
 
-**Pendências do polimento** (commit `598cbab` na branch `feat/e5-sino`; código
-pronto e verificado por tsc/testes/build/lint, falta a volta do QA de tela):
+**Polimento** (branch `feat/e5-sino`, commits `598cbab`, `c54317c` e `ccc4060`):
 
-- **E5.1 — Reescrever o QA headless para a UI nova.**
-  `scratchpad/qa-sino.js` ainda assume a tela antiga: abre por `.sino-btn` (hoje
-  `display:none` abaixo de 640px), espera o título "Novidades" e uma `.sino-lista`
-  única. Precisa de dois caminhos — no celular abrir pelo hambúrguer → item
-  "Notificações", no desktop (≥640px) pelo sino — e asserts de `.menu-dot`,
-  `.drawer-nav-badge` e dos dois grupos ("Novidades" em cima, "Já vistas" abaixo).
-- **E5.2 — Regressões de layout, medidas e não olhadas.**
-  Sem scroll horizontal da página em 320/360/390/430px
-  (`documentElement.scrollWidth <= clientWidth`); a URL longa do fixture contida
-  no cartão (`.ev-title`/`.ev-obs` sem estourar o `right` do `.ev`); barra de
-  rolagem do drawer ocupando 0px (`offsetWidth - clientWidth === 0`) **com o
-  scroll ainda funcionando** — esconder o desenho não pode matar a rolagem.
-- **E5.3 — Recapturar as telas.**
-  Claro, escuro e desktop, com o painel agrupado e a topbar nova; a topbar em
-  320px é a que interessa (era ela que estourava).
-- **E5.4 — Fechar a entrega.**
-  Gate completo (tsc, `npm test`, build, paridade de lint nos 10 erros
-  pré-existentes), fumaça no preview pelo celular de verdade — o dot só aparece
-  para quem tem novidade — e então merge de `feat/e5-sino` em `main`. O ROADMAP
-  já descreve o polimento; conferir se o texto bate com o que foi ao ar.
+- ✅ **E5.1 — QA headless reescrito para a UI nova.** Dois caminhos de abertura
+  (hambúrguer → "Notificações" no celular, `.sino-btn` no desktop), asserts de
+  `.menu-dot`, `.drawer-nav-badge` e dos dois grupos na ordem certa.
+- ✅ **E5.2 — Regressões de layout viraram checagem.** Sem scroll horizontal em
+  320/360/390/430px, URL longa contida no cartão e barra do painel ocupando 0px
+  **com o scroll ainda vivo**. A de 320px pegou um bug de verdade, e não era a
+  topbar: o balão "GitHub" do rodapé (absolute + `nowrap`, invisível mas com
+  caixa) empurrava a página 14px. Corrigido em `ccc4060`.
+- ✅ **E5.3 — Telas recapturadas** em `scratchpad/shots` (claro, escuro,
+  desktop, topbar em 320px, cartão com a URL longa). Contraste do título já
+  lido: 6.6:1 no claro, 7.8:1 no escuro.
+- ⬜ **E5.4 — Fechar a entrega.** Gate completo já verde (tsc, 216 testes,
+  build, lint nos mesmos 10 erros pré-existentes) e QA de tela com 47 checagens
+  verdes. Falta a fumaça no preview por um celular de verdade — o emulador não
+  prova `hover: none` na mão do usuário — e o merge de `feat/e5-sino` em `main`.
 
 ### E6 — Web Push / PWA (F6b)
 
