@@ -75,11 +75,14 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   evento que ainda não terminou, sem teto de dias — candidato a novidade é
   o cadastro, não a proximidade da data); estado de leitura por id em
   `localStorage` (`classdays:sino:v2`, com migração da v1 por timestamp);
-  `listaDoPainel()` mostra todos os não lidos mais os já lidos mais
-  próximos (teto de 8), reaproveitando o `Drawer` — cada item leva à
-  âncora do evento em Próximos eventos. 215 testes, tsc/build limpos;
+  `painelPorGrupo()` divide o painel em "Novidades" (todas) e "Já vistas"
+  (as mais próximas, teto de 8), reaproveitando o `Drawer` — cada item leva
+  à âncora do evento em Próximos eventos. 216 testes, tsc/build limpos;
   verificado em produção (21/08/2026) por fetch direto (markup do sino
-  renderizando).
+  renderizando). Polimento posterior (24/08/2026): novidades em cima, painel
+  sem scroll horizontal e com a barra de rolagem oculta, título
+  "Notificações", h1 da topbar em `clamp()` e sino fora da topbar no celular
+  — no lugar dele, a aba "Notificações" no menu lateral, com dot e contador.
 - ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
   no dia; iOS exige o app na tela de início.
 

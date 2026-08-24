@@ -27,13 +27,20 @@ export function Drawer({ open, onFechar, titulo, children }: Props) {
     const overflowAntes = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // Elementos invisíveis (o corpo de uma seção recolhida, com
+    // visibility:hidden) já saem da ordem de Tab do navegador — se ficassem
+    // na lista, o "último" do trapeamento seria um botão invisível e o Tab
+    // escaparia do painel sem ninguém trazê-lo de volta.
+    const visivel = (el: HTMLElement) =>
+      el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+
     const focaveis = () =>
       aside
         ? Array.from(
             aside.querySelectorAll<HTMLElement>(
               'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             ),
-          ).filter((el) => !el.hasAttribute("disabled"))
+          ).filter((el) => !el.hasAttribute("disabled") && visivel(el))
         : [];
 
     focaveis()[0]?.focus();

@@ -4,7 +4,7 @@ import {
   TETO_LIDOS,
   comVistos,
   idsNaoLidos,
-  listaDoPainel,
+  painelPorGrupo,
   parseVistos,
   vistosIniciais,
 } from "@/lib/sino";
@@ -110,29 +110,37 @@ describe("parseVistos", () => {
   });
 });
 
-describe("listaDoPainel", () => {
+describe("painelPorGrupo", () => {
   const janela = [1, 2, 3, 4, 5].map((id) => evento({ id }));
 
-  it("mostra todos os não lidos, mesmo passando do teto de lidos", () => {
-    const naoLidos = new Set([1, 2, 3, 4, 5]);
-    expect(listaDoPainel(janela, naoLidos, 2).map((e) => e.id)).toEqual([1, 2, 3, 4, 5]);
+  it("novidades vêm em cima, já vistas embaixo", () => {
+    const { novos, lidos } = painelPorGrupo(janela, new Set([2, 4]));
+    expect(novos.map((e) => e.id)).toEqual([2, 4]);
+    expect(lidos.map((e) => e.id)).toEqual([1, 3, 5]);
   });
 
-  it("corta os já lidos no teto, preservando a ordem de entrada", () => {
-    expect(listaDoPainel(janela, new Set(), 2).map((e) => e.id)).toEqual([1, 2]);
+  it("dentro de cada grupo a ordem de entrada (cronológica) é preservada", () => {
+    const { novos } = painelPorGrupo(janela, new Set([5, 1, 3]));
+    expect(novos.map((e) => e.id)).toEqual([1, 3, 5]);
   });
 
-  it("o teto conta só os lidos — o não lido do fim não é empurrado pra fora", () => {
-    const naoLidos = new Set([5]);
-    expect(listaDoPainel(janela, naoLidos, 2).map((e) => e.id)).toEqual([1, 2, 5]);
+  it("mostra todos os não lidos, mesmo passando do teto", () => {
+    const { novos } = painelPorGrupo(janela, new Set([1, 2, 3, 4, 5]), 2);
+    expect(novos.map((e) => e.id)).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it("nada a mostrar continua vazio", () => {
-    expect(listaDoPainel([], new Set())).toEqual([]);
+  it("corta os já lidos no teto, sem mexer nos não lidos", () => {
+    const { novos, lidos } = painelPorGrupo(janela, new Set([5]), 2);
+    expect(novos.map((e) => e.id)).toEqual([5]);
+    expect(lidos.map((e) => e.id)).toEqual([1, 2]);
   });
 
-  it("o teto padrão deixa passar oito lidos", () => {
+  it("nada a mostrar devolve os dois grupos vazios", () => {
+    expect(painelPorGrupo([], new Set())).toEqual({ novos: [], lidos: [] });
+  });
+
+  it("o teto padrão deixa passar oito já vistas", () => {
     const muitos = Array.from({ length: 20 }, (_, i) => evento({ id: i + 1 }));
-    expect(listaDoPainel(muitos, new Set())).toHaveLength(TETO_LIDOS);
+    expect(painelPorGrupo(muitos, new Set()).lidos).toHaveLength(TETO_LIDOS);
   });
 });

@@ -789,13 +789,44 @@ Cada uma segue o mesmo ritual (§5) e a mesma ordem canônica (§1).
   agenda quebrou.
 - Item no `ITENS_NAV` do `MenuLateral` (a lista já está preparada).
 
-### E5 — Sino in-app (F6a)
+### E5 — Sino in-app (F6a) — ✅ entregue, com polimento em aberto
+
+Como foi planejado:
 
 - `eventosNoIntervalo(eventos, hoje, dias)` puro em `agenda.ts`, respeitando as
   ocultas da E4.
 - Não lido: `localStorage` guarda o maior `created_at` já visto; badge conta o que
   veio depois.
 - Painel reaproveita o `Drawer`; cada item leva à âncora `sec-{id}` existente.
+
+Como ficou (as duas primeiras linhas mudaram na prática):
+
+- Candidato é `eventosFuturos()`, não a janela de 7 dias — quem cadastra hoje um
+  evento de setembro quer avisar a turma **hoje**. Novidade é o cadastro, não a
+  proximidade da data; `eventosNoIntervalo` saiu junto com os testes dela.
+- Estado de leitura é **lista de ids** (`classdays:sino:v2`, teto de 200, com
+  migração da v1 por timestamp), não um timestamp — o modelo antigo fazia um
+  evento nascer lido se tivesse sido criado antes da última visita.
+- `painelPorGrupo()` divide o painel em "Novidades" e "Já vistas"; abaixo de
+  640px o sino sai da topbar e as notificações moram no menu lateral.
+
+**Polimento** (branch `feat/e5-sino`, commits `598cbab`, `c54317c` e `ccc4060`):
+
+- ✅ **E5.1 — QA headless reescrito para a UI nova.** Dois caminhos de abertura
+  (hambúrguer → "Notificações" no celular, `.sino-btn` no desktop), asserts de
+  `.menu-dot`, `.drawer-nav-badge` e dos dois grupos na ordem certa.
+- ✅ **E5.2 — Regressões de layout viraram checagem.** Sem scroll horizontal em
+  320/360/390/430px, URL longa contida no cartão e barra do painel ocupando 0px
+  **com o scroll ainda vivo**. A de 320px pegou um bug de verdade, e não era a
+  topbar: o balão "GitHub" do rodapé (absolute + `nowrap`, invisível mas com
+  caixa) empurrava a página 14px. Corrigido em `ccc4060`.
+- ✅ **E5.3 — Telas recapturadas** em `scratchpad/shots` (claro, escuro,
+  desktop, topbar em 320px, cartão com a URL longa). Contraste do título já
+  lido: 6.6:1 no claro, 7.8:1 no escuro.
+- ⬜ **E5.4 — Fechar a entrega.** Gate completo já verde (tsc, 216 testes,
+  build, lint nos mesmos 10 erros pré-existentes) e QA de tela com 47 checagens
+  verdes. Falta a fumaça no preview por um celular de verdade — o emulador não
+  prova `hover: none` na mão do usuário — e o merge de `feat/e5-sino` em `main`.
 
 ### E6 — Web Push / PWA (F6b)
 

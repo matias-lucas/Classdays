@@ -194,7 +194,7 @@ export function AgendaAluno({
             hojeIso={agora.hoje}
             onAbrir={marcarVistos}
           />
-          <MenuLateral />
+          <MenuLateral naoLidas={naoLidos.size} />
         </div>
       </div>
       <header className="head-row">
