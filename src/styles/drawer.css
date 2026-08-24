@@ -374,6 +374,43 @@
   color: var(--ink-soft);
 }
 
+/* "Já vistas" é um disclosure: o rótulo vira botão e o corpo recolhe. O
+   arquivo é a parte fria do painel — havendo novidade ele entra fechado, e a
+   contagem no rótulo diz o que está guardado sem precisar abrir.
+   Reaproveita o caret (.slabel-caret) e o corpo em grid (.sec-corpo /
+   .sec-hidden / .sec-anim) das seções da agenda: mesma animação, mesmo gesto.
+   Alvo de 44px pelo mesmo truque do .slabel-toggle — padding compensado por
+   margin negativa, sem engordar a linha nem deslocar o texto. */
+.drawer-label-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 14px 8px;
+  margin: -14px -8px;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease);
+}
+.drawer-label-btn:hover {
+  color: var(--ink);
+}
+.drawer-label-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* o › gira 90° quando aberto — girar transiciona, trocar caractere não */
+.drawer-label-btn .slabel-caret {
+  font-size: 12px;
+}
+.drawer-label-btn[aria-expanded="true"] .slabel-caret {
+  transform: rotate(90deg);
+}
+.drawer-label-qtd {
+  font-variant-numeric: tabular-nums;
+}
+
 /* navegação do drawer: itens de linha inteira, alvo ≥44px, mesmo desenho para
    <a> (rotas) e <button> (scroll até seção) */
 .drawer-nav {

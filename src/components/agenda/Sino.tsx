@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Drawer } from "@/components/layout/Drawer";
 import { EventoLinha } from "@/components/ui/EventoLinha";
 import { painelPorGrupo } from "@/lib/sino";
@@ -29,6 +29,10 @@ interface Props {
  * Abrir já marca tudo como lido (ver = ler, mesma honestidade do resto do
  * app). Cada item fecha o sino e abre o menu de "Próximos eventos"
  * (ProximoDetalhe) já existente, em vez de duplicar aquela lista.
+ *
+ * "Já vistas" é um disclosure, na mesma linguagem das seções da agenda (caret
+ * que gira, corpo em grid 1fr↔0fr). O rótulo leva a contagem justamente
+ * porque, recolhido, ele é a única pista do que está guardado ali.
  */
 export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) {
   const [aberto, setAberto] = useState(false);
@@ -37,6 +41,14 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
   // Também decide a lista, e por isso NÃO é zerado ao fechar: o painel some
   // deslizando, e recortá-lo no meio da saída seria um pulo à toa.
   const [novosNoClique, setNovosNoClique] = useState<ReadonlySet<number>>(new Set());
+  const [lidosAbertos, setLidosAbertos] = useState(true);
+  // true só enquanto a transição pedida pelo usuário está no ar — mesma janela
+  // do SecaoRecolhivel: é ela que liga a animação (a decisão tomada ao abrir
+  // continua sendo um snap) e o overflow:hidden, que aberto de vez cortaria a
+  // sombra dos cartões.
+  const [animando, setAnimando] = useState(false);
+  const timerAnim = useRef<number | undefined>(undefined);
+  const lidosId = useId();
 
   const { novos, lidos } = useMemo(
     () => painelPorGrupo(eventos, novosNoClique),
@@ -45,6 +57,12 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
 
   const abrir = useCallback(() => {
     setNovosNoClique(new Set(naoLidos));
+    // O painel abre no que é novo: havendo novidade, o arquivo entra recolhido
+    // pra não empurrá-la pra baixo; sem nenhuma, ele abre — senão o sino
+    // abriria vazio. A regra vale a cada abertura e não cobra nada do aluno:
+    // depois da primeira, tudo já está lido e o grupo passa a abrir sozinho.
+    setLidosAbertos(naoLidos.size === 0);
+    setAnimando(false);
     setAberto(true);
     onAbrir();
   }, [naoLidos, onAbrir]);
@@ -53,6 +71,24 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
     window.addEventListener(EVENTO_ABRIR_SINO, abrir);
     return () => window.removeEventListener(EVENTO_ABRIR_SINO, abrir);
   }, [abrir]);
+
+  useEffect(() => () => window.clearTimeout(timerAnim.current), []);
+
+  // O timeout é o plano B do transitionend: com movimento reduzido a transição
+  // vira `none` e o evento nunca chega.
+  const alternarLidos = () => {
+    setAnimando(true);
+    window.clearTimeout(timerAnim.current);
+    timerAnim.current = window.setTimeout(() => setAnimando(false), 450);
+    setLidosAbertos((estava) => !estava);
+  };
+
+  const fimDaTransicao = (ev: React.TransitionEvent<HTMLDivElement>) => {
+    if (ev.target !== ev.currentTarget) return;
+    if (ev.propertyName !== "grid-template-rows") return;
+    window.clearTimeout(timerAnim.current);
+    setAnimando(false);
+  };
 
   // Fecha o sino e só então abre o painel completo — mesmo rAF que o
   // MenuLateral usa entre um Drawer fechar e o próximo prender o foco.
@@ -102,8 +138,28 @@ export function Sino({ eventos, naoLidos, materiaDe, hojeIso, onAbrir }: Props) 
         )}
         {lidos.length > 0 && (
           <div className="drawer-sec">
-            <span className="drawer-label">Já vistas</span>
-            <Lista eventos={lidos} materiaDe={materiaDe} hojeIso={hojeIso} aoClicar={verNoDetalhe} />
+            <button
+              type="button"
+              className="drawer-label drawer-label-btn"
+              aria-expanded={lidosAbertos}
+              aria-controls={lidosId}
+              onClick={alternarLidos}
+            >
+              <span className="slabel-caret" aria-hidden="true">
+                ›
+              </span>
+              Já vistas
+              <span className="drawer-label-qtd">({lidos.length})</span>
+            </button>
+            <div
+              id={lidosId}
+              className={`sec-corpo${lidosAbertos ? "" : " sec-hidden"}${animando ? " sec-anim" : ""}`}
+              onTransitionEnd={fimDaTransicao}
+            >
+              <div className="sec-corpo-inner">
+                <Lista eventos={lidos} materiaDe={materiaDe} hojeIso={hojeIso} aoClicar={verNoDetalhe} />
+              </div>
+            </div>
           </div>
         )}
       </Drawer>
