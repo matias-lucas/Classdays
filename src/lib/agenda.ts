@@ -79,6 +79,30 @@ export function emAndamento(e: Evento, hojeIso: string): boolean {
   return ehPeriodo(e) && ativoEm(e, hojeIso);
 }
 
+/**
+ * A contagem regressiva deste evento mira o TÉRMINO em vez do início?
+ *
+ * Duas situações, e só elas:
+ * - Período de ênfase `"fim"`, desde o primeiro dia: o prazo é a notícia
+ *   ("inscrições até…"), então a conta é pro fechamento mesmo antes de abrir.
+ * - Qualquer período **em andamento**, seja qual for a ênfase: começado, o que
+ *   resta a saber é quanto falta pra acabar — inclusive num `"inicio"`, onde a
+ *   data de abertura já ficou pra trás e contar por ela diria "passou".
+ *
+ * Pontual nunca mira término (`emAndamento` já exige período). Quem mira o fim
+ * também troca o rótulo pra "termina em N dias": o número sozinho seria lido
+ * como a data em que a coisa acontece.
+ *
+ * Existe aqui, e não solto em cada componente, porque é regra de domínio: o
+ * hero e a lista dos Próximos eventos precisam dizer o MESMO número sobre o
+ * mesmo evento. Enquanto a lista tinha a sua própria conta (sempre até o fim,
+ * ignorando a ênfase), um período de ênfase `"inicio"` aparecia com dois
+ * números diferentes na mesma tela.
+ */
+export function contaAteOTermino(e: Evento, hojeIso: string): boolean {
+  return (ehPeriodo(e) && e.enfase === "fim") || emAndamento(e, hojeIso);
+}
+
 /** Períodos rolando hoje (a faixa "em andamento" da tela). Nunca cancelamento. */
 export function continuosAtivos(
   eventos: Evento[],

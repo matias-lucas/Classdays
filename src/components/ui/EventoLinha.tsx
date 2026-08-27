@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
-import { ehAusencia, emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
+import {
+  contaAteOTermino,
+  ehAusencia,
+  ehPeriodo,
+  emAndamento,
+  fimDe,
+} from "@/lib/agenda";
 import {
   DIAS_CURTOS,
   diaSemanaDe,
@@ -55,15 +61,20 @@ export function EventoLinha({
   const cor = materia?.cor ?? (ausencia ? `var(--badge-${evento.tipo}-fg)` : COR_TURMA);
   const nome = materia?.nome ?? "GERAL";
   const periodo = ehPeriodo(evento);
-  const emCurso = periodo && emAndamento(evento, hojeIso);
+  // Duas perguntas diferentes, de propósito: `emCurso` é "está rolando agora?"
+  // (só isso acende o selo "em andamento"); `miraFim` é "a contagem mede até o
+  // término?", que segue a ênfase do evento (regra de domínio em agenda.ts) e
+  // vale também pro período de ênfase "fim" que ainda nem começou.
+  const emCurso = emAndamento(evento, hojeIso);
+  const miraFim = contaAteOTermino(evento, hojeIso);
   const { dia, mes } = fmtDiaMesPartes(evento.data);
   const fimPartes = periodo ? fmtDiaMesPartes(fimDe(evento)) : null;
-  const dias = diffDias(hojeIso, periodo ? fimDe(evento) : evento.data);
+  const dias = diffDias(hojeIso, miraFim ? fimDe(evento) : evento.data);
 
   const quando = [
     periodo ? null : DIAS_CURTOS[diaSemanaDe(evento.data)],
     !periodo && evento.hora ? fmtHora(evento.hora) : null,
-    emCurso ? `termina ${rotuloRelativo(dias)}` : rotuloRelativo(dias),
+    miraFim ? `termina ${rotuloRelativo(dias)}` : rotuloRelativo(dias),
   ]
     .filter(Boolean)
     .join(" · ");

@@ -3,6 +3,7 @@ import {
   ativoEm,
   cancelamentoDa,
   cancelamentosDe,
+  contaAteOTermino,
   continuosAtivos,
   ehAusencia,
   ehPeriodo,
@@ -515,3 +516,85 @@ describe("proximoEvento nunca escolhe feriado/recesso (E3)", () => {
   });
 });
 
+
+describe("contaAteOTermino — a contagem mira o fim ou o início?", () => {
+  const pontual = evento({ id: 90, tipo: "prova", data: "2026-07-20" });
+
+  it("evento pontual nunca mira o término", () => {
+    expect(contaAteOTermino(pontual, HOJE)).toBe(false);
+    // nem no próprio dia
+    expect(contaAteOTermino(pontual, "2026-07-20")).toBe(false);
+  });
+
+  it('ênfase "fim" mira o término desde antes de começar — o prazo é a notícia', () => {
+    const prazo = evento({
+      id: 91,
+      tipo: "evento",
+      data: "2026-07-20",
+      data_fim: "2026-07-25",
+      enfase: "fim",
+    });
+    expect(contaAteOTermino(prazo, HOJE)).toBe(true);
+  });
+
+  it('ênfase "inicio" que ainda não começou mira a ABERTURA', () => {
+    const olimpiada = evento({
+      id: 92,
+      tipo: "evento",
+      data: "2026-07-20",
+      data_fim: "2026-07-22",
+      enfase: "inicio",
+    });
+    expect(contaAteOTermino(olimpiada, HOJE)).toBe(false);
+  });
+
+  it('ênfase "ambos" que ainda não começou mira a abertura', () => {
+    const inscricoes = evento({
+      id: 93,
+      tipo: "evento",
+      data: "2026-07-20",
+      data_fim: "2026-07-25",
+      enfase: "ambos",
+    });
+    expect(contaAteOTermino(inscricoes, HOJE)).toBe(false);
+  });
+
+  it("período EM ANDAMENTO mira o término em qualquer ênfase, inclusive inicio", () => {
+    // Sem isto, um "inicio" já começado contaria pela abertura — que ficou pra
+    // trás — e o rótulo diria "passou" com o evento acontecendo.
+    for (const enfase of ["inicio", "ambos", "fim"] as const) {
+      const rolando = evento({
+        id: 94,
+        tipo: "evento",
+        data: "2026-07-05",
+        data_fim: "2026-07-10",
+        enfase,
+      });
+      expect(contaAteOTermino(rolando, HOJE), `ênfase ${enfase}`).toBe(true);
+    }
+  });
+
+  it("regressão: os dois períodos reais que a lista contava errado em 27/08/2026", () => {
+    // A lista dos Próximos eventos ignorava a ênfase e contava sempre até o
+    // fim: "Aplicação dos exames" (31/08→04/09, ênfase inicio) aparecia como
+    // "em 8 dias" quando abre em 4, e a OLINFEG (16→18/09) como "em 22 dias"
+    // quando abre em 20. Ambos são "inicio" e ainda não começaram.
+    const hoje = "2026-08-27";
+    const exames = evento({
+      id: 34,
+      tipo: "evento",
+      data: "2026-08-31",
+      data_fim: "2026-09-04",
+      enfase: "inicio",
+    });
+    const olinfeg = evento({
+      id: 40,
+      tipo: "evento",
+      data: "2026-09-16",
+      data_fim: "2026-09-18",
+      enfase: "inicio",
+    });
+    expect(contaAteOTermino(exames, hoje)).toBe(false);
+    expect(contaAteOTermino(olinfeg, hoje)).toBe(false);
+  });
+});
