@@ -93,6 +93,19 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   no dia; iOS exige o app na tela de início. **É a última entrega planejada** —
   fechada ela, o plano v2 acaba.
 
+### Correções fora de entrega
+
+- ✅ **Contagem dos períodos respeitava a ênfase só no hero** *(27/08/2026,
+  merge `247d418`)*. `EventoLinha` contava sempre até o término, então um
+  período de ênfase `"inicio"` aparecia com um número na lista e outro no
+  hero. Em produção: "Aplicação dos exames" (31/08→04/09) dizia "em 8 dias"
+  para algo que abre em 4; a OLINFEG (16→18/09), "em 22 dias" para 20. A regra
+  estava duplicada literalmente em dois componentes e ausente no terceiro —
+  virou `contaAteOTermino()` em `agenda.ts`, e os três chamam a mesma função.
+  Achado abrindo o site, não pelo gate: **nenhuma camada de teste cobre a
+  escolha de data feita dentro de um componente**, e é por aí que este tipo de
+  divergência entra. Regra de domínio em componente é o cheiro a vigiar.
+
 ## Pendências de infra
 
 - ✅ **Domínio classdays.net no ar** *(27/08/2026)*. Comprado e apontado pelo
