@@ -14,6 +14,11 @@ export function useTema() {
   // que monta. O menu nasce fechado, então essa correção não pisca na tela.
   const [tema, setTema] = useState<Tema>("light");
 
+  // Sincroniza com a fonte da verdade (o data-theme que o script de boot já
+  // gravou no <html>) — leitura de sistema externo, que é exatamente para o que
+  // o useEffect serve. O setState é o espelho disso em estado React, e só pode
+  // acontecer pós-mount: fazê-lo antes divergiria do HTML do servidor.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setTema(temaAtual()), []);
 
   const definir = useCallback((t: Tema) => {

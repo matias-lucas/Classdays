@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
-import { NOME_CURSO } from "@/lib/config";
 import "./globals.css";
 
 /**
@@ -31,7 +30,7 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://classdays.net"),
-  title: `Classdays`,
+  title: "Classdays",
   description:
     "Grade da semana, provas, entregas e cancelamentos da turma — sempre atualizado.",
   icons: {

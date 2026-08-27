@@ -10,7 +10,7 @@ cadastra eventos **escrevendo uma frase em português**:
 O sistema transforma isso em evento estruturado, mostra um **preview editável** e só
 salva quando o admin confirma.
 
-**No ar:** https://classdays.vercel.app
+**No ar:** https://classdays.net (alias: `classdays.vercel.app`)
 
 ## Por que existe
 

@@ -58,6 +58,9 @@ export function useNaoLidos(candidatos: Evento[]) {
     // cada reload, e a novidade que o aluno viu mas não abriu se apagaria
     // sozinha ao completar 24h, sem ninguém ter lido nada.
     if (!salvos) salvar(inicial);
+    // set-state-in-effect é o padrão de hidratação descrito no doc acima: o
+    // localStorage não existe no servidor, então a leitura só pode ser aqui.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVistos(inicial);
     setPronto(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps

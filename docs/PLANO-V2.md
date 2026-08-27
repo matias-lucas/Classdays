@@ -136,7 +136,8 @@ em `src/lib/parser/schema.ts`; os novos (grade/matéria) em `src/lib/schemas/`.
 
 ### 3.5 Definition of Done (idêntico ao ROADMAP)
 
-- `npx tsc --noEmit` limpo · `npm test` verde · `npm run build` passa
+- `npx tsc --noEmit` limpo · `npm test` verde · `npm run build` passa ·
+  `npm run lint` sem erro nem aviso (zerado em 27/08/2026 — ver ROADMAP)
 - Correto nos **dois temas**; `prefers-reduced-motion` respeitado
 - A11y: foco visível, navegável por teclado, `aria-*`, alvos ≥44px em `pointer: coarse`
 - Mobile (360px) **e** desktop (≥1000px); sem hydration mismatch
@@ -812,7 +813,7 @@ Como ficou (as duas primeiras linhas mudaram na prática):
 - `painelPorGrupo()` divide o painel em "Novidades" e "Já vistas"; abaixo de
   640px o sino sai da topbar e as notificações moram no menu lateral.
 
-**Polimento** (branch `feat/e5-sino`, commits `598cbab`, `c54317c` e `ccc4060`):
+**Polimento** (branch `feat/e5-sino`, commits `722672a`, `b2bf989` e `d5ee462`):
 
 - ✅ **E5.1 — QA headless reescrito para a UI nova.** Dois caminhos de abertura
   (hambúrguer → "Notificações" no celular, `.sino-btn` no desktop), asserts de
@@ -821,13 +822,13 @@ Como ficou (as duas primeiras linhas mudaram na prática):
   320/360/390/430px, URL longa contida no cartão e barra do painel ocupando 0px
   **com o scroll ainda vivo**. A de 320px pegou um bug de verdade, e não era a
   topbar: o balão "GitHub" do rodapé (absolute + `nowrap`, invisível mas com
-  caixa) empurrava a página 14px. Corrigido em `ccc4060`.
+  caixa) empurrava a página 14px. Corrigido em `d5ee462`.
 - ✅ **E5.3 — Telas recapturadas** em `scratchpad/shots` (claro, escuro,
   desktop, topbar em 320px, cartão com a URL longa). Contraste do título já
   lido: 6.6:1 no claro, 7.8:1 no escuro.
 - ✅ **E5.4 — Fechar a entrega.** Gate completo verde (tsc, build, lint nos
   mesmos 10 erros pré-existentes) e QA de tela com 47 checagens verdes.
-  `feat/e5-sino` mergeado em `main` (`174ff84`).
+  `feat/e5-sino` mergeado em `main` (`3464be3`).
 - ✅ **E5.5 — A fumaça no celular achou o bug que o emulador não acha.** Evento
   cadastrado no admin, site aberto pela primeira vez no telefone: **nenhum
   ponto**. Não era o `localStorage` falhando — era ele funcionando conforme o
@@ -872,7 +873,7 @@ Como ficou (as duas primeiras linhas mudaram na prática):
 
 Dois minutos, sempre os mesmos passos, no celular:
 
-1. `classdays.vercel.app` (e depois `classdays.net`) abre sem erro.
+1. `classdays.net` abre sem erro (e o alias `classdays.vercel.app` também).
 2. "Hoje" mostra o esperado para o dia.
 3. A grade da semana bate com a realidade; navegar uma semana para frente e voltar.
 4. O card "Próximo" mostra o evento certo, com a contagem certa.
@@ -899,21 +900,22 @@ Dois minutos, sempre os mesmos passos, no celular:
 
 ---
 
-## 11. Domínio classdays.net
+## 11. Domínio classdays.net — ✅ no ar (27/08/2026)
 
-O `layout.tsx` já declara `metadataBase: new URL("https://classdays.net")` — ou
-seja, o código está pronto e as URLs de preview de link já apontam para lá.
-Falta a parte de infraestrutura:
+O `layout.tsx` já declarava `metadataBase: new URL("https://classdays.net")`, ou
+seja, o código estava pronto antes da infra. O Lucas comprou o domínio e
+apontou; os passos 1–4 estão feitos e verificados:
 
-1. Confirmar que o domínio está registrado e no seu controle.
-2. Vercel → Project → Settings → Domains → adicionar `classdays.net` e
-   `www.classdays.net`.
-3. Apontar o DNS conforme as instruções da Vercel (`A` para o apex, `CNAME` para o
-   `www`) e aguardar o certificado TLS.
-4. Definir `classdays.net` como domínio de produção; manter
-   `classdays.vercel.app` como alias (links antigos continuam funcionando).
-5. Conferir no celular: preview de link no WhatsApp com imagem e título corretos.
-6. Só então divulgar o endereço novo para a turma.
+1. ✅ Domínio registrado e sob controle do Lucas.
+2. ✅ Vercel → Domains com `classdays.net` e `www.classdays.net`.
+3. ✅ DNS apontado e certificado TLS emitido — apex responde 200, verificação de
+   certificado limpa.
+4. ✅ `classdays.net` é o domínio de produção; `www` redireciona pro apex e
+   `classdays.vercel.app` segue respondendo como alias (links antigos vivos).
+5. ⬜ Conferir no celular: preview de link no WhatsApp com imagem e título
+   corretos (o `opengraph-image` é gerado no build; só um aparelho real diz se
+   o WhatsApp pegou).
+6. ⬜ Divulgar o endereço novo para a turma.
 
 ---
 

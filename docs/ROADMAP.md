@@ -71,7 +71,7 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   gerais" nos chips de matéria (eventos sem `materia_id`), dot vermelho e
   navegação por setas nos chips, Vercel Analytics.
 - ✅ **E5 — Sino in-app** *(21/08/2026)*. Código em `main` e em produção
-  (merge `eb8d3a1`): badge de não lidos sobre `eventosFuturos()` (todo
+  (merge `b3a4e73`): badge de não lidos sobre `eventosFuturos()` (todo
   evento que ainda não terminou, sem teto de dias — candidato a novidade é
   o cadastro, não a proximidade da data); estado de leitura por id em
   `localStorage` (`classdays:sino:v2`, com migração da v1 por timestamp);
@@ -83,19 +83,32 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   sem scroll horizontal e com a barra de rolagem oculta, título
   "Notificações", h1 da topbar em `clamp()` e sino fora da topbar no celular
   — no lugar dele, a aba "Notificações" no menu lateral, com dot e contador.
+  **Correção de estreia** (24/08/2026, merge `1bab165`): quem chegava pela
+  primeira vez via o sino calado — `vistosIniciais` devolvia a janela inteira
+  como lida, então a estreia começava por definição sem novidade nenhuma, e o
+  evento cadastrado minutos antes junto. Agora nasce lido só o que tem mais de
+  24h (`JANELA_ESTREIA_MS`), com a baseline gravada na chegada e o corte por
+  instante (`Date.parse`), não por string. Detalhe em `PLANO-V2.md` §E5.5.
 - ⬜ **E6 — Web Push (PWA)**. Service worker, VAPID, Vercel Cron na véspera e
-  no dia; iOS exige o app na tela de início.
+  no dia; iOS exige o app na tela de início. **É a última entrega planejada** —
+  fechada ela, o plano v2 acaba.
 
-## Pendências de infra ⬜
+## Pendências de infra
 
-- Obter `ANTHROPIC_API_KEY` (parsing por Claude em produção; sem ela o parser
+- ✅ **Domínio classdays.net no ar** *(27/08/2026)*. Comprado e apontado pelo
+  Lucas; verificado: apex responde 200 com TLS válido, `www` redireciona pro
+  apex, e `classdays.vercel.app` segue como alias (links antigos vivos). O
+  `metadataBase` do código já apontava pra lá. Passo a passo em
+  `docs/PLANO-V2.md` §11.
+- ⬜ Obter `ANTHROPIC_API_KEY` (parsing por Claude em produção; sem ela o parser
   de regras assume e o app roda a custo zero).
-- Apontar o domínio **classdays.net** (o `metadataBase` do código já aponta
-  para lá) — passo a passo em `docs/PLANO-V2.md` §11.
 
 ## Definition of Done (toda etapa)
 
-- `npx tsc --noEmit` limpo, `npm test` verde, `npm run build` passa.
+- `npx tsc --noEmit` limpo, `npm test` verde, `npm run build` passa,
+  `npm run lint` **sem erros nem avisos** (zerado em 27/08/2026; o que é
+  padrão deliberado do projeto está marcado inline com a razão escrita, então
+  qualquer coisa que apareça no lint é nova de verdade).
 - Lógica pura em `src/lib/` com testes determinísticos; UI em `src/components`.
 - Correto nos **dois temas**; `prefers-reduced-motion` respeitado (JS também).
 - A11y: foco visível, teclado, `aria-*`, alvos ≥44px em `pointer: coarse`.

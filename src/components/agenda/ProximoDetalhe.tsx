@@ -66,6 +66,9 @@ export function ProximoDetalhe({
   // grade da semana pintando por cima. No servidor não existe `document`, então
   // só montamos no cliente — fechado ele é visibility:hidden, ninguém nota.
   const [montado, setMontado] = useState(false);
+  // Portal só existe no cliente (não há `document` no servidor): o setState
+  // pós-mount é o jeito canônico de dizer isso, não cascata acidental.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMontado(true), []);
 
   // Filtro da LISTA, local ao menu — nunca mexe no filtro da página (o
@@ -73,6 +76,8 @@ export function ProximoDetalhe({
   // reabrir mostrando tudo.
   const [filtroLista, setFiltroLista] = useState<string | null>(null);
   useEffect(() => {
+    // Reset reativo ao fechar, uma vez por troca — ver nota igual no HeroProximo.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!open) setFiltroLista(null);
   }, [open]);
 
