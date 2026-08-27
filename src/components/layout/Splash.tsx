@@ -45,6 +45,10 @@ export function Splash({ hoje }: Props) {
     };
 
     if (html.dataset.splash !== "on") {
+      // Quem decide se o splash roda é o script de boot (data-splash no <html>),
+      // e isso só dá pra ler depois do mount. Desmontar já no primeiro efeito é
+      // o caminho mais curto — o overlay nem chega a ser pintado.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMontado(false);
       return;
     }

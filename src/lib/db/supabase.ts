@@ -1,11 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type {
-  AulaFixa,
-  EdicaoMateria,
-  Materia,
-  NovaAula,
-  NovoEvento,
-} from "@/lib/types";
+import type { EdicaoMateria, Materia, NovaAula, NovoEvento } from "@/lib/types";
 import { ConflitoBanco } from "./erros";
 import type { Database } from "./index";
 

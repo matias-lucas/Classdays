@@ -55,6 +55,8 @@ export function HeroProximo({
   // o menu não faz sentido: garante que ele não fique/reabra pendurado.
   const temEvento = evento !== null;
   useEffect(() => {
+    // Idem: fechamento reativo ao evento sumir, uma vez por troca.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!temEvento) setAberto(false);
   }, [temEvento]);
 

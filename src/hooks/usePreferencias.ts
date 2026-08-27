@@ -44,6 +44,9 @@ export function usePreferencias(materias: Materia[]) {
 
   useEffect(() => {
     const idsValidos = new Set(materias.map((m) => m.id));
+    // set-state-in-effect é o padrão de hidratação descrito no doc acima: o
+    // localStorage não existe no servidor, então a leitura só pode ser aqui.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMateriasOcultas(lerPreferencias().filter((id) => idsValidos.has(id)));
     setPronto(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps

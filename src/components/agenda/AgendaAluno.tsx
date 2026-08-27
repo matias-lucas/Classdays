@@ -9,14 +9,7 @@ import {
   proximoEvento,
 } from "@/lib/agenda";
 import { ASSINATURA_RODAPE, NOME_CURSO, NOME_TURMA, NOME_INST } from "@/lib/config";
-import {
-  addDias,
-  fmtDiaMesPartes,
-  hojeISO,
-  horaAgora,
-  rotuloSemana,
-  segundaDaSemana,
-} from "@/lib/dates";
+import { addDias, hojeISO, horaAgora, segundaDaSemana } from "@/lib/dates";
 import type { AulaFixa, Evento, Materia } from "@/lib/types";
 import { MenuLateral } from "@/components/layout/MenuLateral";
 import { Splash } from "@/components/layout/Splash";
@@ -92,6 +85,9 @@ export function AgendaAluno({
   // Se a matéria do filtro ativo acabou de ser ocultada, o filtro volta para
   // "Todas" — senão o chip escolhido sumiria da barra sem explicação.
   useEffect(() => {
+    // Reset reativo a uma escolha do usuário (ocultar matéria), não render
+    // em cascata: dispara uma vez, na troca, e converge no frame seguinte.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (filtro && materiasOcultas.includes(filtro)) setFiltro(null);
   }, [filtro, materiasOcultas]);
 
@@ -173,19 +169,20 @@ export function AgendaAluno({
   );
   const { naoLidos, marcarVistos } = useNaoLidos(candidatosSino);
 
-  const ini = fmtDiaMesPartes(segunda);
-  const fim = fmtDiaMesPartes(addDias(segunda, 6));
-
   return (
     <div className="wrap">
       {/* overlay de abertura; mora aqui pra medir a topbar real (FLIP) */}
       <Splash hoje={hojeInicial} />
+      {/* O período da semana NÃO mora aqui: ele é do cabeçalho da grade
+          (GradeSemanaSlider), que é quem navega entre semanas. A topbar ficou
+          só com identidade e ações — foi o que abriu espaço pro sino no
+          celular. */}
       <div className="topbar">
+          {/* SVG do próprio domínio: o next/image não otimiza vetor (só
+              repassa), então <img> é a rota direta e sem custo. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon.svg" alt="Logo Classdays" className="logo" />
           <h1>Classdays</h1>
-          {/* <p className={`head-sub dir-${direcaoSemana}`} key={segunda}>
-            {rotuloSemana(semanaOffset)} · {ini.dia} {ini.mes} – {fim.dia} {fim.mes}
-          </p> */}
         <div className="topbar-acoes">
           <Sino
             eventos={candidatosSino}

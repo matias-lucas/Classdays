@@ -96,6 +96,10 @@ export function SecaoRecolhivel({
   };
 
   useEffect(() => {
+    // set-state-in-effect é o padrão de hidratação do projeto, não descuido: a
+    // seção nasce aberta (igual ao servidor) e só recolhe depois do mount, com
+    // o localStorage em mãos. Ler antes divergiria do HTML do servidor.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (lerRecolhidas().includes(id)) setAberta(false);
     return () => window.clearTimeout(timerAnim.current);
   }, [id]);

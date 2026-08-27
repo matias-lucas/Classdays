@@ -90,6 +90,9 @@ export function Drawer({ open, onFechar, titulo, children }: Props) {
       >
         <div className="drawer-head">
           <span className="drawer-marca">
+            {/* SVG do próprio domínio: o next/image não otimiza vetor (só
+                repassa), então <img> é a rota direta e sem custo. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="drawer-logo" src="/icon.svg" alt="" />
             <span className="drawer-titulo">{titulo}</span>
           </span>

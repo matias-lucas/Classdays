@@ -169,7 +169,6 @@ export function GradeSemanaSlider({
     if (ate == null) return;
     vp.style.transition = "height 480ms cubic-bezier(0.25, 1, 0.5, 1)";
     vp.style.height = `${ate}px`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arraste]);
 
   // --- Transição por BOTÃO -------------------------------------------------
@@ -210,6 +209,10 @@ export function GradeSemanaSlider({
     try {
       if (localStorage.getItem(CHAVE_DICA)) return;
     } catch {}
+    // Igual ao resto do projeto: matchMedia e localStorage não existem no
+    // servidor, então a dica só pode ser revelada depois do mount — é o que o
+    // comentário acima chama de "começa oculta no servidor".
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDicaVisivel(true);
   }, []);
 
