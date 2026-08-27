@@ -49,6 +49,27 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
           .filter(Boolean)
           .join(" ");
 
+        // Qual dos dois horários da noite ficou vazio, se algum. No quadro do
+        // desktop cada dia tem 2 linhas; um dia com aula só num dos horários
+        // deixava a outra linha como buraco — e buraco lê como layout
+        // quebrado, não como "você está livre aqui". O card de preenchimento
+        // abaixo ocupa essa linha.
+        //
+        // Só com o FILTRO DESLIGADO: com filtro, a outra aula existe e está
+        // apenas escondida, então marcar a linha como livre seria mentira.
+        // Aula da noite inteira ("full") não deixa linha nenhuma sobrando.
+        const ocupados = new Set(
+          aulas.map((a) => faixaHorario(a.aula.hora_ini, a.aula.hora_fim)),
+        );
+        const horarioLivre =
+          filtro || ocupados.size === 0 || ocupados.has("full")
+            ? null
+            : !ocupados.has("tarde")
+              ? "tarde"
+              : !ocupados.has("cedo")
+                ? "cedo"
+                : null;
+
         return (
           <section className={classesDia} key={dia.data}>
             <div className="day-head">
@@ -95,7 +116,8 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
               ) : aulas.length === 0 ? (
                 <p className="empty-day">{filtro ? "—" : "Sem aulas"}</p>
               ) : (
-                aulas.map(({ aula, cancelamento, evento }) => {
+                <>
+                  {aulas.map(({ aula, cancelamento, evento }) => {
                   const materia = materiaDe(aula.materia_id);
                   const slot = `slot-${faixaHorario(aula.hora_ini, aula.hora_fim)}`;
                   if (cancelamento) {
@@ -134,7 +156,22 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
                       </div>
                     </div>
                   );
-                })
+                  })}
+                  {horarioLivre && (
+                    // Preenchimento do quadro do desktop: fecha a coluna sem
+                    // fingir que ali aconteceu alguma coisa. Traço, e só —
+                    // nada de hachura, que no `.noclass` significa "cancelada".
+                    // `aria-hidden` porque é peça de layout: um "—" lido em voz
+                    // alta não informa nada, e a ausência de aula já está dita
+                    // pela ausência de card.
+                    <div
+                      className={`slot-livre slot-${horarioLivre}`}
+                      aria-hidden="true"
+                    >
+                      —
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </section>

@@ -317,6 +317,16 @@
   margin-top: 2px;
 }
 
+/* Horário livre no quadro do desktop: o dia tem aula só num dos dois horários
+   e a outra linha ficaria vazia. Existe só para fechar a coluna — por isso um
+   traço e nada mais, e por isso SEM a hachura do `.noclass`: lá ela quer dizer
+   "cancelada", que é notícia; aqui não houve notícia nenhuma.
+   Fora do quadro (celular) não há linha vazia pra preencher e o card seria
+   ruído, então nasce escondido e só o desktop o mostra. */
+.slot-livre {
+  display: none;
+}
+
 /* aviso de cancelamento / dia sem aula */
 .noclass {
   padding: 10px 14px;
@@ -449,6 +459,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  /* o traço do horário livre (ver .slot-livre lá em cima): mesma caixa
+     tracejada do `.noclass`, sem a hachura e sem texto. A linha fica ocupada,
+     a coluna fecha na mesma altura das outras, e o vazio passa a ter contorno
+     em vez de ser um buraco. */
+  .day-classes > .slot-livre {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-card);
+    color: var(--ink-faint);
+    font-family: var(--font-mono), monospace;
+    font-size: 13px;
+    opacity: 0.7;
   }
 
   /* cards na vertical pra caber na coluna estreita: matéria+prof em cima,
