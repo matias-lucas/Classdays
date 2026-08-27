@@ -60,6 +60,8 @@ async function ler(): Promise<BancoLocal> {
     for (const e of banco.eventos) e.data_fim ??= null;
     // eventos gravados antes deste campo existir: mesma regra de sempre.
     for (const e of banco.eventos) e.enfase ??= "ambos";
+    // idem: sem o campo, ninguém derrubava aula (só feriado/recesso, por tipo).
+    for (const e of banco.eventos) e.suspende_aulas ??= false;
     return banco;
   } catch {
     // Arquivo ainda não existe (ou foi apagado): nasce do seed.

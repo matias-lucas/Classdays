@@ -20,6 +20,9 @@ const CamposEvento = z.object({
   data_fim: z.string().regex(REGEX_DATA).nullable(),
   hora: z.string().regex(REGEX_HORA).nullable(),
   enfase: z.enum(ENFASES_PERIODO).default("ambos"),
+  // `.default(false)`: corpo antigo (sem o campo) segue válido — a fronteira
+  // não pode quebrar entre o deploy da coluna e o do formulário que a envia.
+  suspende_aulas: z.boolean().default(false),
   observacao: z.string().max(500).nullable(),
 });
 
