@@ -84,6 +84,7 @@ describe("dbLocal — eventos (E2: updateEvento)", () => {
       data_fim: null,
       hora: null,
       enfase: "ambos",
+      suspende_aulas: false,
       observacao: null,
     });
 
@@ -102,6 +103,7 @@ describe("dbLocal — eventos (E2: updateEvento)", () => {
       data_fim: null,
       hora: null,
       enfase: "ambos",
+      suspende_aulas: false,
       observacao: null,
     });
     expect(resultado).toBeNull();

@@ -9,11 +9,12 @@ import {
   ehPeriodo,
   emAndamento,
   eventosFuturos,
-  feriadoEm,
   fimDe,
   itensDeHoje,
   montarSemana,
   proximoEvento,
+  suspendeAulas,
+  suspensaoEm,
 } from "@/lib/agenda";
 import type { AulaFixa, Evento } from "@/lib/types";
 
@@ -35,6 +36,7 @@ function evento(parcial: Partial<Evento> & Pick<Evento, "id" | "tipo" | "data">)
     data_fim: null,
     hora: null,
     enfase: "ambos",
+    suspende_aulas: false,
     observacao: null,
     created_at: "2026-07-01T00:00:00.000Z",
     ...parcial,
@@ -436,35 +438,35 @@ describe("ehAusencia (E3)", () => {
   });
 });
 
-describe("feriadoEm (E3)", () => {
+describe("suspensaoEm — feriado/recesso (E3)", () => {
   it("acha um feriado de um dia só, só na data exata", () => {
     const feriado = evento({ id: 1, tipo: "feriado", data: HOJE, titulo: "Feriado" });
-    expect(feriadoEm([feriado], HOJE)).toBe(feriado);
-    expect(feriadoEm([feriado], "2026-07-08")).toBeNull();
+    expect(suspensaoEm([feriado], HOJE)).toBe(feriado);
+    expect(suspensaoEm([feriado], "2026-07-08")).toBeNull();
   });
 
   it("acha um recesso (período) em qualquer dia dentro do intervalo", () => {
     const recesso = evento({
       id: 1, tipo: "recesso", titulo: "Recesso", data: "2026-07-06", data_fim: "2026-07-17",
     });
-    expect(feriadoEm([recesso], "2026-07-10")).toBe(recesso);
-    expect(feriadoEm([recesso], "2026-07-18")).toBeNull();
+    expect(suspensaoEm([recesso], "2026-07-10")).toBe(recesso);
+    expect(suspensaoEm([recesso], "2026-07-18")).toBeNull();
   });
 
   it("nunca confunde cancelamento ou evento comum com feriado", () => {
     const cancel = evento({ id: 1, tipo: "cancelamento", data: HOJE });
     const comum = evento({ id: 2, tipo: "evento", data: HOJE });
-    expect(feriadoEm([cancel, comum], HOJE)).toBeNull();
+    expect(suspensaoEm([cancel, comum], HOJE)).toBeNull();
   });
 });
 
 describe("montarSemana com feriado/recesso (E3)", () => {
-  it("feriado de um dia derruba as aulas só daquele dia e marca `feriado`", () => {
+  it("feriado de um dia derruba as aulas só daquele dia e marca `suspensao`", () => {
     const feriado = evento({ id: 1, tipo: "feriado", data: "2026-07-07", titulo: "Feriado" });
     const semana = montarSemana(GRADE, [feriado], "2026-07-06");
-    expect(semana[1].feriado).toBe(feriado);
+    expect(semana[1].suspensao).toBe(feriado);
     expect(semana[1].aulas).toHaveLength(0);
-    expect(semana[0].feriado).toBeNull();
+    expect(semana[0].suspensao).toBeNull();
     expect(semana[0].aulas).toHaveLength(1); // segunda intacta
   });
 
@@ -474,7 +476,7 @@ describe("montarSemana com feriado/recesso (E3)", () => {
     });
     const semana = montarSemana(GRADE, [recesso], "2026-07-06");
     expect(semana.every((d) => d.aulas.length === 0)).toBe(true);
-    expect(semana.every((d) => d.feriado?.id === 1)).toBe(true);
+    expect(semana.every((d) => d.suspensao?.id === 1)).toBe(true);
     expect(semana.every((d) => d.continuos.length === 0)).toBe(true);
   });
 
@@ -516,6 +518,88 @@ describe("proximoEvento nunca escolhe feriado/recesso (E3)", () => {
   });
 });
 
+
+describe("suspende_aulas — um evento qualquer derrubando a grade", () => {
+  // O caso real: a OLINFEG ocupa a semana e não há aula nenhuma nesses dias.
+  // Antes disso existir, era preciso cadastrar o evento E um cancelamento
+  // de dia inteiro para cada data.
+  const olinfeg = evento({
+    id: 1,
+    tipo: "evento",
+    titulo: "OLINFEG",
+    data: "2026-07-07",
+    data_fim: "2026-07-09",
+    suspende_aulas: true,
+  });
+
+  it("feriado e recesso derrubam por tipo, com o campo desligado", () => {
+    expect(suspendeAulas(evento({ id: 2, tipo: "feriado", data: HOJE }))).toBe(true);
+    expect(suspendeAulas(evento({ id: 3, tipo: "recesso", data: HOJE }))).toBe(true);
+  });
+
+  it("evento comum só derruba quando o admin marcou", () => {
+    expect(suspendeAulas(olinfeg)).toBe(true);
+    expect(suspendeAulas(evento({ id: 4, tipo: "evento", data: HOJE }))).toBe(false);
+    expect(suspendeAulas(evento({ id: 5, tipo: "prova", data: HOJE }))).toBe(false);
+  });
+
+  it("cancelamento nunca derruba o dia por esta via — ele tem a sua", () => {
+    // senão um cancelamento de UMA matéria com o campo ligado por engano
+    // (ou herdado de uma troca de tipo no /admin) apagaria o dia inteiro
+    const cancel = evento({
+      id: 6, tipo: "cancelamento", data: HOJE, materia_id: "bd", suspende_aulas: true,
+    });
+    expect(suspendeAulas(cancel)).toBe(false);
+    const semana = montarSemana(GRADE, [cancel], "2026-07-06");
+    expect(semana[1].suspensao).toBeNull();
+    expect(semana[1].aulas).toHaveLength(2); // as duas seguem lá, uma riscada
+    expect(semana[1].aulas.find((a) => a.aula.materia_id === "bd")?.cancelamento).toBe(cancel);
+  });
+
+  it("suspensaoEm acha o evento em qualquer dia do período, e só nele", () => {
+    expect(suspensaoEm([olinfeg], "2026-07-08")).toBe(olinfeg);
+    expect(suspensaoEm([olinfeg], "2026-07-09")).toBe(olinfeg);
+    expect(suspensaoEm([olinfeg], "2026-07-10")).toBeNull();
+    expect(suspensaoEm([olinfeg], "2026-07-06")).toBeNull();
+  });
+
+  it("montarSemana esvazia só os dias cobertos e não duplica em `continuos`", () => {
+    const semana = montarSemana(GRADE, [olinfeg], "2026-07-06");
+    expect(semana[0].suspensao).toBeNull();
+    expect(semana[0].aulas).toHaveLength(1); // segunda, fora do período, intacta
+    expect(semana[1].suspensao).toBe(olinfeg);
+    expect(semana[1].aulas).toHaveLength(0);
+    expect(semana[2].aulas).toHaveLength(0);
+    expect(semana[3].suspensao).toBe(olinfeg); // quinta: sem aula na grade, mas coberta
+    expect(semana.every((d) => d.continuos.length === 0)).toBe(true);
+  });
+
+  it("com matéria, derruba o dia INTEIRO — não só a aula daquela matéria", () => {
+    // "tem exame de BD e por isso não há aula nenhuma nesse dia". Tirar uma
+    // aula só continua sendo trabalho do cancelamento.
+    const exame = evento({
+      id: 7, tipo: "prova", titulo: "Exame final", data: "2026-07-07",
+      materia_id: "bd", suspende_aulas: true,
+    });
+    const semana = montarSemana(GRADE, [exame], "2026-07-06");
+    expect(semana[1].suspensao).toBe(exame);
+    expect(semana[1].aulas).toHaveLength(0); // edados também caiu
+  });
+
+  it("itensDeHoje: o evento pontual suprime as aulas e segue na timeline", () => {
+    const congresso = evento({
+      id: 8, tipo: "evento", titulo: "Congresso", data: HOJE, suspende_aulas: true,
+    });
+    expect(itensDeHoje(GRADE, [congresso], HOJE)).toEqual([
+      expect.objectContaining({ kind: "evento", titulo: "Congresso" }),
+    ]);
+  });
+
+  it("segue disputando o hero — não é ausência, é coisa que acontece", () => {
+    // a diferença para feriado/recesso, que somem do card "Próximo"
+    expect(proximoEvento([olinfeg], "2026-07-06", "10:00")?.id).toBe(1);
+  });
+});
 
 describe("contaAteOTermino — a contagem mira o fim ou o início?", () => {
   const pontual = evento({ id: 90, tipo: "prova", data: "2026-07-20" });

@@ -20,6 +20,7 @@ function evento(parcial: Partial<Evento> & Pick<Evento, "id">): Evento {
     data_fim: null,
     hora: null,
     enfase: "ambos",
+    suspende_aulas: false,
     observacao: null,
     created_at: "2026-07-01T00:00:00.000Z",
     ...parcial,
