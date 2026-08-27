@@ -1,0 +1,54 @@
+-- 0008 — Fecha (e depois remove) o snapshot da E2, que estava exposto sem RLS
+--
+-- POR QUE
+-- A receita de backup do PLANO-V2 §4.1 cria a tabela com `create table
+-- bkp_… as select * from …`. Uma tabela nascida assim no schema `public` fica
+-- visível ao PostgREST e **não herda RLS de ninguém**: nasce com row level
+-- security desligada. Como a chave anônima do Supabase vai no bundle do site,
+-- qualquer visitante conseguia ler `bkp_eventos_20260806` pela API REST.
+--
+-- O conteúdo não era sensível (eventos da agenda da turma, que já eram
+-- públicos na própria home), mas a tabela não tinha por que existir: o §4.1
+-- manda apagar o snapshot quando a entrega estabiliza, e a E2 fechou em
+-- 06/08/2026 — três semanas antes disto.
+--
+-- Detectado pelo `get_advisors` do Supabase (lint 0013_rls_disabled_in_public)
+-- em 27/08/2026. A receita do §4.1 foi corrigida no mesmo commit para que todo
+-- snapshot futuro já nasça com RLS ligada.
+
+-- ---------------------------------------------------------------------------
+-- PASSO 1 — JÁ RODADO EM PRODUÇÃO (27/08/2026)
+-- Fecha a exposição sem apagar nada. Sem policy, só o service_role enxerga;
+-- o advisor sai de ERROR (rls_disabled_in_public) para INFO
+-- (rls_enabled_no_policy), que é o estado pretendido para uma tabela que
+-- ninguém deve ler — o mesmo padrão previsto para `push_subscriptions` na E6.
+-- ---------------------------------------------------------------------------
+alter table public.bkp_eventos_20260806 enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- PASSO 2 — PENDENTE, rodar quando quiser (SQL Editor do Supabase)
+-- É o que o §4.1 manda: snapshot de entrega estável não fica no banco. Só
+-- descomente depois de conferir o arquivo do conteúdo, logo abaixo.
+-- ---------------------------------------------------------------------------
+-- drop table if exists public.bkp_eventos_20260806;
+
+-- ---------------------------------------------------------------------------
+-- ARQUIVO — conteúdo integral da tabela, capturado em 27/08/2026
+--
+-- A tabela tinha 4 linhas; duas delas (21 e 26) já não existiam mais em
+-- `eventos` — as duas foram apagadas de propósito, a 21 na fusão dos eventos
+-- 21/22 da E2 (com confirmação do Lucas) e a 26 depois que o edital saiu.
+-- Ficam registradas aqui para que o passo 2 não dependa de uma tabela viva em
+-- produção para ser reversível.
+--
+-- NÃO rode este bloco: `eventos` já contém as linhas 22 e 25, e as 21 e 26
+-- foram removidas de propósito. Isto é arquivo, não restauração — se um dia
+-- precisar de uma delas de volta, copie a linha correspondente à mão.
+--
+-- A tabela é anterior à coluna `enfase` (migration 0007), então os inserts
+-- abaixo não a mencionam: hoje ela cairia no default.
+-- ---------------------------------------------------------------------------
+-- insert into eventos (id, tipo, titulo, materia_id, data, hora, observacao, created_at, data_fim) values (21, 'evento', 'Data de início da renovação de matrícula', null, '2026-08-04', null, 'Renovação de matrícula e escolha das disciplinas - Via SUAP', '2026-07-08 14:34:02.828375+00', null);
+-- insert into eventos (id, tipo, titulo, materia_id, data, hora, observacao, created_at, data_fim) values (22, 'evento', 'Término do prazo para renovação de matrícula', null, '2026-08-09', null, 'Renovação de matrícula e escolha das disciplinas - Via SUAP', '2026-07-08 14:34:44.874449+00', null);
+-- insert into eventos (id, tipo, titulo, materia_id, data, hora, observacao, created_at, data_fim) values (25, 'evento', 'RETORNO DAS AULAS', null, '2026-08-10', null, 'Início das aulas do 4º Período (02/2026)', '2026-07-16 16:28:23.237818+00', null);
+-- insert into eventos (id, tipo, titulo, materia_id, data, hora, observacao, created_at, data_fim) values (26, 'evento', 'Edital de proficiência', null, '2026-08-19', null, 'Data prevista para a publicação do edital de proficiência', '2026-08-05 10:29:07.22078+00', null);

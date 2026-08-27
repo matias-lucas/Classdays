@@ -115,6 +115,13 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   `docs/PLANO-V2.md` §11.
 - ⬜ Obter `ANTHROPIC_API_KEY` (parsing por Claude em produção; sem ela o parser
   de regras assume e o app roda a custo zero).
+- ⬜ **Apagar `bkp_eventos_20260806`** (`drop table` no SQL Editor — passo 2 de
+  `supabase/0008_drop_backup_e2.sql`). O snapshot da E2 estava no schema
+  `public` **sem RLS**, legível por qualquer visitante através da chave anônima
+  que vai no bundle; a RLS foi ligada em 27/08/2026 e a exposição está fechada,
+  então o que resta é faxina, não urgência. As 4 linhas estão arquivadas no
+  próprio `.sql`, então o drop não perde nada. Achado pelo `get_advisors` do
+  Supabase — que virou passo fixo do §4.1 do plano por causa disto.
 
 ## Definition of Done (toda etapa)
 

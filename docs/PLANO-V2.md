@@ -159,6 +159,14 @@ entrega que apague dados):
 create table bkp_materias_20260804      as select * from materias;
 create table bkp_grade_horaria_20260804 as select * from grade_horaria;
 create table bkp_eventos_20260804       as select * from eventos;
+
+-- OBRIGATÓRIO, na mesma colada: `create table ... as select` nasce com RLS
+-- DESLIGADA e no schema `public`, ou seja, visível ao PostgREST. Como a chave
+-- anônima vai no bundle do site, sem estas três linhas o snapshot fica
+-- legível por qualquer visitante. Sem policy = só o service_role enxerga.
+alter table bkp_materias_20260804      enable row level security;
+alter table bkp_grade_horaria_20260804 enable row level security;
+alter table bkp_eventos_20260804       enable row level security;
 ```
 
 Restaurar (se algo der errado):
@@ -172,8 +180,18 @@ insert into grade_horaria select * from bkp_grade_horaria_20260804;
 commit;
 ```
 
-Apagar os snapshots só depois que a entrega estiver estável em produção
-(`drop table bkp_…`). Eles não têm RLS: **não deixe snapshot de longo prazo**.
+Apagar os snapshots depois que a entrega estiver estável em produção
+(`drop table bkp_…`). **Não deixe snapshot de longo prazo** — nem com RLS
+ligada: é schema que ninguém lê e todo mundo esquece.
+
+> Esta seção já dizia "eles não têm RLS" e mesmo assim o
+> `bkp_eventos_20260806` da E2 passou três semanas em produção legível pela
+> chave anônima, até o `get_advisors` acusar em 27/08/2026 (`supabase/
+> 0008_drop_backup_e2.sql`). Um aviso que depende de alguém lembrar não é
+> salvaguarda; por isso o `alter table … enable row level security` agora faz
+> parte do bloco que se copia, e não de um parágrafo abaixo dele.
+> **Rode `get_advisors` (security) ao fim de toda entrega que mexer no banco** —
+> foi a única coisa que pegou isto, e custa um comando.
 
 ### 4.2 A chave de segurança que já existe: "Grade divulgada"
 
