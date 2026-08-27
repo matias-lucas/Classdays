@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { COR_TURMA } from "@/components/ui/EventoLinha";
-import { ehPeriodo, emAndamento, fimDe } from "@/lib/agenda";
+import { contaAteOTermino, fimDe } from "@/lib/agenda";
 import {
   DIAS_CURTOS,
   diaSemanaDe,
@@ -97,10 +97,9 @@ export function HeroProximo({
 
   const materia = materiaDe(evento.materia_id);
   const cor = materia?.cor ?? COR_TURMA;
-  // ênfase "fim": a contagem mira o término mesmo antes do período começar (o
-  // prazo é a notícia); os demais casos só contam pro término enquanto rolam.
-  const contaTermino =
-    (ehPeriodo(evento) && evento.enfase === "fim") || emAndamento(evento, hojeIso);
+  // Regra de domínio (agenda.ts): ênfase "fim" mira o término desde o primeiro
+  // dia, e qualquer período em andamento também. A lista usa a mesma função.
+  const contaTermino = contaAteOTermino(evento, hojeIso);
 
   // O rodapé-CTA anuncia o que o toque abre (o menu com todos os próximos) e
   // de quebra informa quantos eventos vêm aí. Cancelamentos ficam de fora da

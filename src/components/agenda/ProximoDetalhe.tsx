@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/Badge";
 import { COR_TURMA, EventoLinha } from "@/components/ui/EventoLinha";
-import { emAndamento, ehPeriodo, fimDe } from "@/lib/agenda";
+import { contaAteOTermino, ehPeriodo, fimDe } from "@/lib/agenda";
 import {
   type Contagem,
   contagemRegressiva,
@@ -129,10 +129,9 @@ export function ProximoDetalhe({
   }, [open, onFechar]);
 
   const cor = materia?.cor ?? COR_TURMA;
-  // ênfase "fim": a contagem mira o término mesmo antes do período começar (o
-  // prazo é a notícia); os demais casos só contam pro término enquanto rolam.
-  const contaTermino =
-    (ehPeriodo(evento) && evento.enfase === "fim") || emAndamento(evento, hojeIso);
+  // Regra de domínio (agenda.ts): ênfase "fim" mira o término desde o primeiro
+  // dia, e qualquer período em andamento também. A lista usa a mesma função.
+  const contaTermino = contaAteOTermino(evento, hojeIso);
   const contagem = contaTermino
     ? contagemRegressiva(hojeIso, agoraHHMM, fimDe(evento), null)
     : contagemRegressiva(hojeIso, agoraHHMM, evento.data, evento.hora);
