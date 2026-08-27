@@ -55,3 +55,28 @@ describe("NovoEventoSchema — data_fim (E2)", () => {
     if (r.success) expect(r.data.data_fim).toBeNull();
   });
 });
+
+describe("NovoEventoSchema — suspende_aulas", () => {
+  it("corpo sem o campo continua válido e nasce false", () => {
+    // é o que garante que o formulário antigo (e o /api/parse) não quebrem
+    // entre o deploy da coluna e o do resto
+    const r = NovoEventoSchema.safeParse({ ...BASE, data: "2026-09-16", data_fim: null });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.suspende_aulas).toBe(false);
+  });
+
+  it("true atravessa a fronteira intacto", () => {
+    const r = NovoEventoSchema.safeParse({
+      ...BASE, data: "2026-09-16", data_fim: "2026-09-18", suspende_aulas: true,
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.suspende_aulas).toBe(true);
+  });
+
+  it("valor que não é booleano é rejeitado", () => {
+    const r = NovoEventoSchema.safeParse({
+      ...BASE, data: "2026-09-16", data_fim: null, suspende_aulas: "sim",
+    });
+    expect(r.success).toBe(false);
+  });
+});

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/Badge";
+import { ehAusencia } from "@/lib/agenda";
 import type { DiaDaSemana } from "@/lib/agenda";
 import { DIAS_LONGOS, diaSemanaDe, faixaHorario, fmtDiaMes } from "@/lib/dates";
 import type { Materia } from "@/lib/types";
@@ -58,6 +59,17 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
         // Só com o FILTRO DESLIGADO: com filtro, a outra aula existe e está
         // apenas escondida, então marcar a linha como livre seria mentira.
         // Aula da noite inteira ("full") não deixa linha nenhuma sobrando.
+        // O evento que derrubou as aulas do dia, quando há um. Feriado e
+        // recesso já dizem "não tem aula" pelo próprio selo; um evento comum
+        // marcado com `suspende_aulas` (a OLINFEG, uma semana de exames) não
+        // diz — o título sozinho seria lido como "isso acontece ALÉM da aula".
+        const suspensao = dia.suspensao;
+        const motivoSuspensao = suspensao
+          ? [ehAusencia(suspensao.tipo) ? null : "Sem aula", suspensao.observacao]
+              .filter(Boolean)
+              .join(" — ")
+          : "";
+
         const ocupados = new Set(
           aulas.map((a) => faixaHorario(a.aula.hora_ini, a.aula.hora_fim)),
         );
@@ -89,16 +101,14 @@ export function GradeSemana({ semana, materiaDe, hojeIso, filtro, marcarPassados
             )}
 
             <div className="day-classes">
-              {dia.feriado ? (
+              {suspensao ? (
                 <div
-                  className="noclass feriado slot-full"
-                  style={{ "--sc": `var(--badge-${dia.feriado.tipo}-fg)` } as React.CSSProperties}
+                  className="noclass suspensao slot-full"
+                  style={{ "--sc": `var(--badge-${suspensao.tipo}-fg)` } as React.CSSProperties}
                 >
-                  <Badge tipo={dia.feriado.tipo} />
-                  <strong>{dia.feriado.titulo}</strong>
-                  {dia.feriado.observacao && (
-                    <span className="motivo">{dia.feriado.observacao}</span>
-                  )}
+                  <Badge tipo={suspensao.tipo} />
+                  <strong>{suspensao.titulo}</strong>
+                  {motivoSuspensao && <span className="motivo">{motivoSuspensao}</span>}
                 </div>
               ) : dia.cancelamentoDiaInteiro ? (
                 <div className="noclass slot-full">

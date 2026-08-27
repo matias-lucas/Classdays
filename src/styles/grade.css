@@ -353,13 +353,14 @@
 .noclass .motivo {
   color: var(--ink-faint);
 }
-/* feriado/recesso: mesmo aviso do dia sem aula, com o acento do selo do tipo
-   (aqui `--sc` carrega a cor do BADGE, não de matéria — feriado/recesso nunca
-   têm matéria, então não há conflito com a regra selo=tipo/matéria=filete).
+/* dia derrubado por um evento (feriado, recesso ou qualquer um marcado com
+   `suspende_aulas`): mesmo aviso do dia sem aula, com o acento do selo do TIPO
+   — aqui `--sc` carrega a cor do badge, não de matéria, e o filete de matéria
+   não existe neste box, então a regra selo=tipo/matéria=filete segue de pé.
    Empilhado (não em linha, como o `.noclass` padrão) e centralizado: o box
    ocupa a coluna inteira no desktop (`.slot-full`), e badge+título+observação
    sozinhos no topo deixavam um vão vazio embaixo. */
-.noclass.feriado {
+.noclass.suspensao {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
@@ -368,11 +369,11 @@
   border-color: color-mix(in srgb, var(--sc) 30%, var(--line));
   background: color-mix(in srgb, var(--sc) 7%, var(--surface));
 }
-.noclass.feriado strong {
+.noclass.suspensao strong {
   color: var(--sc);
   font-weight: 600;
 }
-.noclass.feriado .motivo {
+.noclass.suspensao .motivo {
   font-size: 12px;
 }
 .empty-day {
