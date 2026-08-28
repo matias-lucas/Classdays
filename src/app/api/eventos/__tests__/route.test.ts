@@ -102,3 +102,31 @@ describe("POST /api/eventos com data_fim (E2, sanity)", () => {
     expect(evento.data_fim).toBe("2027-01-09");
   });
 });
+
+describe("POST /api/eventos com suspende_aulas", () => {
+  it("salva o evento que derruba as aulas do período", async () => {
+    const req = reqAutenticado(
+      "POST",
+      {
+        ...EVENTO_VALIDO,
+        titulo: "OLINFEG",
+        data: "2027-09-16",
+        data_fim: "2027-09-18",
+        suspende_aulas: true,
+      },
+      "http://localhost/api/eventos",
+    );
+    const res = await postEvento(req);
+    expect(res.status).toBe(201);
+    const { evento } = await res.json();
+    expect(evento.suspende_aulas).toBe(true);
+  });
+
+  it("corpo sem o campo grava false (nada muda pra quem já usava a rota)", async () => {
+    const req = reqAutenticado("POST", EVENTO_VALIDO, "http://localhost/api/eventos");
+    const res = await postEvento(req);
+    expect(res.status).toBe(201);
+    const { evento } = await res.json();
+    expect(evento.suspende_aulas).toBe(false);
+  });
+});

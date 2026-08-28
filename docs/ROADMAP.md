@@ -106,6 +106,25 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   escolha de data feita dentro de um componente**, e é por aí que este tipo de
   divergência entra. Regra de domínio em componente é o cheiro a vigiar.
 
+### Melhorias fora de entrega
+
+- ⬜ **Evento que derruba a aula do dia** *(27/08/2026)*. Campo
+  `suspende_aulas` em `eventos` (`supabase/0009_suspende_aulas.sql`, aditiva,
+  **ainda não rodada em produção**): qualquer evento pode entrar no LUGAR das
+  aulas enquanto acontece — a OLINFEG (16–18/09) é o caso que motivou. Antes,
+  era preciso cadastrar o evento E um `cancelamento` de dia inteiro para cada
+  data, e as duas linhas viviam desencontradas. Em `agenda.ts`, `feriadoEm`
+  virou `suspensaoEm` sobre `suspendeAulas()`, que junta as duas origens:
+  feriado/recesso derrubam por tipo, o resto derruba por escolha do admin.
+  Cancelamento fica de fora de propósito (senão um cancelamento de uma matéria
+  com a caixa marcada apagaria o dia inteiro). Sempre o dia INTEIRO, mesmo com
+  matéria — tirar uma aula só continua sendo trabalho do `cancelamento`.
+  Caixa no preview do `/admin`, selo "sem aula" na lista de eventos, e a grade
+  mostra o evento no lugar das aulas. Nenhum dos dois parsers infere o campo,
+  como já acontece com a `enfase`: quem marca é o admin. 244 testes verdes,
+  tsc/build/lint limpos, render conferido fora do navegador (grade, linha da
+  lista e as quatro variações do formulário).
+
 ## Pendências de infra
 
 - ✅ **Domínio classdays.net no ar** *(27/08/2026)*. Comprado e apontado pelo

@@ -24,8 +24,9 @@ interface Props {
 /**
  * Badge com a contagem de eventos que o aluno nunca viu no painel (E5). O
  * painel vem em dois grupos (`painelPorGrupo`): "Novidades" em cima, com todas
- * elas, e "Já vistas" logo abaixo, com as mais próximas — notificação não some
- * por ter sido lida, só desce, fica apagada e perde o selo "novo".
+ * elas, e "Já vistas" logo abaixo, com as adicionadas mais recentemente
+ * primeiro — notificação não some por ter sido lida, só desce, fica apagada e
+ * perde o selo "novo".
  * Abrir já marca tudo como lido (ver = ler, mesma honestidade do resto do
  * app). Cada item fecha o sino e abre o menu de "Próximos eventos"
  * (ProximoDetalhe) já existente, em vez de duplicar aquela lista.

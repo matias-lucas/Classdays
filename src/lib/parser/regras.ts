@@ -405,6 +405,7 @@ export function parseComRegras(frase: string, ctx: Contexto): ResultadoParse {
     data_fim,
     hora: hora?.hhmm ?? null,
     enfase: "ambos",
+    suspende_aulas: false, // "derruba as aulas?" é decisão do admin, não do parser
     observacao: null, // regras não inventam observação
   };
 

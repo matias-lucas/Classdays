@@ -54,6 +54,14 @@ export interface Evento {
   data_fim: string | null; // "AAAA-MM-DD" > data; null = evento pontual (não período)
   hora: string | null; // "HH:MM" ou null (dia inteiro / sem hora definida)
   enfase: EnfasePeriodo; // só lido quando data_fim existe; "ambos" nos pontuais (ignorado)
+  /**
+   * Este evento derruba as aulas da grade enquanto acontece (a OLINFEG, uma
+   * semana de exames, um congresso). Vale o(s) dia(s) INTEIRO(s) — mesmo com
+   * `materia_id` preenchido: para tirar só uma aula existe o `cancelamento`.
+   * Feriado e recesso derrubam por serem o que são, com ou sem este campo
+   * (ver `suspendeAulas` em src/lib/agenda.ts).
+   */
+  suspende_aulas: boolean;
   observacao: string | null;
   created_at: string; // ISO timestamp
 }

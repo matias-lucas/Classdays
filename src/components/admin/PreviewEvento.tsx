@@ -1,6 +1,7 @@
 "use client";
 
 import { COR_TURMA } from "@/components/ui/EventoLinha";
+import { ehAusencia } from "@/lib/agenda";
 import type { EventoParseado } from "@/lib/parser/tipos";
 import type { EnfasePeriodo, Materia, TipoEvento } from "@/lib/types";
 import { TIPOS_EVENTO } from "@/lib/types";
@@ -178,6 +179,36 @@ export function PreviewEvento({
             </select>
           </label>
         )}
+
+        {/* "este evento entra no LUGAR da aula" — a OLINFEG, uma semana de
+            exames. Feriado e recesso derrubam sozinhos (regra de tipo), e
+            cancelamento já É o mecanismo de tirar aula: nos dois casos a caixa
+            não teria efeito nenhum, então não aparece. */}
+        {evento.tipo !== "cancelamento" &&
+          (ehAusencia(evento.tipo) ? (
+            <p className="campo-nota col-2">
+              {evento.tipo === "feriado" ? "Feriado" : "Recesso"} já derruba as
+              aulas — não há o que marcar.
+            </p>
+          ) : (
+            <>
+              <label className="campo campo-check col-2">
+                <input
+                  type="checkbox"
+                  checked={evento.suspende_aulas}
+                  onChange={(e) => muda("suspende_aulas", e.target.checked)}
+                />
+                <span>Não haverá aula {ehPeriodo ? "nesses dias" : "nesse dia"}</span>
+              </label>
+              {evento.suspende_aulas && (
+                <p className="campo-nota col-2">
+                  {materia
+                    ? `Derruba o dia inteiro na grade, não só a aula de ${materia.nome} — para tirar uma aula só, o tipo é "cancelamento".`
+                    : "Na grade da semana, este evento aparece no lugar das aulas do dia."}
+                </p>
+              )}
+            </>
+          ))}
 
         <label className="campo col-2">
           <span>Observação (opcional)</span>

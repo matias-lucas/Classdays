@@ -6,6 +6,7 @@ import {
   ehPeriodo,
   emAndamento,
   fimDe,
+  suspendeAulas,
 } from "@/lib/agenda";
 import {
   DIAS_CURTOS,
@@ -67,6 +68,10 @@ export function EventoLinha({
   // vale também pro período de ênfase "fim" que ainda nem começou.
   const emCurso = emAndamento(evento, hojeIso);
   const miraFim = contaAteOTermino(evento, hojeIso);
+  // Feriado e recesso já dizem "não tem aula" pelo selo do tipo; um evento
+  // comum marcado com `suspende_aulas` precisa dizer — senão a lista promete
+  // a OLINFEG e a grade, logo abaixo, some com as aulas sem explicação.
+  const avisaSemAula = !ausencia && suspendeAulas(evento);
   const { dia, mes } = fmtDiaMesPartes(evento.data);
   const fimPartes = periodo ? fmtDiaMesPartes(fimDe(evento)) : null;
   const dias = diffDias(hojeIso, miraFim ? fimDe(evento) : evento.data);
@@ -116,6 +121,7 @@ export function EventoLinha({
             </span>
           )}
           {emCurso && <span className="badge badge-andamento">em andamento</span>}
+          {avisaSemAula && <span className="badge badge-sem-aula">sem aula</span>}
           <Badge tipo={evento.tipo} />
         </div>
         <div className="ev-title">{evento.titulo}</div>

@@ -124,6 +124,7 @@ export async function parseComClaude(
     data_fim,
     hora,
     enfase: "ambos",
+    suspende_aulas: false, // fora do schema de saída, como a ênfase: quem marca é o admin
     observacao: bruto.observacao?.trim() || null,
   };
 

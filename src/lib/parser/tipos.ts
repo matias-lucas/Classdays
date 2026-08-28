@@ -15,6 +15,7 @@ export interface EventoParseado {
   data_fim: string | null; // "AAAA-MM-DD" > data, quando é um período; senão null
   hora: string | null; // "HH:MM" ou null
   enfase: EnfasePeriodo; // o parser nunca infere — nasce "ambos", o admin ajusta no preview
+  suspende_aulas: boolean; // idem: nasce false, quem marca é o admin no preview
   observacao: string | null;
 }
 

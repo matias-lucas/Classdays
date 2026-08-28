@@ -20,6 +20,7 @@ function evento(parcial: Partial<Evento> & Pick<Evento, "id">): Evento {
     data_fim: null,
     hora: null,
     enfase: "ambos",
+    suspende_aulas: false,
     observacao: null,
     created_at: "2026-07-01T00:00:00.000Z",
     ...parcial,
@@ -182,6 +183,17 @@ describe("painelPorGrupo", () => {
 
   it("nada a mostrar devolve os dois grupos vazios", () => {
     expect(painelPorGrupo([], new Set())).toEqual({ novos: [], lidos: [] });
+  });
+
+  it("já vistas vêm por ordem de cadastro, mais recente primeiro — não por data do evento", () => {
+    // e2 acontece antes de e1, mas foi cadastrado depois: no grupo "Já
+    // vistas" isso não é a agenda de novo, é aviso — quem avisou por último
+    // vem em cima.
+    const e1 = evento({ id: 1, data: "2026-07-08", created_at: "2026-07-01T00:00:00.000Z" });
+    const e2 = evento({ id: 2, data: "2026-07-05", created_at: "2026-07-10T00:00:00.000Z" });
+    const e3 = evento({ id: 3, data: "2026-07-20", created_at: "2026-07-05T00:00:00.000Z" });
+    const { lidos } = painelPorGrupo([e1, e2, e3], new Set());
+    expect(lidos.map((e) => e.id)).toEqual([2, 3, 1]);
   });
 
   it("o teto padrão deixa passar oito já vistas", () => {

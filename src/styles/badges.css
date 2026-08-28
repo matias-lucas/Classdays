@@ -58,6 +58,15 @@
   color: var(--ink-faint);
   border: 1px solid var(--line);
 }
+/* "sem aula" (o evento derruba a grade enquanto acontece): neutro pelo mesmo
+   motivo do "em andamento" — é uma consequência do evento, não um tipo dele,
+   e não pode disputar cor com o selo de tipo que vem ao lado. Contorno
+   tracejado, o mesmo desenho que a grade usa pra dizer "aqui não há aula". */
+.badge-sem-aula {
+  background: transparent;
+  color: var(--ink-faint);
+  border: 1px dashed var(--line);
+}
 /* ============================================================================
    lista de próximos eventos
    ========================================================================== */

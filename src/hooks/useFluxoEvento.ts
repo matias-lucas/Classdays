@@ -20,6 +20,7 @@ export const EVENTO_VAZIO: EventoParseado = {
   data_fim: null,
   hora: null,
   enfase: "ambos",
+  suspende_aulas: false,
   observacao: null,
 };
 
@@ -84,6 +85,7 @@ export function useFluxoEvento() {
         data_fim: evento.data_fim,
         hora: evento.hora,
         enfase: evento.enfase,
+        suspende_aulas: evento.suspende_aulas,
         observacao: evento.observacao,
       },
       origem: "edicao",
