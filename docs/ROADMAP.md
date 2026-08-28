@@ -108,9 +108,9 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
 
 ### Melhorias fora de entrega
 
-- ⬜ **Evento que derruba a aula do dia** *(27/08/2026)*. Campo
+- ✅ **Evento que derruba a aula do dia** *(28/08/2026)*. Campo
   `suspende_aulas` em `eventos` (`supabase/0009_suspende_aulas.sql`, aditiva,
-  **ainda não rodada em produção**): qualquer evento pode entrar no LUGAR das
+  rodada em produção antes do merge): qualquer evento pode entrar no LUGAR das
   aulas enquanto acontece — a OLINFEG (16–18/09) é o caso que motivou. Antes,
   era preciso cadastrar o evento E um `cancelamento` de dia inteiro para cada
   data, e as duas linhas viviam desencontradas. Em `agenda.ts`, `feriadoEm`
@@ -121,9 +121,10 @@ interface, e parada obrigatória para confirmação entre uma entrega e a próxi
   matéria — tirar uma aula só continua sendo trabalho do `cancelamento`.
   Caixa no preview do `/admin`, selo "sem aula" na lista de eventos, e a grade
   mostra o evento no lugar das aulas. Nenhum dos dois parsers infere o campo,
-  como já acontece com a `enfase`: quem marca é o admin. 244 testes verdes,
-  tsc/build/lint limpos, render conferido fora do navegador (grade, linha da
-  lista e as quatro variações do formulário).
+  como já acontece com a `enfase`: quem marca é o admin. De quebra, o sino
+  passou a ordenar "Já vistas" por `created_at` (mais recente primeiro), em
+  vez de herdar a ordem por data do evento. 245 testes verdes, tsc/build/lint
+  limpos, mergeado em `main` (`01cdc8b`).
 
 ## Pendências de infra
 
