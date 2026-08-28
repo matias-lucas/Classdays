@@ -108,10 +108,12 @@ export const TETO_LIDOS = 8;
 
 /**
  * O painel em dois grupos: primeiro TODAS as novidades (o badge não pode
- * prometer uma que a lista esconde), depois as já vistas mais próximas, até o
- * teto. Dentro de cada grupo vale a ordem cronológica que entrou — novidade em
- * cima é o que se espera de uma caixa de notificações, mas entre duas
- * novidades ainda manda a data.
+ * prometer uma que a lista esconde), depois as já vistas, até o teto. Dentro
+ * de "Novidades" vale a ordem cronológica de `candidatos` (evento mais
+ * próximo primeiro) — é o que se espera de uma caixa de notificações. Dentro
+ * de "Já vistas" quem manda é `created_at`, mais recente em cima: é uma
+ * caixa de avisos, não a agenda de novo, então a pergunta é "o que me
+ * avisaram por último", não "o que acontece antes".
  */
 export function painelPorGrupo(
   candidatos: Evento[],
@@ -120,6 +122,9 @@ export function painelPorGrupo(
 ): { novos: Evento[]; lidos: Evento[] } {
   return {
     novos: candidatos.filter((e) => naoLidos.has(e.id)),
-    lidos: candidatos.filter((e) => !naoLidos.has(e.id)).slice(0, teto),
+    lidos: candidatos
+      .filter((e) => !naoLidos.has(e.id))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, teto),
   };
 }
