@@ -1,8 +1,11 @@
 -- ============================================================================
 -- Classdays — dados iniciais
 --
--- ⚠️ PLACEHOLDER: mesma grade de exemplo do protótipo (src/lib/db/seed.ts).
--- Troque pelos dados reais da turma antes (ou depois) de rodar.
+-- ⚠️ PLACEHOLDER: mesma grade de exemplo do protótipo (src/lib/db/seed.ts),
+-- mas com os ids das matérias do 4º período — `alglin` virou `age` e `calc`
+-- virou `ext3`. Toda aula e todo evento daqui apontam para uma das cinco
+-- matérias abaixo; um id fora delas quebra a chave estrangeira e o arquivo
+-- inteiro falha. Troque pelos dados reais da turma antes (ou depois) de rodar.
 -- ============================================================================
 
 insert into materias (id, nome, prof, cor) values
@@ -20,15 +23,15 @@ insert into grade_horaria (materia_id, dia_semana, hora_ini, hora_fim, sala) val
   ('bd2',     2, '20:50', '22:30', 'Lab 2'),
   ('poo1',    3, '19:00', '20:40', 'Sala 5'),
   ('ext3',   4, '19:00', '20:40', 'Sala 3'),
-  ('alglin', 4, '20:50', '22:30', 'Sala 3'),
+  ('age',    4, '20:50', '22:30', 'Sala 3'),
   ('bd2',     5, '19:00', '20:40', 'Lab 1');
 
 -- Eventos de demonstração (datas de julho/2026) — apague pelo /admin depois.
 insert into eventos (tipo, titulo, materia_id, data, hora, observacao) values
-  ('prova',        'Prova — Unidade 2',       'alglin', '2026-07-13', '19:00', null),
+  ('prova',        'Prova — Unidade 2',       'age',    '2026-07-13', '19:00', null),
   ('trabalho',     'Entrega do Projeto AVL',  'edados', '2026-07-14', null,    'Enviar pelo AVA até o fim do dia'),
   ('cancelamento', 'Não haverá aula',         null,     '2026-07-15', null,    'Conselho universitário'),
   ('atividade',    'Lista de SQL (vale nota)','bd2',     '2026-07-16', '23:59', null),
   ('cancelamento', 'Aula cancelada',          'bd2',     '2026-07-17', null,    'Professora em congresso'),
   ('evento',       'Semana Acadêmica',        null,     '2026-07-22', null,    'Programação no mural do curso'),
-  ('prova',        'Prova — Integrais',       'calc',   '2026-07-23', '19:00', null);
+  ('prova',        'Prova — Unidade 1',       'ext3',   '2026-07-23', '19:00', null);
